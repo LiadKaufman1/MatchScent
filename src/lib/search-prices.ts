@@ -35,8 +35,7 @@ export async function fetchLivePrices(
     let url = '';
 
     if (type === 'il') {
-      // Google Shopping Israel (gl=il) or US if IL has no results, but we'll stick to US (gl=us) 
-      url = `https://serpapi.com/search.json?engine=google_shopping&q=${encodeURIComponent(query)}&hl=en&gl=us&api_key=${SERPAPI_KEY}`;
+      url = `https://serpapi.com/search.json?engine=google_shopping&q=${encodeURIComponent(query)}&hl=en&gl=il&api_key=${SERPAPI_KEY}`;
     } else {
       url = `https://serpapi.com/search.json?engine=amazon&amazon_domain=amazon.com&k=${encodeURIComponent(query)}&api_key=${SERPAPI_KEY}`;
     }
@@ -66,13 +65,13 @@ export async function fetchLivePrices(
     } else {
       // Parse Amazon Search Results
       const items = data.organic_results || [];
-      const validItems = items.filter((item: any) => item.price?.raw && item.link);
+      const validItems = items.filter((item: any) => item.price && item.link);
       
-      validItems.sort((a: any, b: any) => (a.price?.value || 9999) - (b.price?.value || 9999));
+      validItems.sort((a: any, b: any) => (a.extracted_price || 9999) - (b.extracted_price || 9999));
 
       parsedPrices = validItems.slice(0, 3).map((item: any) => ({
         store: 'Amazon',
-        price: item.price.raw,
+        price: item.price,
         link: item.link
       }));
     }
