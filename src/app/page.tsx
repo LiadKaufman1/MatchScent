@@ -6,6 +6,7 @@ import { Search, Sparkles, X, ExternalLink, ShoppingBag } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase, type Perfume, type Dupe } from '@/lib/supabase';
 import { mockPerfumes, mockDupes } from '@/lib/mockData';
+import LivePriceButtons from './components/LivePriceButtons';
 
 export default function Home() {
   const [perfumes, setPerfumes] = useState<Perfume[]>([]);
@@ -198,40 +199,7 @@ export default function Home() {
                             <p className="text-xs text-slate-500 mt-2 line-clamp-2">{dupe.notes}</p>
                           </div>
                         </div>
-                        
-                        <div className="mt-auto grid grid-cols-2 gap-2 pt-4 border-t border-slate-50">
-                          {dupe.purchase_link_il ? (
-                            <a 
-                              href={dupe.purchase_link_il} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="flex items-center justify-center gap-2 bg-slate-900 text-white py-2 px-3 rounded-xl text-sm font-medium hover:bg-slate-800 transition-colors"
-                            >
-                              <ShoppingBag className="w-4 h-4" />
-                              Buy in Israel
-                            </a>
-                          ) : (
-                            <button disabled className="flex items-center justify-center gap-2 bg-slate-100 text-slate-400 py-2 px-3 rounded-xl text-sm font-medium cursor-not-allowed">
-                              N/A in IL
-                            </button>
-                          )}
-                          
-                          {dupe.purchase_link_amazon ? (
-                            <a 
-                              href={dupe.purchase_link_amazon} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-700 py-2 px-3 rounded-xl text-sm font-medium hover:bg-slate-50 transition-colors"
-                            >
-                              <ExternalLink className="w-4 h-4" />
-                              Amazon
-                            </a>
-                          ) : (
-                            <button disabled className="flex items-center justify-center gap-2 bg-slate-100 text-slate-400 py-2 px-3 rounded-xl text-sm font-medium cursor-not-allowed">
-                              N/A on Amazon
-                            </button>
-                          )}
-                        </div>
+                        <LivePriceButtons dupe={dupe} />
                       </div>
                     ))}
                   </div>

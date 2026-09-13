@@ -16,6 +16,12 @@ export type Perfume = {
   gender: string
 }
 
+export type LivePrice = {
+  store: string;
+  price: string;
+  link: string;
+}
+
 export type Dupe = {
   id: string
   original_perfume_id: string
@@ -28,4 +34,6 @@ export type Dupe = {
   purchase_link_il: string
   purchase_link_amazon: string
   notes: string
+  live_prices_il?: LivePrice[]
+  live_prices_amazon?: LivePrice[]
 }
