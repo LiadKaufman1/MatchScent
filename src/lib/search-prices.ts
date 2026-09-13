@@ -36,11 +36,9 @@ export async function fetchLivePrices(
 
     if (type === 'il') {
       // Google Shopping Israel (gl=il) or US if IL has no results, but we'll stick to US (gl=us) 
-      // because Google Shopping IL is sometimes barren for English dupe names. 
-      // The user just wants places to buy. Let's use US for wider results, or just general.
       url = `https://serpapi.com/search.json?engine=google_shopping&q=${encodeURIComponent(query)}&hl=en&gl=us&api_key=${SERPAPI_KEY}`;
     } else {
-      url = `https://serpapi.com/search.json?engine=amazon&q=${encodeURIComponent(query)}&amazon_domain=amazon.com&api_key=${SERPAPI_KEY}`;
+      url = `https://serpapi.com/search.json?engine=amazon&amazon_domain=amazon.com&k=${encodeURIComponent(query)}&api_key=${SERPAPI_KEY}`;
     }
 
     const response = await fetch(url);
@@ -55,7 +53,7 @@ export async function fetchLivePrices(
     if (type === 'il') {
       // Parse Google Shopping
       const items = data.shopping_results || [];
-      const validItems = items.filter((item: any) => item.price && item.link);
+      const validItems = items.filter((item: any) => item.price && item.product_link);
       
       // Sort by price (SerpApi price is usually a float in extracted_price)
       validItems.sort((a: any, b: any) => (a.extracted_price || 9999) - (b.extracted_price || 9999));
@@ -63,7 +61,7 @@ export async function fetchLivePrices(
       parsedPrices = validItems.slice(0, 3).map((item: any) => ({
         store: item.source || 'Store',
         price: item.price,
-        link: item.link
+        link: item.product_link
       }));
     } else {
       // Parse Amazon Search Results
