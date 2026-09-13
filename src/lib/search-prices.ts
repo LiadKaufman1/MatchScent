@@ -47,12 +47,25 @@ export async function fetchLivePrices(
       throw new Error(`SerpApi error: ${data.error}`);
     }
 
-    let parsedPrices: LivePrice[] = [];
+    const searchWords = dupeName.toLowerCase().replace(/[^a-z0-9 ]/g, '').split(' ').filter(w => w.length > 2);
+
+    const isValidResult = (title: string) => {
+      if (!title) return false;
+      const t = title.toLowerCase();
+      if (t.includes('decant') || t.includes('sample') || t.includes('vial') || t.includes('empty') || t.includes('body spray') || t.includes('deodorant')) return false;
+      
+      let matchCount = 0;
+      for (const w of searchWords) {
+        if (t.includes(w)) matchCount++;
+      }
+      return searchWords.length > 0 ? (matchCount / searchWords.length) >= 0.5 : true;
+    };
 
     if (type === 'il') {
       // Parse Google Shopping
       const items = data.shopping_results || [];
-      const validItems = items.filter((item: any) => item.price && item.product_link);
+      const validItems = items.filter((item: any) => item.price && item.product_link && isValidResult(item.title));
+
       
       // Sort by price (SerpApi price is usually a float in extracted_price)
       validItems.sort((a: any, b: any) => (a.extracted_price || 9999) - (b.extracted_price || 9999));
@@ -65,7 +78,7 @@ export async function fetchLivePrices(
     } else {
       // Parse Amazon Search Results
       const items = data.organic_results || [];
-      const validItems = items.filter((item: any) => item.price && item.link);
+      const validItems = items.filter((item: any) => item.price && item.link && isValidResult(item.title));
       
       validItems.sort((a: any, b: any) => (a.extracted_price || 9999) - (b.extracted_price || 9999));
 
