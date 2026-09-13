@@ -47,6 +47,7 @@ export async function fetchLivePrices(
       throw new Error(`SerpApi error: ${data.error}`);
     }
 
+    let parsedPrices: LivePrice[] = [];
     const searchWords = dupeName.toLowerCase().replace(/[^a-z0-9 ]/g, '').split(' ').filter(w => w.length > 2);
 
     const isValidResult = (title: string) => {
