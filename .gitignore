@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Local working files for the Fragrantica import (third-party content, never publish)
+data-import/
