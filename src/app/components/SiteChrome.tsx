@@ -1,42 +1,69 @@
 import Link from 'next/link';
+import { getDict, otherLang, withLang, type Lang } from '@/lib/i18n';
 import CountrySelect from './CountrySelect';
 
 export function Wordmark({ className = '' }: { className?: string }) {
   return (
-    <span className={`font-display ${className}`}>
+    <span className={`font-display ${className}`} dir="ltr">
       Match<span className="text-wine-600">Scent</span>
     </span>
   );
 }
 
-export function SiteHeader() {
+// Switches between the English and Hebrew version of the SAME page.
+// `path` is the page without the language prefix, e.g. "/" or "/perfume/creed-aventus".
+export function LanguageSwitch({ lang, path }: { lang: Lang; path: string }) {
+  const t = getDict(lang);
+  const other = otherLang(lang);
+  return (
+    <a
+      href={withLang(other, path)}
+      hrefLang={other}
+      lang={other}
+      aria-label={t.switchLabel}
+      className="inline-flex items-center rounded-full border border-line bg-white px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.1em] text-ink shadow-[0_1px_2px_rgba(28,21,24,0.04)] transition hover:border-wine-600 hover:text-wine-700"
+    >
+      {t.switchTo}
+    </a>
+  );
+}
+
+export function SiteHeader({ lang, path }: { lang: Lang; path: string }) {
+  const t = getDict(lang);
   return (
     <header className="border-b border-line bg-white/80 backdrop-blur">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6">
-        <Link href="/" aria-label="MatchScent home">
-          <Wordmark className="text-3xl font-bold" />
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-4 sm:px-6">
+        <Link href={withLang(lang, '/')} aria-label="MatchScent">
+          <Wordmark className="text-2xl font-extrabold" />
         </Link>
-        <div className="flex items-center gap-4 sm:gap-6">
-          <Link href="/" className="hidden text-xs font-medium uppercase tracking-[0.2em] text-smoke transition hover:text-wine-600 sm:inline">
-            All fragrances
+        <div className="flex items-center gap-2 sm:gap-4">
+          <Link
+            href={withLang(lang, '/')}
+            className="hidden text-xs font-bold uppercase tracking-[0.14em] text-smoke transition hover:text-wine-600 md:inline"
+          >
+            {t.allFragrances}
           </Link>
-          <CountrySelect />
+          <LanguageSwitch lang={lang} path={path} />
+          <CountrySelect lang={lang} />
         </div>
       </div>
     </header>
   );
 }
 
-export function SiteFooter() {
+export function SiteFooter({ lang }: { lang: Lang }) {
+  const t = getDict(lang);
   return (
-    <footer className="mt-24 bg-plum-900 px-6 py-12 text-center">
-      <p className="font-display text-3xl font-bold text-white">
+    <footer className="mt-24 bg-plum-900 px-6 pb-24 pt-12 text-center sm:pb-12">
+      <p className="text-3xl font-extrabold text-white" dir="ltr">
         Match<span className="text-wine-200">Scent</span>
       </p>
       <div className="mx-auto my-5 h-px w-16 bg-wine-200/40" />
-      <p className="mx-auto max-w-2xl text-xs leading-relaxed text-white/60">
-        MatchScent is an independent fragrance guide. We are not affiliated with, or endorsed by, any of the brands
-        mentioned. All trademarks belong to their respective owners.
+      <p className="mx-auto max-w-2xl text-xs leading-relaxed text-white/70">{t.footer}</p>
+      <p className="mt-4 text-xs">
+        <Link href={withLang(lang, '/accessibility')} className="font-medium text-white/80 underline underline-offset-4 transition hover:text-white">
+          {t.footerA11y}
+        </Link>
       </p>
     </footer>
   );
