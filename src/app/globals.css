@@ -3,8 +3,8 @@
 /* "inline" because these point at font variables that next/font defines on <body>,
    not on :root, so they must be resolved where they are used. */
 @theme inline {
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-serif: var(--font-playfair), Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-jost), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-jost), ui-sans-serif, system-ui, sans-serif;
 }
 
 @theme {

@@ -1,8 +1,9 @@
 import Link from 'next/link';
+import CountrySelect from './CountrySelect';
 
 export function Wordmark({ className = '' }: { className?: string }) {
   return (
-    <span className={`font-serif ${className}`}>
+    <span className={`font-display ${className}`}>
       Match<span className="text-wine-600">Scent</span>
     </span>
   );
@@ -15,9 +16,12 @@ export function SiteHeader() {
         <Link href="/" aria-label="MatchScent home">
           <Wordmark className="text-2xl font-semibold" />
         </Link>
-        <Link href="/" className="text-xs font-medium uppercase tracking-[0.2em] text-smoke transition hover:text-wine-600">
-          All fragrances
-        </Link>
+        <div className="flex items-center gap-4 sm:gap-6">
+          <Link href="/" className="hidden text-xs font-medium uppercase tracking-[0.2em] text-smoke transition hover:text-wine-600 sm:inline">
+            All fragrances
+          </Link>
+          <CountrySelect />
+        </div>
       </div>
     </header>
   );
@@ -26,7 +30,7 @@ export function SiteHeader() {
 export function SiteFooter() {
   return (
     <footer className="mt-24 bg-plum-900 px-6 py-12 text-center">
-      <p className="font-serif text-2xl font-semibold text-white">
+      <p className="font-display text-2xl font-semibold text-white">
         Match<span className="text-wine-200">Scent</span>
       </p>
       <div className="mx-auto my-5 h-px w-16 bg-wine-200/40" />

@@ -98,7 +98,7 @@ export default function Catalog({ perfumes }: { perfumes: ShownPerfume[] }) {
                 </div>
                 <div className="flex flex-1 flex-col p-3.5 sm:p-5">
                   <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-wine-600 sm:text-[11px]">{p.brand}</span>
-                  <h3 className="mt-1.5 font-serif text-base leading-snug text-ink sm:text-xl">{p.name}</h3>
+                  <h3 className="mt-1.5 font-display text-base leading-snug text-ink sm:text-xl">{p.name}</h3>
                   <div className="mt-auto flex items-end justify-between gap-2 pt-4 text-sm">
                     <span className="text-smoke">
                       {usd(p.price_usd)}

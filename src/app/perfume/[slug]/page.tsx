@@ -51,7 +51,7 @@ function PerfumeLink({ p }: { p: ShownPerfume }) {
     >
       <span className="min-w-0">
         <span className="block text-[10px] font-medium uppercase tracking-[0.2em] text-wine-600">{p.brand}</span>
-        <span className="block truncate font-serif text-base text-ink">{p.name}</span>
+        <span className="block truncate font-display text-base text-ink">{p.name}</span>
       </span>
       <span className="shrink-0 text-xs text-smoke group-hover:text-wine-600">
         {p.entryCount > 0 ? `${p.entryCount} similar` : 'Soon'}
@@ -114,7 +114,7 @@ export default async function PerfumePage({ params }: Props) {
           </div>
           <div>
             <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-wine-600">{perfume.brand}</p>
-            <h1 className="mt-2 font-serif text-4xl leading-tight text-ink sm:text-5xl">{perfume.name}</h1>
+            <h1 className="mt-2 font-display text-4xl leading-tight text-ink sm:text-5xl">{perfume.name}</h1>
             <div className="wine-rule my-6 w-32" />
             <p className="max-w-xl leading-relaxed text-smoke">
               {perfume.name} by {perfume.brand} is a fragrance for {audience}.{' '}
