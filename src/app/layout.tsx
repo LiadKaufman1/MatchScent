@@ -6,8 +6,8 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair" });
 
 export const metadata: Metadata = {
-  title: "MatchScent | Find Your Perfect Fragrance Alternative",
-  description: "Discover premium original perfumes and their best, affordable dupes with direct purchase links.",
+  title: "MatchScent | Discover Fragrances Inspired by Iconic Perfumes",
+  description: "Explore iconic perfumes and the fragrances inspired by them, with links to stores where you can buy.",
 };
 
 export default function RootLayout({
