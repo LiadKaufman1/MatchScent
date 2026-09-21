@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // One-off database seed script, not part of the website
+    "generate_seed.js",
   ]),
 ]);
 

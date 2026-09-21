@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { Search, Sparkles, X, ExternalLink, ShoppingBag } from 'lucide-react';
+import { Search, Sparkles, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { supabase, type Perfume, type Dupe } from '@/lib/supabase';
+import { getSupabase, type Perfume, type Dupe } from '@/lib/supabase';
+import { prepareCatalog } from '@/lib/catalog';
 import { mockPerfumes, mockDupes } from '@/lib/mockData';
 import LivePriceButtons from './components/LivePriceButtons';
 
@@ -20,11 +21,13 @@ export default function Home() {
       // Try to fetch from Supabase if environment variables exist
       if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
         try {
+          const supabase = getSupabase();
           const { data: pData } = await supabase.from('perfumes').select('*');
           const { data: dData } = await supabase.from('dupes').select('*');
           if (pData && pData.length > 0) {
-            setPerfumes(pData);
-            setDupes(dData || []);
+            const catalog = prepareCatalog(pData, dData || []);
+            setPerfumes(catalog.perfumes);
+            setDupes(catalog.dupes);
             setIsLoading(false);
             return;
           }
@@ -32,10 +35,14 @@ export default function Home() {
           console.error('Error fetching from Supabase:', error);
         }
       }
-      
-      // Fallback to mock data if no Supabase data or config
-      setPerfumes(mockPerfumes);
-      setDupes(mockDupes);
+
+      // Sample data is only for local development. Real visitors must never see
+      // made-up perfumes, so in production an outage shows an empty state instead.
+      if (process.env.NODE_ENV === 'development') {
+        const catalog = prepareCatalog(mockPerfumes, mockDupes);
+        setPerfumes(catalog.perfumes);
+        setDupes(catalog.dupes);
+      }
       setIsLoading(false);
     }
     fetchData();
@@ -50,6 +57,9 @@ export default function Home() {
     return dupes.filter(d => d.original_perfume_id === perfumeId).sort((a, b) => b.similarity_score - a.similarity_score);
   };
 
+  const similarLabel = (n: number) =>
+    n === 0 ? 'Coming soon' : `View ${n} Similar ${n === 1 ? 'Scent' : 'Scents'}`;
+
   return (
     <main className="min-h-screen pb-20">
       {/* Hero Section */}
@@ -63,13 +73,13 @@ export default function Home() {
         >
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-900/5 border border-slate-900/10 mb-8">
             <Sparkles className="w-4 h-4 text-slate-700" />
-            <span className="text-sm font-medium text-slate-700">Find your perfect alternative</span>
+            <span className="text-sm font-medium text-slate-700">Find your perfect scent</span>
           </div>
           <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6" style={{ fontFamily: 'var(--font-playfair)' }}>
             Match<span className="text-slate-400">Scent</span>
           </h1>
           <p className="text-lg md:text-xl text-slate-600 mb-10 max-w-2xl mx-auto">
-            Discover affordable, high-quality alternatives to the world's most luxurious perfumes.
+            Explore fragrances inspired by the world&apos;s most iconic perfumes.
           </p>
 
           <div className="relative max-w-xl mx-auto">
@@ -90,6 +100,10 @@ export default function Home() {
         {isLoading ? (
           <div className="flex justify-center py-20">
             <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-900 rounded-full animate-spin" />
+          </div>
+        ) : perfumes.length === 0 ? (
+          <div className="text-center py-20">
+            <p className="text-slate-500">Our collection is being updated. Please check back soon.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -112,7 +126,7 @@ export default function Home() {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   <div className="absolute bottom-4 left-4 right-4 flex justify-between items-end opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <span className="bg-white/90 backdrop-blur text-xs font-medium px-2 py-1 rounded">
-                      View {getPerfumeDupes(perfume.id).length} Dupes
+                      {similarLabel(getPerfumeDupes(perfume.id).length)}
                     </span>
                   </div>
                 </div>
@@ -168,11 +182,11 @@ export default function Home() {
 
               {/* Modal Content */}
               <div className="overflow-y-auto p-6 bg-slate-50 flex-1">
-                <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4">Best Alternatives</h3>
+                <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4">Inspired by {selectedPerfume.name}</h3>
                 
                 {getPerfumeDupes(selectedPerfume.id).length === 0 ? (
                   <div className="text-center py-12">
-                    <p className="text-slate-500">We are still searching for the perfect dupes for this fragrance.</p>
+                    <p className="text-slate-500">We are still curating similar scents for this fragrance.</p>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

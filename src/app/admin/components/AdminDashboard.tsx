@@ -6,6 +6,8 @@ import { updatePerfume, updateDupe, deleteDupe, logoutAdmin } from '@/lib/action
 import { Search, LogOut, ChevronDown, ChevronUp, Save, Trash2, Plus } from 'lucide-react';
 import type { Perfume, Dupe } from '@/lib/supabase';
 
+const errorMessage = (e: unknown) => (e instanceof Error ? e.message : String(e));
+
 export default function AdminDashboard({ perfumes, dupes }: { perfumes: Perfume[], dupes: Dupe[] }) {
   const [search, setSearch] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -48,7 +50,7 @@ export default function AdminDashboard({ perfumes, dupes }: { perfumes: Perfume[
           />
         ))}
         {filtered.length === 0 && (
-          <div className="p-8 text-center text-slate-500">No perfumes found matching "{search}"</div>
+          <div className="p-8 text-center text-slate-500">No perfumes found matching &quot;{search}&quot;</div>
         )}
       </div>
     </div>
@@ -64,8 +66,8 @@ function PerfumeEditor({ perfume, dupes, isExpanded, onToggle }: { perfume: Perf
     try {
       await updatePerfume(perfume.id, formData);
       alert('Saved successfully!');
-    } catch (e: any) {
-      alert('Error: ' + e.message);
+    } catch (e) {
+      alert('Error: ' + errorMessage(e));
     }
     setSaving(false);
   };
@@ -82,7 +84,7 @@ function PerfumeEditor({ perfume, dupes, isExpanded, onToggle }: { perfume: Perf
           </div>
           <div>
             <h3 className="font-semibold text-slate-900">{perfume.name}</h3>
-            <p className="text-sm text-slate-500">{perfume.brand} • {dupes.length} dupes</p>
+            <p className="text-sm text-slate-500">{perfume.brand} • {dupes.length} similar scents</p>
           </div>
         </div>
         {isExpanded ? <ChevronUp className="w-5 h-5 text-slate-400" /> : <ChevronDown className="w-5 h-5 text-slate-400" />}
@@ -115,9 +117,9 @@ function PerfumeEditor({ perfume, dupes, isExpanded, onToggle }: { perfume: Perf
 
           <div>
             <div className="flex items-center justify-between mb-4">
-              <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Dupes ({dupes.length})</h4>
+              <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Similar scents ({dupes.length})</h4>
               <button className="flex items-center gap-1 text-sm font-medium text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-lg hover:bg-emerald-100 transition-colors">
-                <Plus className="w-4 h-4" /> Add Dupe
+                <Plus className="w-4 h-4" /> Add similar scent
               </button>
             </div>
             
@@ -143,19 +145,19 @@ function DupeEditor({ dupe }: { dupe: Dupe }) {
     try {
       await updateDupe(dupe.id, formData);
       alert('Saved successfully!');
-    } catch (e: any) {
-      alert('Error: ' + e.message);
+    } catch (e) {
+      alert('Error: ' + errorMessage(e));
     }
     setSaving(false);
   };
 
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this dupe?')) return;
+    if (!confirm('Are you sure you want to delete this similar scent?')) return;
     setDeleting(true);
     try {
       await deleteDupe(dupe.id);
-    } catch (e: any) {
-      alert('Error: ' + e.message);
+    } catch (e) {
+      alert('Error: ' + errorMessage(e));
       setDeleting(false);
     }
   };

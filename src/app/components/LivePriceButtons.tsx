@@ -30,7 +30,7 @@ export default function LivePriceButtons({ dupe }: { dupe: Dupe }) {
     setError('');
     setExpandedType(null);
 
-    const res = await fetchLivePrices(dupe.id, dupe.name, dupe.brand, type);
+    const res = await fetchLivePrices(dupe.id, type);
     
     if (res.success && res.prices && res.prices.length > 0) {
       if (type === 'il') setPricesIL(res.prices);
