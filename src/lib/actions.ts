@@ -3,7 +3,7 @@
 import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import crypto from 'crypto';
-import { supabaseAdmin } from './supabase-admin';
+import { getSupabaseAdmin } from './supabase-admin';
 import type { Dupe } from './supabase';
 
 // Generate a static signature based on the password for the cookie.
@@ -47,7 +47,7 @@ const pick = (data: Record<string, unknown>, fields: readonly string[]) => {
 };
 
 type PerfumeInput = { name: string; brand: string; image_url: string };
-type DupeInput =Partial<Pick<Dupe, (typeof DUPE_FIELDS)[number]>>;
+type DupeInput = Partial<Pick<Dupe, (typeof DUPE_FIELDS)[number]>>;
 
 export async function loginAdmin(password: string) {
   const expected = process.env.ADMIN_PASSWORD;
@@ -84,7 +84,7 @@ export async function checkAdminAuth() {
 
 export async function updatePerfume(id: string, data: PerfumeInput) {
   await checkAuth();
-  const { error } = await supabaseAdmin.from('perfumes').update(pick(data, PERFUME_FIELDS)).eq('id', id);
+  const { error } = await getSupabaseAdmin().from('perfumes').update(pick(data, PERFUME_FIELDS)).eq('id', id);
   if (error) throw new Error(error.message);
   revalidatePath('/');
   revalidatePath('/admin');
@@ -97,7 +97,7 @@ export async function updateDupe(id: string, data: DupeInput) {
   await checkAuth();
   const fields = pick(data, DUPE_FIELDS);
   if (Object.keys(fields).length === 0) throw new Error('Nothing to update');
-  const { error } = await supabaseAdmin.from('dupes').update(fields).eq('id', id);
+  const { error } = await getSupabaseAdmin().from('dupes').update(fields).eq('id', id);
   if (error) throw new Error(error.message);
   revalidatePath('/');
   revalidatePath('/admin');
@@ -107,7 +107,7 @@ export async function updateDupe(id: string, data: DupeInput) {
 export async function addDupe(data: DupeInput & { original_perfume_id: string }) {
   await checkAuth();
   const fields = pick(data, [...DUPE_FIELDS, 'original_perfume_id']);
-  const { error } = await supabaseAdmin.from('dupes').insert([fields]);
+  const { error } = await getSupabaseAdmin().from('dupes').insert([fields]);
   if (error) throw new Error(error.message);
   revalidatePath('/');
   revalidatePath('/admin');
@@ -116,7 +116,7 @@ export async function addDupe(data: DupeInput & { original_perfume_id: string })
 
 export async function deleteDupe(id: string) {
   await checkAuth();
-  const { error } = await supabaseAdmin.from('dupes').delete().eq('id', id);
+  const { error } = await getSupabaseAdmin().from('dupes').delete().eq('id', id);
   if (error) throw new Error(error.message);
   revalidatePath('/');
   revalidatePath('/admin');

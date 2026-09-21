@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Search, Sparkles, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { supabase, type Perfume, type Dupe } from '@/lib/supabase';
+import { getSupabase, type Perfume, type Dupe } from '@/lib/supabase';
+import { prepareCatalog } from '@/lib/catalog';
 import { mockPerfumes, mockDupes } from '@/lib/mockData';
 import LivePriceButtons from './components/LivePriceButtons';
 
@@ -20,11 +21,13 @@ export default function Home() {
       // Try to fetch from Supabase if environment variables exist
       if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
         try {
+          const supabase = getSupabase();
           const { data: pData } = await supabase.from('perfumes').select('*');
           const { data: dData } = await supabase.from('dupes').select('*');
           if (pData && pData.length > 0) {
-            setPerfumes(pData);
-            setDupes(dData || []);
+            const catalog = prepareCatalog(pData, dData || []);
+            setPerfumes(catalog.perfumes);
+            setDupes(catalog.dupes);
             setIsLoading(false);
             return;
           }
@@ -32,10 +35,14 @@ export default function Home() {
           console.error('Error fetching from Supabase:', error);
         }
       }
-      
-      // Fallback to mock data if no Supabase data or config
-      setPerfumes(mockPerfumes);
-      setDupes(mockDupes);
+
+      // Sample data is only for local development. Real visitors must never see
+      // made-up perfumes, so in production an outage shows an empty state instead.
+      if (process.env.NODE_ENV === 'development') {
+        const catalog = prepareCatalog(mockPerfumes, mockDupes);
+        setPerfumes(catalog.perfumes);
+        setDupes(catalog.dupes);
+      }
       setIsLoading(false);
     }
     fetchData();
@@ -49,6 +56,9 @@ export default function Home() {
   const getPerfumeDupes = (perfumeId: string) => {
     return dupes.filter(d => d.original_perfume_id === perfumeId).sort((a, b) => b.similarity_score - a.similarity_score);
   };
+
+  const similarLabel = (n: number) =>
+    n === 0 ? 'Coming soon' : `View ${n} Similar ${n === 1 ? 'Scent' : 'Scents'}`;
 
   return (
     <main className="min-h-screen pb-20">
@@ -91,6 +101,10 @@ export default function Home() {
           <div className="flex justify-center py-20">
             <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-900 rounded-full animate-spin" />
           </div>
+        ) : perfumes.length === 0 ? (
+          <div className="text-center py-20">
+            <p className="text-slate-500">Our collection is being updated. Please check back soon.</p>
+          </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {filteredPerfumes.map((perfume, index) => (
@@ -112,7 +126,7 @@ export default function Home() {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   <div className="absolute bottom-4 left-4 right-4 flex justify-between items-end opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <span className="bg-white/90 backdrop-blur text-xs font-medium px-2 py-1 rounded">
-                      View {getPerfumeDupes(perfume.id).length} Similar {getPerfumeDupes(perfume.id).length === 1 ? 'Scent' : 'Scents'}
+                      {similarLabel(getPerfumeDupes(perfume.id).length)}
                     </span>
                   </div>
                 </div>

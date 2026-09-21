@@ -1,5 +1,5 @@
 import { checkAdminAuth } from '@/lib/actions';
-import { supabaseAdmin } from '@/lib/supabase-admin';
+import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import LoginForm from './components/LoginForm';
 import AdminDashboard from './components/AdminDashboard';
 
@@ -13,8 +13,8 @@ export default async function AdminPage() {
   }
 
   // Fetch all perfumes and dupes
-  const { data: perfumes } = await supabaseAdmin.from('perfumes').select('*').order('brand', { ascending: true });
-  const { data: dupes } = await supabaseAdmin.from('dupes').select('*').order('similarity_score', { ascending: false });
+  const { data: perfumes } = await getSupabaseAdmin().from('perfumes').select('*').order('brand', { ascending: true });
+  const { data: dupes } = await getSupabaseAdmin().from('dupes').select('*').order('similarity_score', { ascending: false });
 
   return (
     <div className="min-h-screen bg-slate-50 p-6 md:p-12">

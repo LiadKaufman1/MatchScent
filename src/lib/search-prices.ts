@@ -1,6 +1,6 @@
 'use server';
 
-import { supabaseAdmin } from './supabase-admin';
+import { getSupabaseAdmin } from './supabase-admin';
 import type { LivePrice } from './supabase';
 
 const SERPAPI_KEY = process.env.SERPAPI_KEY;
@@ -32,7 +32,7 @@ export async function fetchLivePrices(
     }
 
     // 1. Check database first to avoid API limits
-    const { data: dupe, error: dbError } = await supabaseAdmin
+    const { data: dupe, error: dbError } = await getSupabaseAdmin()
       .from('dupes')
       .select('name, brand, live_prices_il, live_prices_amazon')
       .eq('id', dupeId)
@@ -122,7 +122,7 @@ export async function fetchLivePrices(
         ? { live_prices_il: parsedPrices }
         : { live_prices_amazon: parsedPrices };
 
-      await supabaseAdmin.from('dupes').update(updatePayload).eq('id', dupeId);
+      await getSupabaseAdmin().from('dupes').update(updatePayload).eq('id', dupeId);
     }
 
     return { success: true, prices: parsedPrices };
