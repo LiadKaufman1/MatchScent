@@ -1,13 +1,11 @@
 'use client';
 
-import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
-import Image from 'next/image';
-import { Search, X, ArrowUpRight } from 'lucide-react';
-import type { Dupe } from '@/lib/supabase';
+import { useDeferredValue, useMemo, useState } from 'react';
+import Link from 'next/link';
+import { Search, ArrowUpRight } from 'lucide-react';
 import type { ShownPerfume } from '@/lib/load-catalog';
-import { isRealPhoto } from '@/lib/images';
-import PerfumeArt from './PerfumeArt';
-import LivePriceButtons from './LivePriceButtons';
+import { ils, usd } from '@/lib/format';
+import Photo from './Photo';
 
 const FILTERS = [
   { id: 'all', label: 'All' },
@@ -16,22 +14,9 @@ const FILTERS = [
   { id: 'unisex', label: 'Unisex' },
 ] as const;
 
-const usd = (n?: number | null) => (n ? `$${Math.round(n).toLocaleString('en-US')}` : null);
-const ils = (n?: number | null) => (n ? `₪${Math.round(n).toLocaleString('en-US')}` : null);
-
-function Photo({ url, alt, seed, sizes }: { url?: string | null; alt: string; seed: string; sizes: string }) {
-  return isRealPhoto(url) ? (
-    <Image src={url as string} alt={alt} fill sizes={sizes} className="object-cover" />
-  ) : (
-    <PerfumeArt seed={seed} />
-  );
-}
-
-export default function Catalog({ perfumes, dupes }: { perfumes: ShownPerfume[]; dupes: Dupe[] }) {
+export default function Catalog({ perfumes }: { perfumes: ShownPerfume[] }) {
   const [query, setQuery] = useState('');
   const [gender, setGender] = useState<(typeof FILTERS)[number]['id']>('all');
-  const [selected, setSelected] = useState<ShownPerfume | null>(null);
-  const dialogRef = useRef<HTMLDialogElement>(null);
 
   const deferredQuery = useDeferredValue(query);
 
@@ -42,23 +27,6 @@ export default function Catalog({ perfumes, dupes }: { perfumes: ShownPerfume[];
       (!q || p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q))
     );
   }, [perfumes, deferredQuery, gender]);
-
-  const entries = useMemo(() => {
-    if (!selected) return [];
-    return dupes
-      .filter(d => d.original_perfume_id === selected.id)
-      .sort((a, b) => b.similarity_score - a.similarity_score);
-  }, [dupes, selected]);
-
-  // Open / close the native dialog and stop the page behind it from scrolling.
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-    if (selected && !dialog.open) dialog.showModal();
-    if (!selected && dialog.open) dialog.close();
-    document.body.style.overflow = selected ? 'hidden' : '';
-    return () => { document.body.style.overflow = ''; };
-  }, [selected]);
 
   return (
     <>
@@ -109,10 +77,10 @@ export default function Catalog({ perfumes, dupes }: { perfumes: ShownPerfume[];
         ) : (
           <div className="grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3 lg:grid-cols-4 lg:gap-6">
             {visible.map((p, i) => (
-              <button
+              <Link
                 key={p.id}
-                type="button"
-                onClick={() => setSelected(p)}
+                href={`/perfume/${p.slug}`}
+                prefetch={false}
                 className={`luxe-card group flex flex-col overflow-hidden rounded-2xl text-left ${i < 12 ? 'rise' : ''} ${p.entryCount === 0 ? 'opacity-75 hover:opacity-100' : ''}`}
                 style={i < 12 ? { animationDelay: `${i * 45}ms` } : undefined}
               >
@@ -134,76 +102,11 @@ export default function Catalog({ perfumes, dupes }: { perfumes: ShownPerfume[];
                     <ArrowUpRight className="h-4 w-4 shrink-0 text-gold-500 transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5" aria-hidden="true" />
                   </div>
                 </div>
-              </button>
+              </Link>
             ))}
           </div>
         )}
       </section>
-
-      {/* Popup */}
-      <dialog
-        ref={dialogRef}
-        className="luxe-dialog"
-        aria-labelledby="perfume-dialog-title"
-        onClose={() => setSelected(null)}
-        onKeyDown={e => { if (e.key === 'Escape') { e.preventDefault(); setSelected(null); } }}
-        onClick={e => { if (e.target === e.currentTarget) setSelected(null); }}
-      >
-        {selected && (
-          <div className="luxe-panel flex max-h-[90vh] flex-col overflow-hidden rounded-3xl border border-gold-500/30 bg-ink-900 shadow-[0_40px_80px_-30px_rgba(0,0,0,0.95)]">
-            <div className="gold-rule" />
-            <header className="flex items-center justify-between gap-4 border-b border-gold-500/15 p-5 sm:p-6">
-              <div className="flex min-w-0 items-center gap-4">
-                <div className="relative h-20 w-16 shrink-0 overflow-hidden rounded-xl border border-gold-500/25">
-                  <Photo url={selected.image_url} alt={`${selected.brand} ${selected.name}`} seed={selected.brand + selected.name} sizes="64px" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-gold-500">{selected.brand}</p>
-                  <h2 id="perfume-dialog-title" className="truncate font-serif text-2xl text-ivory sm:text-3xl">{selected.name}</h2>
-                  {usd(selected.price_usd) && <p className="mt-0.5 text-sm text-mist">Original from {usd(selected.price_usd)}</p>}
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setSelected(null)}
-                aria-label="Close"
-                className="shrink-0 rounded-full border border-gold-500/25 p-2 text-mist transition hover:border-gold-500/70 hover:text-gold-300"
-              >
-                <X className="h-5 w-5" aria-hidden="true" />
-              </button>
-            </header>
-
-            <div className="flex-1 overflow-y-auto bg-ink-950/60 p-5 sm:p-6">
-              <h3 className="mb-4 text-xs font-medium uppercase tracking-[0.22em] text-gold-400">Inspired by {selected.name}</h3>
-
-              {entries.length === 0 ? (
-                <p className="py-12 text-center text-mist">We are still curating similar scents for this fragrance.</p>
-              ) : (
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  {entries.map(d => (
-                    <article key={d.id} className="flex flex-col rounded-2xl border border-gold-500/15 bg-ink-800/70 p-4">
-                      <div className="flex gap-4">
-                        <div className="relative h-24 w-[4.5rem] shrink-0 overflow-hidden rounded-xl border border-gold-500/20">
-                          <Photo url={d.image_url} alt={`${d.brand} ${d.name}`} seed={d.brand + d.name} sizes="72px" />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <h4 className="font-serif text-lg leading-snug text-ivory">{d.name}</h4>
-                          <p className="text-[11px] uppercase tracking-[0.18em] text-gold-500">{d.brand}</p>
-                          {d.notes && <p className="mt-2 line-clamp-3 text-sm text-mist">{d.notes}</p>}
-                          {usd(d.price_usd) && (
-                            <p className="mt-2 text-sm text-mist">From <span className="text-gold-300">{usd(d.price_usd)}</span></p>
-                          )}
-                        </div>
-                      </div>
-                      <LivePriceButtons dupe={d} />
-                    </article>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-      </dialog>
     </>
   );
 }

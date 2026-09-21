@@ -25,13 +25,13 @@ function PriceList({ title, prices }: { title: string; prices: LivePrice[] }) {
   );
 }
 
-export default function LivePriceButtons({ dupe }: { dupe: Dupe }) {
+export default function LivePriceButtons({ entry }: { entry: Dupe }) {
   const [loadingType, setLoadingType] = useState<'il' | 'amazon' | null>(null);
   const [expandedType, setExpandedType] = useState<'il' | 'amazon' | null>(null);
 
   // Initialize with cached data if it exists
-  const [pricesIL, setPricesIL] = useState<LivePrice[]>(dupe.live_prices_il || []);
-  const [pricesAmazon, setPricesAmazon] = useState<LivePrice[]>(dupe.live_prices_amazon || []);
+  const [pricesIL, setPricesIL] = useState<LivePrice[]>(entry.live_prices_il || []);
+  const [pricesAmazon, setPricesAmazon] = useState<LivePrice[]>(entry.live_prices_amazon || []);
   const [error, setError] = useState('');
 
   const handleFetch = async (type: 'il' | 'amazon') => {
@@ -49,7 +49,7 @@ export default function LivePriceButtons({ dupe }: { dupe: Dupe }) {
     setError('');
     setExpandedType(null);
 
-    const res = await fetchLivePrices(dupe.id, type);
+    const res = await fetchLivePrices(entry.id, type);
 
     if (res.success && res.prices && res.prices.length > 0) {
       if (type === 'il') setPricesIL(res.prices);

@@ -1,12 +1,13 @@
-import { loadCatalog } from '@/lib/load-catalog';
+import { getCatalog } from '@/lib/load-catalog';
 import Catalog from './components/Catalog';
+import { SiteFooter } from './components/SiteChrome';
 
 // The page is built on the server with the data already inside, then rebuilt in the
 // background at most every 5 minutes. Edits made in /admin refresh it immediately.
 export const revalidate = 300;
 
 export default async function Home() {
-  const { perfumes, dupes } = await loadCatalog();
+  const { perfumes } = await getCatalog();
 
   return (
     <div className="luxe">
@@ -24,16 +25,10 @@ export default async function Home() {
           </div>
         </section>
 
-        <Catalog perfumes={perfumes} dupes={dupes} />
+        <Catalog perfumes={perfumes} />
       </main>
 
-      <footer className="mt-24 border-t border-gold-500/15 px-6 py-10 text-center">
-        <p className="font-serif text-lg gold-text">MatchScent</p>
-        <p className="mx-auto mt-3 max-w-2xl text-xs leading-relaxed text-mist/80">
-          MatchScent is an independent fragrance guide. We are not affiliated with, or endorsed by, any of the brands
-          mentioned. All trademarks belong to their respective owners.
-        </p>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }
