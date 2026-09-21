@@ -70,10 +70,10 @@ BEGIN
   WHERE d.original_perfume_id = p.old_id;
   GET DIAGNOSTICS moved = ROW_COUNT;
 
-  -- Step 2: delete Google-sourced / risky entries
+  -- Step 2: delete Google-sourced / risky entries.
+  -- Entries with NO image are kept on purpose: the new Fragrantica-based entries have none.
   DELETE FROM dupes
-  WHERE image_url IS NULL
-     OR image_url NOT LIKE 'https://images.unsplash.com/%'
+  WHERE (image_url IS NOT NULL AND image_url NOT LIKE 'https://images.unsplash.com/%')
      OR (coalesce(name, '') || ' ' || coalesce(brand, '') || ' ' || coalesce(notes, ''))
           ~* '\m(dupes?|clones?|knock-?offs?|replicas?|fakes?|counterfeit)\M';
   GET DIAGNOSTICS risky = ROW_COUNT;
