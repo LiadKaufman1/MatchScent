@@ -18,16 +18,18 @@
 -- WHAT IT DOES (tested on a copy of the live data)
 --   0. Backup: copies both tables to perfumes_backup_20260921 and
 --      dupes_backup_20260921 (public access switched off on the copies).
---   1. Perfumes stored twice (same brand + name): move the entries of the
---      older copy to the newer copy.                          expected: 15
+--   1. Perfumes stored twice (same brand + name, ignoring punctuation such as the apostrophe in
+--      Angels Share / Angels' Share): move the entries of the
+--      older copy to the newer copy.                          expected: 5
 --   2. Delete entries copied from Google Shopping: wording like "dupe" or
 --      "clone" in the text, or an image not from images.unsplash.com (those
---      images do not load on the site).                       expected: 291
+--      images do not load on the site).                       expected: 0  (the Fragrantica import already replaced them)
 --   3. Delete exact duplicate entries (same perfume + brand + name), keeping
---      the highest similarity score.                           expected: 15
---   4. Delete the older duplicate perfume copies (now empty).  expected: 18
+--      the highest similarity score.                           expected: 5
+--   4. Delete the older duplicate perfume copies (now empty).  expected: 19
 --
--- EXPECTED RESULT: perfumes 130 -> 112, entries 337 -> 31, orphans 0.
+-- EXPECTED RESULT (state after the Fragrantica import of 2026-09-21):
+--   perfumes 130 -> 111, entries 524 -> 519, orphans 0.
 -- The script stops (and undoes everything) if any orphan entry would remain.
 -- No column or table is changed, apart from the two backup tables in step 0.
 -- =====================================================================
@@ -62,8 +64,8 @@ BEGIN
     SELECT DISTINCT ON (o.id) o.id AS old_id, n.id AS new_id
     FROM perfumes o
     JOIN perfumes n
-      ON lower(trim(o.brand)) = lower(trim(n.brand))
-     AND lower(trim(o.name))  = lower(trim(n.name))
+      ON trim(regexp_replace(lower(o.brand || '|' || o.name), '[^a-z0-9|]+', ' ', 'g')) =
+     trim(regexp_replace(lower(n.brand || '|' || n.name), '[^a-z0-9|]+', ' ', 'g'))
      AND o.created_at < n.created_at
     ORDER BY o.id, n.created_at DESC
   )
@@ -95,8 +97,8 @@ BEGIN
   -- Step 4: delete the older duplicate perfume copies (their entries were moved in step 1)
   DELETE FROM perfumes o
   USING perfumes n
-  WHERE lower(trim(o.brand)) = lower(trim(n.brand))
-    AND lower(trim(o.name))  = lower(trim(n.name))
+  WHERE trim(regexp_replace(lower(o.brand || '|' || o.name), '[^a-z0-9|]+', ' ', 'g')) =
+    trim(regexp_replace(lower(n.brand || '|' || n.name), '[^a-z0-9|]+', ' ', 'g'))
     AND o.created_at < n.created_at;
   GET DIAGNOSTICS dup_perfumes = ROW_COUNT;
 
