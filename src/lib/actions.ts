@@ -46,6 +46,13 @@ const pick = (data: Record<string, unknown>, fields: readonly string[]) => {
   return out;
 };
 
+// After an admin edit, refresh the home page, every perfume page and the sitemap.
+const refreshPublicPages = () => {
+  revalidatePath('/');
+  revalidatePath('/perfume/[slug]', 'page');
+  revalidatePath('/sitemap.xml');
+};
+
 type PerfumeInput = { name: string; brand: string; image_url: string };
 type DupeInput = Partial<Pick<Dupe, (typeof DUPE_FIELDS)[number]>>;
 
@@ -86,7 +93,7 @@ export async function updatePerfume(id: string, data: PerfumeInput) {
   await checkAuth();
   const { error } = await getSupabaseAdmin().from('perfumes').update(pick(data, PERFUME_FIELDS)).eq('id', id);
   if (error) throw new Error(error.message);
-  revalidatePath('/');
+  refreshPublicPages();
   revalidatePath('/admin');
   return { success: true };
 }
@@ -99,7 +106,7 @@ export async function updateDupe(id: string, data: DupeInput) {
   if (Object.keys(fields).length === 0) throw new Error('Nothing to update');
   const { error } = await getSupabaseAdmin().from('dupes').update(fields).eq('id', id);
   if (error) throw new Error(error.message);
-  revalidatePath('/');
+  refreshPublicPages();
   revalidatePath('/admin');
   return { success: true };
 }
@@ -109,7 +116,7 @@ export async function addDupe(data: DupeInput & { original_perfume_id: string })
   const fields = pick(data, [...DUPE_FIELDS, 'original_perfume_id']);
   const { error } = await getSupabaseAdmin().from('dupes').insert([fields]);
   if (error) throw new Error(error.message);
-  revalidatePath('/');
+  refreshPublicPages();
   revalidatePath('/admin');
   return { success: true };
 }
@@ -118,7 +125,7 @@ export async function deleteDupe(id: string) {
   await checkAuth();
   const { error } = await getSupabaseAdmin().from('dupes').delete().eq('id', id);
   if (error) throw new Error(error.message);
-  revalidatePath('/');
+  refreshPublicPages();
   revalidatePath('/admin');
   return { success: true };
 }
