@@ -45,6 +45,9 @@ DECLARE
   d_after       int;
   orphans       int;
 BEGIN
+  -- make sure the tables are looked up in the "public" schema (some SQL editors do not)
+  PERFORM set_config('search_path', 'public, extensions', true);
+
   SELECT count(*) INTO p_before FROM perfumes;
   SELECT count(*) INTO d_before FROM dupes;
 
@@ -114,5 +117,5 @@ BEGIN
 END $$;
 
 -- Only reached after a real run (dry_run := false): shows the final numbers.
-SELECT (SELECT count(*) FROM perfumes) AS perfumes_now,
-       (SELECT count(*) FROM dupes)    AS entries_now;
+SELECT (SELECT count(*) FROM public.perfumes) AS perfumes_now,
+       (SELECT count(*) FROM public.dupes)    AS entries_now;
