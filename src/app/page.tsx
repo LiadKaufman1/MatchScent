@@ -19,7 +19,7 @@ export default async function Home() {
         <section className="hero-glow relative overflow-hidden px-6 pb-12 pt-10 text-center sm:pt-16">
           <div className="rise mx-auto max-w-3xl">
             <p className="mb-6 text-[11px] font-medium uppercase tracking-[0.4em] text-wine-600">The fragrance guide</p>
-            <h1 className="text-5xl font-semibold tracking-tight sm:text-7xl md:text-8xl">
+            <h1 className="text-6xl font-bold tracking-tight sm:text-8xl md:text-9xl">
               <Wordmark />
             </h1>
             <div className="wine-rule mx-auto my-8 w-40" />
