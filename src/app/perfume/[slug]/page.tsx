@@ -47,13 +47,13 @@ function PerfumeLink({ p }: { p: ShownPerfume }) {
     <Link
       href={`/perfume/${p.slug}`}
       prefetch={false}
-      className="group flex items-center justify-between gap-3 rounded-xl border border-gold-500/15 bg-ink-900/70 px-4 py-3 transition hover:border-gold-500/55"
+      className="group flex items-center justify-between gap-3 rounded-xl border border-line bg-white px-4 py-3 transition hover:border-wine-600/50"
     >
       <span className="min-w-0">
-        <span className="block text-[10px] font-medium uppercase tracking-[0.2em] text-gold-500">{p.brand}</span>
-        <span className="block truncate font-serif text-base text-ivory">{p.name}</span>
+        <span className="block text-[10px] font-medium uppercase tracking-[0.2em] text-wine-600">{p.brand}</span>
+        <span className="block truncate font-serif text-base text-ink">{p.name}</span>
       </span>
-      <span className="shrink-0 text-xs text-mist group-hover:text-gold-300">
+      <span className="shrink-0 text-xs text-smoke group-hover:text-wine-600">
         {p.entryCount > 0 ? `${p.entryCount} similar` : 'Soon'}
       </span>
     </Link>
@@ -93,7 +93,7 @@ export default async function PerfumePage({ params }: Props) {
     perfume.gender === 'male' ? 'men' : perfume.gender === 'female' ? 'women' : 'everyone';
 
   return (
-    <div className="luxe">
+    <div className="site">
       <script
         type="application/ld+json"
         // "<" is escaped so the data can never close the script tag
@@ -102,21 +102,21 @@ export default async function PerfumePage({ params }: Props) {
       <SiteHeader />
 
       <main className="mx-auto max-w-5xl px-4 pb-8 pt-8 sm:px-6">
-        <nav aria-label="Breadcrumb" className="text-xs uppercase tracking-[0.18em] text-mist">
-          <Link href="/" className="transition hover:text-gold-300">Home</Link>
-          <span className="mx-2 text-gold-600" aria-hidden="true">/</span>
-          <span className="text-ivory/80">{full}</span>
+        <nav aria-label="Breadcrumb" className="text-xs uppercase tracking-[0.18em] text-smoke">
+          <Link href="/" className="transition hover:text-wine-600">Home</Link>
+          <span className="mx-2 text-wine-200" aria-hidden="true">/</span>
+          <span className="text-ink/80">{full}</span>
         </nav>
 
         <header className="rise mt-8 grid gap-8 md:grid-cols-[16rem_1fr] md:items-center">
-          <div className="relative mx-auto aspect-[4/5] w-full max-w-[16rem] overflow-hidden rounded-2xl border border-gold-500/25 md:mx-0">
+          <div className="relative mx-auto aspect-[4/5] w-full max-w-[16rem] overflow-hidden rounded-2xl border border-line bg-white shadow-[0_1px_2px_rgba(28,21,24,0.04)] md:mx-0">
             <Photo url={perfume.image_url} alt={full} seed={perfume.brand + perfume.name} sizes="256px" priority />
           </div>
           <div>
-            <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-gold-500">{perfume.brand}</p>
-            <h1 className="mt-2 font-serif text-4xl leading-tight text-ivory sm:text-5xl">{perfume.name}</h1>
-            <div className="gold-rule my-6 w-32" />
-            <p className="max-w-xl leading-relaxed text-mist">
+            <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-wine-600">{perfume.brand}</p>
+            <h1 className="mt-2 font-serif text-4xl leading-tight text-ink sm:text-5xl">{perfume.name}</h1>
+            <div className="wine-rule my-6 w-32" />
+            <p className="max-w-xl leading-relaxed text-smoke">
               {perfume.name} by {perfume.brand} is a fragrance for {audience}.{' '}
               {entries.length > 0
                 ? `Below ${entries.length === 1 ? 'is' : 'are'} ${entries.length} fragrance${entries.length === 1 ? '' : 's'} inspired by it, so you can find a similar scent that suits your budget.`
@@ -126,24 +126,24 @@ export default async function PerfumePage({ params }: Props) {
             <dl className="mt-6 flex flex-wrap gap-x-8 gap-y-3 text-sm">
               {usd(perfume.price_usd) && (
                 <div>
-                  <dt className="text-[10px] uppercase tracking-[0.2em] text-mist">Original from</dt>
-                  <dd className="text-ivory">{usd(perfume.price_usd)}{ils(perfume.price_ils) && <span className="ml-2 text-mist">{ils(perfume.price_ils)}</span>}</dd>
+                  <dt className="text-[10px] uppercase tracking-[0.2em] text-smoke">Original from</dt>
+                  <dd className="text-ink">{usd(perfume.price_usd)}{ils(perfume.price_ils) && <span className="ml-2 text-smoke">{ils(perfume.price_ils)}</span>}</dd>
                 </div>
               )}
               <div>
-                <dt className="text-[10px] uppercase tracking-[0.2em] text-mist">Audience</dt>
-                <dd className="text-ivory">{audienceLabel(perfume.gender)}</dd>
+                <dt className="text-[10px] uppercase tracking-[0.2em] text-smoke">Audience</dt>
+                <dd className="text-ink">{audienceLabel(perfume.gender)}</dd>
               </div>
             </dl>
           </div>
         </header>
 
         <section className="mt-14" aria-labelledby="inspired-heading">
-          <h2 id="inspired-heading" className="mb-5 text-xs font-medium uppercase tracking-[0.22em] text-gold-400">
+          <h2 id="inspired-heading" className="mb-5 text-xs font-medium uppercase tracking-[0.22em] text-wine-600">
             Fragrances inspired by {perfume.name}
           </h2>
           {entries.length === 0 ? (
-            <p className="rounded-2xl border border-gold-500/15 bg-ink-900/60 py-12 text-center text-mist">
+            <p className="rounded-2xl border border-line bg-white py-12 text-center text-smoke">
               We are still curating similar scents for this fragrance.
             </p>
           ) : (
@@ -155,7 +155,7 @@ export default async function PerfumePage({ params }: Props) {
 
         {sameBrand.length > 0 && (
           <section className="mt-14" aria-labelledby="brand-heading">
-            <h2 id="brand-heading" className="mb-5 text-xs font-medium uppercase tracking-[0.22em] text-gold-400">
+            <h2 id="brand-heading" className="mb-5 text-xs font-medium uppercase tracking-[0.22em] text-wine-600">
               More from {perfume.brand}
             </h2>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -166,7 +166,7 @@ export default async function PerfumePage({ params }: Props) {
 
         {more.length > 0 && (
           <section className="mt-14" aria-labelledby="more-heading">
-            <h2 id="more-heading" className="mb-5 text-xs font-medium uppercase tracking-[0.22em] text-gold-400">
+            <h2 id="more-heading" className="mb-5 text-xs font-medium uppercase tracking-[0.22em] text-wine-600">
               Keep exploring
             </h2>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

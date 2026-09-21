@@ -1,11 +1,21 @@
 import Link from 'next/link';
 
+export function Wordmark({ className = '' }: { className?: string }) {
+  return (
+    <span className={`font-serif ${className}`}>
+      Match<span className="text-wine-600">Scent</span>
+    </span>
+  );
+}
+
 export function SiteHeader() {
   return (
-    <header className="border-b border-gold-500/15">
+    <header className="border-b border-line bg-white/80 backdrop-blur">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6">
-        <Link href="/" className="font-serif text-xl gold-text">MatchScent</Link>
-        <Link href="/" className="text-xs uppercase tracking-[0.2em] text-mist transition hover:text-gold-300">
+        <Link href="/" aria-label="MatchScent home">
+          <Wordmark className="text-2xl font-semibold" />
+        </Link>
+        <Link href="/" className="text-xs font-medium uppercase tracking-[0.2em] text-smoke transition hover:text-wine-600">
           All fragrances
         </Link>
       </div>
@@ -15,9 +25,12 @@ export function SiteHeader() {
 
 export function SiteFooter() {
   return (
-    <footer className="mt-24 border-t border-gold-500/15 px-6 py-10 text-center">
-      <p className="font-serif text-lg gold-text">MatchScent</p>
-      <p className="mx-auto mt-3 max-w-2xl text-xs leading-relaxed text-mist/80">
+    <footer className="mt-24 bg-plum-900 px-6 py-12 text-center">
+      <p className="font-serif text-2xl font-semibold text-white">
+        Match<span className="text-wine-200">Scent</span>
+      </p>
+      <div className="mx-auto my-5 h-px w-16 bg-wine-200/40" />
+      <p className="mx-auto max-w-2xl text-xs leading-relaxed text-white/60">
         MatchScent is an independent fragrance guide. We are not affiliated with, or endorsed by, any of the brands
         mentioned. All trademarks belong to their respective owners.
       </p>

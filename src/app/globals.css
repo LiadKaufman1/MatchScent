@@ -19,19 +19,21 @@
   --color-muted: #F3F4F6;
   --color-muted-foreground: #6B7280;
 
-  /* Public site: black & gold */
-  --color-ink-950: #0a0a0b;
-  --color-ink-900: #111113;
-  --color-ink-800: #18181b;
-  --color-ink-700: #232327;
-  --color-gold-200: #f6e7b4;
-  --color-gold-300: #eed58a;
-  --color-gold-400: #e0bd5c;
-  --color-gold-500: #d4af37;
-  --color-gold-600: #b8912a;
-  --color-gold-700: #8a6a1c;
-  --color-ivory: #f5f0e6;
-  --color-mist: #a8a294;
+  /* Public site: clean white with burgundy and deep plum */
+  --color-paper: #FBF9F7;
+  --color-ink: #1C1518;
+  --color-smoke: #6F6469;
+  --color-line: #E9E2DE;
+  --color-blush: #F5EEEC;
+  --color-wine-50: #FBF1F3;
+  --color-wine-100: #F4DFE4;
+  --color-wine-200: #E6BCC6;
+  --color-wine-500: #9B2A45;
+  --color-wine-600: #7E1F37;
+  --color-wine-700: #651A2E;
+  --color-wine-800: #4E1424;
+  --color-plum-900: #1F1026;
+  --color-plum-800: #2B1733;
 
   --radius-xl: 1rem;
   --radius-2xl: 1.5rem;
@@ -50,96 +52,61 @@
   }
 }
 
-/* ---------- Public site (black & gold) ---------- */
+/* ---------- Public site (white, burgundy, plum) ---------- */
 
-.luxe {
-  background-color: var(--color-ink-950);
-  color: var(--color-ivory);
+.site {
+  background-color: var(--color-paper);
+  color: var(--color-ink);
   min-height: 100vh;
 }
 
-/* keep the overscroll / edges black on the public page too */
-html:has(.luxe) {
-  background-color: var(--color-ink-950);
-  color-scheme: dark;
+html:has(.site) {
+  background-color: var(--color-paper);
 }
 
-.luxe ::selection {
-  background: rgba(212, 175, 55, 0.35);
-  color: #fff;
+.site ::selection {
+  background: var(--color-wine-100);
+  color: var(--color-wine-800);
 }
 
-.luxe :focus-visible {
-  outline: 2px solid var(--color-gold-400);
+.site :focus-visible {
+  outline: 2px solid var(--color-wine-500);
   outline-offset: 3px;
   border-radius: 0.5rem;
 }
 
-.gold-text {
-  background-image: linear-gradient(120deg, #f6e7b4 0%, #d4af37 42%, #a67c00 70%, #eed58a 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
-}
-
-.gold-rule {
+.wine-rule {
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.7), transparent);
+  background: linear-gradient(90deg, transparent, rgba(126, 31, 55, 0.55), transparent);
 }
 
 .hero-glow {
   background:
-    radial-gradient(55% 60% at 50% 0%, rgba(212, 175, 55, 0.18), transparent 70%),
-    radial-gradient(40% 40% at 85% 10%, rgba(212, 175, 55, 0.06), transparent 70%);
+    radial-gradient(60% 65% at 50% 0%, rgba(126, 31, 55, 0.08), transparent 72%),
+    radial-gradient(35% 40% at 88% 8%, rgba(75, 42, 91, 0.06), transparent 72%);
 }
 
-.luxe-card {
-  background: linear-gradient(180deg, #151517 0%, #0f0f11 100%);
-  border: 1px solid rgba(212, 175, 55, 0.14);
+.site-card {
+  background: #ffffff;
+  border: 1px solid var(--color-line);
+  box-shadow: 0 1px 2px rgba(28, 21, 24, 0.04);
   transition: transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1), border-color 0.35s ease, box-shadow 0.35s ease;
   /* skip painting cards that are far off-screen: faster first render */
   content-visibility: auto;
   contain-intrinsic-size: auto 380px;
 }
 
-.luxe-card:hover,
-.luxe-card:focus-visible {
+.site-card:hover,
+.site-card:focus-visible {
   transform: translateY(-4px);
-  border-color: rgba(212, 175, 55, 0.55);
-  box-shadow: 0 22px 44px -22px rgba(212, 175, 55, 0.35);
+  border-color: rgba(126, 31, 55, 0.4);
+  box-shadow: 0 26px 40px -26px rgba(126, 31, 55, 0.4);
 }
 
-.art-a { background: radial-gradient(90% 70% at 50% 25%, rgba(212, 175, 55, 0.22), transparent 70%), linear-gradient(180deg, #1a1a1d, #0e0e10); }
-.art-b { background: radial-gradient(90% 70% at 50% 25%, rgba(232, 200, 120, 0.2), transparent 70%), linear-gradient(180deg, #1b1a18, #0e0e0f); }
-.art-c { background: radial-gradient(90% 70% at 50% 25%, rgba(184, 145, 42, 0.26), transparent 70%), linear-gradient(180deg, #191817, #0d0d0e); }
-
-.luxe-dialog {
-  margin: auto;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: var(--color-ivory);
-  width: min(56rem, calc(100vw - 1.5rem));
-  max-width: none;
-  max-height: none;
-  overflow: visible;
-}
-
-.luxe-dialog::backdrop {
-  background: rgba(4, 4, 5, 0.82);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-}
-
-.luxe-dialog[open] .luxe-panel {
-  animation: panel-in 0.28s cubic-bezier(0.2, 0.7, 0.2, 1);
-}
-
-@keyframes panel-in {
-  from { opacity: 0; transform: translateY(14px) scale(0.98); }
-  to { opacity: 1; transform: none; }
-}
+/* soft backgrounds behind the bottle illustrations */
+.art-a { background: radial-gradient(85% 65% at 50% 30%, rgba(126, 31, 55, 0.10), transparent 72%), linear-gradient(180deg, #F8F2F0, #EFE6E2); }
+.art-b { background: radial-gradient(85% 65% at 50% 30%, rgba(75, 42, 91, 0.11), transparent 72%), linear-gradient(180deg, #F6F1F3, #ECE4E8); }
+.art-c { background: radial-gradient(85% 65% at 50% 30%, rgba(185, 128, 59, 0.13), transparent 72%), linear-gradient(180deg, #F9F4EE, #EFE7DF); }
 
 @keyframes rise {
   from { opacity: 0; transform: translateY(14px); }
@@ -155,7 +122,7 @@ html:has(.luxe) {
 .fade { animation: fade 0.25s ease both; }
 
 @media (prefers-reduced-motion: reduce) {
-  .rise, .fade, .luxe-dialog[open] .luxe-panel { animation: none; }
-  .luxe-card { transition: none; }
-  .luxe-card:hover, .luxe-card:focus-visible { transform: none; }
+  .rise, .fade { animation: none; }
+  .site-card { transition: none; }
+  .site-card:hover, .site-card:focus-visible { transform: none; }
 }
