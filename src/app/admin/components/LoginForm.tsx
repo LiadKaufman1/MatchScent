@@ -27,7 +27,7 @@ export default function LoginForm() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 px-6">
       <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 w-full max-w-sm">
-        <h2 className="text-2xl font-bold mb-6 text-center" style={{ fontFamily: 'var(--font-playfair)' }}>
+        <h2 className="text-2xl font-bold mb-6 text-center" style={{ fontFamily: 'var(--font-cormorant)' }}>
           Admin Login
         </h2>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">

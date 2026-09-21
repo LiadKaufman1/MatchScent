@@ -1,10 +1,11 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Playfair_Display } from "next/font/google";
+import { Cormorant_Garamond, Inter } from "next/font/google";
 import { siteUrl } from "@/lib/site";
 import "./globals.css";
 
+// Cormorant Garamond for headings and the logo, Inter for everything else.
+const cormorant = Cormorant_Garamond({ subsets: ["latin"], weight: ["500", "600", "700"], variable: "--font-cormorant", display: "swap" });
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
-const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair", display: "swap" });
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl()),
@@ -27,7 +28,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} ${playfair.variable} antialiased`}>
+      <body className={`${cormorant.variable} ${inter.variable} antialiased`}>
         {children}
       </body>
     </html>

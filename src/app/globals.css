@@ -4,7 +4,7 @@
    not on :root, so they must be resolved where they are used. */
 @theme inline {
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-serif: var(--font-playfair), Georgia, "Times New Roman", serif;
+  --font-display: var(--font-cormorant), Georgia, "Times New Roman", serif;
 }
 
 @theme {
@@ -46,7 +46,7 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
-    font-family: var(--font-sans);
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }

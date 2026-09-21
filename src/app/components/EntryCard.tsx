@@ -1,7 +1,7 @@
 import type { Dupe } from '@/lib/supabase';
 import { usd } from '@/lib/format';
 import Photo from './Photo';
-import LivePriceButtons from './LivePriceButtons';
+import StoreButtons from './StoreButtons';
 
 // One "inspired by" fragrance, with its buy buttons.
 export default function EntryCard({ entry }: { entry: Dupe }) {
@@ -12,7 +12,7 @@ export default function EntryCard({ entry }: { entry: Dupe }) {
           <Photo url={entry.image_url} alt={`${entry.brand} ${entry.name}`} seed={entry.brand + entry.name} sizes="72px" />
         </div>
         <div className="min-w-0 flex-1">
-          <h3 className="font-serif text-lg leading-snug text-ink">{entry.name}</h3>
+          <h3 className="font-display text-xl font-semibold leading-tight text-ink">{entry.name}</h3>
           <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-wine-600">{entry.brand}</p>
           {entry.notes && <p className="mt-2 line-clamp-3 text-sm text-smoke">{entry.notes}</p>}
           {usd(entry.price_usd) && (
@@ -20,7 +20,7 @@ export default function EntryCard({ entry }: { entry: Dupe }) {
           )}
         </div>
       </div>
-      <LivePriceButtons entry={entry} />
+      <StoreButtons brand={entry.brand} name={entry.name} />
     </article>
   );
 }
