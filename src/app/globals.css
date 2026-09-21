@@ -1,8 +1,14 @@
 @import "tailwindcss";
 
-@theme {
+/* "inline" because these point at font variables that next/font defines on <body>,
+   not on :root, so they must be resolved where they are used. */
+@theme inline {
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  
+  --font-serif: var(--font-playfair), Georgia, "Times New Roman", serif;
+}
+
+@theme {
+  /* Admin (light) palette */
   --color-background: #FAFAFA;
   --color-foreground: #111111;
   --color-card: #FFFFFF;
@@ -12,7 +18,21 @@
   --color-primary-foreground: #FFFFFF;
   --color-muted: #F3F4F6;
   --color-muted-foreground: #6B7280;
-  
+
+  /* Public site: black & gold */
+  --color-ink-950: #0a0a0b;
+  --color-ink-900: #111113;
+  --color-ink-800: #18181b;
+  --color-ink-700: #232327;
+  --color-gold-200: #f6e7b4;
+  --color-gold-300: #eed58a;
+  --color-gold-400: #e0bd5c;
+  --color-gold-500: #d4af37;
+  --color-gold-600: #b8912a;
+  --color-gold-700: #8a6a1c;
+  --color-ivory: #f5f0e6;
+  --color-mist: #a8a294;
+
   --radius-xl: 1rem;
   --radius-2xl: 1.5rem;
 }
@@ -30,18 +50,112 @@
   }
 }
 
-.glass-panel {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+/* ---------- Public site (black & gold) ---------- */
+
+.luxe {
+  background-color: var(--color-ink-950);
+  color: var(--color-ivory);
+  min-height: 100vh;
 }
 
-.hover-lift {
-  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
+/* keep the overscroll / edges black on the public page too */
+html:has(.luxe) {
+  background-color: var(--color-ink-950);
+  color-scheme: dark;
 }
 
-.hover-lift:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+.luxe ::selection {
+  background: rgba(212, 175, 55, 0.35);
+  color: #fff;
+}
+
+.luxe :focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: 3px;
+  border-radius: 0.5rem;
+}
+
+.gold-text {
+  background-image: linear-gradient(120deg, #f6e7b4 0%, #d4af37 42%, #a67c00 70%, #eed58a 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+.gold-rule {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.7), transparent);
+}
+
+.hero-glow {
+  background:
+    radial-gradient(55% 60% at 50% 0%, rgba(212, 175, 55, 0.18), transparent 70%),
+    radial-gradient(40% 40% at 85% 10%, rgba(212, 175, 55, 0.06), transparent 70%);
+}
+
+.luxe-card {
+  background: linear-gradient(180deg, #151517 0%, #0f0f11 100%);
+  border: 1px solid rgba(212, 175, 55, 0.14);
+  transition: transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1), border-color 0.35s ease, box-shadow 0.35s ease;
+  /* skip painting cards that are far off-screen: faster first render */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 380px;
+}
+
+.luxe-card:hover,
+.luxe-card:focus-visible {
+  transform: translateY(-4px);
+  border-color: rgba(212, 175, 55, 0.55);
+  box-shadow: 0 22px 44px -22px rgba(212, 175, 55, 0.35);
+}
+
+.art-a { background: radial-gradient(90% 70% at 50% 25%, rgba(212, 175, 55, 0.22), transparent 70%), linear-gradient(180deg, #1a1a1d, #0e0e10); }
+.art-b { background: radial-gradient(90% 70% at 50% 25%, rgba(232, 200, 120, 0.2), transparent 70%), linear-gradient(180deg, #1b1a18, #0e0e0f); }
+.art-c { background: radial-gradient(90% 70% at 50% 25%, rgba(184, 145, 42, 0.26), transparent 70%), linear-gradient(180deg, #191817, #0d0d0e); }
+
+.luxe-dialog {
+  margin: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-ivory);
+  width: min(56rem, calc(100vw - 1.5rem));
+  max-width: none;
+  max-height: none;
+  overflow: visible;
+}
+
+.luxe-dialog::backdrop {
+  background: rgba(4, 4, 5, 0.82);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.luxe-dialog[open] .luxe-panel {
+  animation: panel-in 0.28s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+@keyframes panel-in {
+  from { opacity: 0; transform: translateY(14px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.rise { animation: rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.fade { animation: fade 0.25s ease both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .rise, .fade, .luxe-dialog[open] .luxe-panel { animation: none; }
+  .luxe-card { transition: none; }
+  .luxe-card:hover, .luxe-card:focus-visible { transform: none; }
 }

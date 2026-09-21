@@ -4,15 +4,19 @@ import type { Perfume, Dupe } from './supabase';
 // database; it only decides what visitors are shown.
 
 // Image hosts that next/image is allowed to load. Keep in sync with next.config.mjs.
-const ALLOWED_IMAGE_HOSTS = new Set(['images.unsplash.com']);
+const isAllowedImageHost = (host: string) =>
+  host === 'images.unsplash.com' || host.endsWith('.supabase.co');
 
 // Words we never show visitors (the old data contains raw store product titles).
 const BLOCKED_WORDS = /\b(dupes?|clones?|knock-?offs?|replicas?|fakes?|counterfeit)\b/i;
 
+// An entry with no image is fine (the site shows a placeholder). An entry whose
+// image comes from a host we cannot load (for example Google thumbnails) is hidden.
 const isImageLoadable = (url: string | null | undefined) => {
+  if (!url) return true;
   try {
-    const u = new URL(url ?? '');
-    return u.protocol === 'https:' && ALLOWED_IMAGE_HOSTS.has(u.hostname);
+    const u = new URL(url);
+    return u.protocol === 'https:' && isAllowedImageHost(u.hostname);
   } catch {
     return false;
   }
