@@ -20,46 +20,16 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import { MIN_VOTES, isExcludedBrand, norm, sameBrand, parseCount } from './lib/rules.mjs';
 
 const COLLAPSE_VARIANTS = true;
 const TOP = 5;
 const SCORES = [100, 95, 90, 85, 80]; // stored in similarity_score so the site keeps this order
-const MIN_VOTES = 10; // likes + dislikes; a handful of votes says nothing
-
-// Supermarket, drugstore and body-care lines: they do not fit a premium fragrance site.
-// (Zara and the Arabian houses are kept: they are the popular alternatives people look for.)
-const EXCLUDED_BRANDS = [
-  'Lidl', 'Mercadona', 'Bath & Body Works', 'Halloween', 'AXE', 'Avon', 'Oriflame', 'The Body Shop',
-  "Victoria's Secret", 'Natura', 'O Boticário', 'Thera Cosméticos', 'Ciclo Cosméticos', 'VIVANT Cosméticos',
-  'Mango', 'Massimo Dutti', 'Korres', 'Sol de Janeiro', 'Mahogany', 'Jaguar', 'Animale', 'Christian Audigier',
-];
 
 const input = process.argv[2] || 'data-import/fragrantica-30.txt';
 const outDir = path.dirname(input);
 const now = new Date().toISOString();
 const today = `${now.slice(0, 10).replace(/-/g, '')}_${now.slice(11, 16).replace(':', '')}`; // date + time, so a re-run never clashes with an older backup
-
-const norm = s =>
-  s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
-
-// Words that are not part of a brand's identity ("By Kilian" = "Kilian", "Lattafa Perfumes" = "Lattafa").
-const BRAND_NOISE = new Set(['by', 'the', 'de', 'la', 'le', 'of', 'maison', 'parfum', 'parfums', 'perfume', 'perfumes', 'paris']);
-const brandTokens = s => norm(s).split(' ').filter(t => t && !BRAND_NOISE.has(t));
-// Same house when one name's words are all inside the other ("Rabanne" / "Paco Rabanne").
-const sameBrand = (a, b) => {
-  const x = brandTokens(a), y = brandTokens(b);
-  if (!x.length || !y.length) return norm(a) === norm(b);
-  const [small, big] = x.length <= y.length ? [x, y] : [y, x];
-  return small.every(t => big.includes(t));
-};
-
-// "6.1k" -> 6100, "917" -> 917
-const parseCount = text => {
-  const m = /^(\d+(?:[.,]\d+)?)(k?)$/i.exec(text.trim());
-  if (!m) return null;
-  const n = parseFloat(m[1].replace(',', '.'));
-  return Math.round(m[2] ? n * 1000 : n);
-};
 
 const sqlText = s => `'${s.replace(/'/g, "''")}'`;
 
@@ -98,7 +68,7 @@ function choose(sec, items) {
 
   for (const it of pool) {
     if (sameBrand(it.brand, sec.brand)) it.note = `removed: same brand (${it.brand})`;
-    else if (EXCLUDED_BRANDS.some(b => norm(b) === norm(it.brand))) it.note = `removed: budget/retail line (${it.brand})`;
+    else if (isExcludedBrand(it.brand)) it.note = `removed: budget/retail line (${it.brand})`;
     else if (it.diff <= 0) it.note = 'removed: not more likes than dislikes';
     else if (it.likes + it.dislikes < MIN_VOTES) it.note = `removed: only ${it.likes + it.dislikes} votes`;
   }
