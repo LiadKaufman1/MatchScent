@@ -19,7 +19,7 @@ export default async function AdminPage() {
   return (
     <div className="min-h-screen bg-slate-50 p-6 md:p-12">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold text-slate-900 mb-8" style={{ fontFamily: 'var(--font-cormorant)' }}>
+        <h1 className="text-3xl font-bold text-slate-900 mb-8" style={{ fontFamily: 'var(--font-heebo)' }}>
           MatchScent Admin Dashboard
         </h1>
         <AdminDashboard perfumes={perfumes || []} dupes={dupes || []} />

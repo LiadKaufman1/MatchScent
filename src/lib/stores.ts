@@ -40,8 +40,12 @@ export const COUNTRIES: Record<CountryCode, { label: string; stores: Store[] }> 
 
 export const COUNTRY_ORDER: CountryCode[] = ['IL', 'US', 'GB', 'WORLD'];
 
-// Google's price comparison, which shows the visitor's local stores.
-export const compareUrl = (query: string) => `https://www.google.com/search?tbm=shop&q=${enc(query)}`;
+// Google Shopping: lists every store that sells the perfume, with prices, for the
+// chosen country (checked: for Israel it shows KSP, Mashbir, eBay, ACE... in shekels).
+const GOOGLE_COUNTRY: Record<CountryCode, string | null> = { IL: 'il', US: 'us', GB: 'gb', WORLD: null };
+
+export const compareUrl = (query: string, country: CountryCode, lang: 'en' | 'he' = 'en') =>
+  `https://www.google.com/search?udm=28&q=${enc(query)}${GOOGLE_COUNTRY[country] ? `&gl=${GOOGLE_COUNTRY[country]}` : ''}&hl=${lang}`;
 
 export const normalizeCountry = (code?: string | null): CountryCode => {
   const c = (code ?? '').toUpperCase();

@@ -3,8 +3,8 @@
 /* "inline" because these point at font variables that next/font defines on <body>,
    not on :root, so they must be resolved where they are used. */
 @theme inline {
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-cormorant), Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-heebo), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-heebo), ui-sans-serif, system-ui, sans-serif;
 }
 
 @theme {
@@ -46,7 +46,7 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
-    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-heebo), ui-sans-serif, system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -126,3 +126,42 @@ html:has(.site) {
   .site-card { transition: none; }
   .site-card:hover, .site-card:focus-visible { transform: none; }
 }
+
+/* ---------- Accessibility toolbar (choices are set as attributes on <html>) ---------- */
+
+html[data-a11y-size="1"] { font-size: 112.5%; }
+html[data-a11y-size="2"] { font-size: 125%; }
+html[data-a11y-size="3"] { font-size: 150%; }
+
+html[data-a11y-links="1"] a { text-decoration: underline !important; text-underline-offset: 3px; }
+
+html[data-a11y-readable="1"] body,
+html[data-a11y-readable="1"] .font-display,
+html[data-a11y-readable="1"] button,
+html[data-a11y-readable="1"] input,
+html[data-a11y-readable="1"] select {
+  font-family: Arial, Helvetica, sans-serif !important;
+  letter-spacing: 0.01em;
+}
+
+html[data-a11y-still="1"] *,
+html[data-a11y-still="1"] *::before,
+html[data-a11y-still="1"] *::after {
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}
+
+/* High contrast: darker text, stronger borders, deeper accent colour */
+html[data-a11y-contrast="1"] {
+  --color-paper: #ffffff;
+  --color-ink: #000000;
+  --color-smoke: #1a1a1a;
+  --color-line: #6b6b6b;
+  --color-blush: #ffffff;
+  --color-wine-500: #6a0f26;
+  --color-wine-600: #5c0a20;
+  --color-wine-700: #45071a;
+}
+html[data-a11y-contrast="1"] .site-card { border-color: #000; }
+html[data-a11y-contrast="1"] .hero-glow { background: none; }
