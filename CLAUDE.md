@@ -55,6 +55,8 @@ src/lib/actions.ts        Admin server actions (login, edit/add/delete), whiteli
 src/lib/supabase.ts, supabase-admin.ts   Public (anon) and server-only (service role) clients, both created lazily
 src/lib/site.ts, site-metadata.ts, fonts.ts, slug.ts, format.ts, a11y-store.ts, use-country.ts, mockData.ts
 scripts/fragrantica-import.mjs   Ranking rules -> report + reviewable SQL (see below)
+scripts/fragrantica-refresh-report.mjs   Monthly "what are we missing?" report (new releases vs. our catalog)
+scripts/lib/rules.mjs            Shared rules: same-brand check, excluded budget brands, inspired-side houses
 db-cleanup/2026-09-cleanup.sql   Database cleanup script (dry run by default, run by the owner)
 data-import/                     LOCAL ONLY, git-ignored: collected lists, generated SQL and reports
 next.config.mjs                  The active Next config
@@ -85,6 +87,18 @@ Old SQL files in the repo root (`supabase_setup.sql`, `add_live_prices.sql`, `fi
 2. `node scripts/fragrantica-import.mjs` writes `data-import/fragrantica-result.txt` (readable report of every decision) and `data-import/fragrantica-import.sql`.
 3. The owner runs the SQL in Supabase: first as a dry run (ends with a red message that lists counts and saves nothing), then with `dry_run := false`. It is all-or-nothing and creates a backup table of the replaced entries. The assistant never runs it.
 4. Check the live site (up to 5 minutes for ISR).
+
+## Keeping the catalog fresh (monthly refresh)
+
+The pairings are a snapshot; new "inspired" fragrances and new popular originals appear all the time. Monthly, with the owner's approval of every change:
+
+1. **Find new releases.** Fetch the designer pages of the "inspired-side" houses (Lattafa, Armaf, Maison Alhambra, French Avenue, Afnan, Rasasi, Rayhaan, Khadlaj, Paris Corner, ...) from `https://www.fragrantica.com/designers/<House>.html` from within the built-in browser (one plain request per house, 2-3 s apart). Each row shows year and votes; keep year >= last year and votes >= 100.
+2. **Read each new fragrance's "This perfume reminds me of" list** (slowly, one page at a time, same extractor as the import). Store as `data-import/refresh-scraped.json`; snapshot the site's catalog as `data-import/catalog-snapshot.json` (public read).
+3. `node scripts/fragrantica-refresh-report.mjs` writes `data-import/refresh-report.txt`: (1) new "inspired by" candidates for perfumes we already have, (2) popular originals that are not on the site yet.
+4. The owner decides. Approved additions go through the normal import flow (`fragrantica-import.mjs` -> reviewable SQL -> owner runs it, dry run first). New originals need a `perfumes` row first (SQL, owner runs it).
+5. Also re-read the lists of the original perfumes every few months: they gain new fragrances as votes accumulate.
+
+Findings from the first run (2026-09-21): only ~10% of the lists of new fragrances point at perfumes we already have; most point at popular originals we do not list yet (Azzaro The Most Wanted, D&G Devotion, Amouage Outlands, Hugo Boss Bottled Absolu, Gucci Flora Gorgeous Orchid, ...). So growing the list of originals matters as much as re-reading the existing ones.
 
 ## Environment variables
 
