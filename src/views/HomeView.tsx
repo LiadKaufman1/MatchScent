@@ -2,6 +2,7 @@ import { getCatalog } from '@/lib/load-catalog';
 import { getDict, type Lang } from '@/lib/i18n';
 import Catalog from '@/app/components/Catalog';
 import CountrySelect from '@/app/components/CountrySelect';
+import AuthStatus from '@/app/components/AuthStatus';
 import { LanguageSwitch, SiteFooter, Wordmark } from '@/app/components/SiteChrome';
 
 // The home page, in either language.
@@ -15,6 +16,7 @@ export default async function HomeView({ lang }: { lang: Lang }) {
         <div className="mx-auto flex max-w-7xl items-center justify-end gap-2 px-4 pt-4 sm:px-6">
           <LanguageSwitch lang={lang} path="/" />
           <CountrySelect lang={lang} />
+          <AuthStatus lang={lang} />
         </div>
         <section className="hero-glow relative overflow-hidden px-6 pb-12 pt-10 text-center sm:pt-16">
           <div className="rise mx-auto max-w-3xl">
