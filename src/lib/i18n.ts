@@ -119,6 +119,7 @@ export type Dict = {
 
   community: {
     ratingsHeading: string;
+    ratingSummaryOne: string;
     ratingSummary: string;
     ratingNone: string;
     yourRating: string;
@@ -255,6 +256,7 @@ const en: Dict = {
 
   community: {
     ratingsHeading: 'Ratings & reviews',
+    ratingSummaryOne: '{avg} out of 5 (1 rating)',
     ratingSummary: '{avg} out of 5 ({count} ratings)',
     ratingNone: 'No ratings yet - be the first to rate it.',
     yourRating: 'Your rating',
@@ -391,6 +393,7 @@ const he: Dict = {
 
   community: {
     ratingsHeading: 'דירוגים וביקורות',
+    ratingSummaryOne: '{avg} מתוך 5 (דירוג אחד)',
     ratingSummary: '{avg} מתוך 5 ({count} דירוגים)',
     ratingNone: 'אין עדיין דירוגים - היו הראשונים לדרג.',
     yourRating: 'הדירוג שלכם',

@@ -71,7 +71,9 @@ export default function RatingsReviews({ lang, perfumeId, average, count, review
 
       <div className="rounded-2xl border border-line bg-white p-5">
         <p className="font-bold text-ink">
-          {count > 0 ? fmt(t.community.ratingSummary, { avg: average.toFixed(1), count }) : t.community.ratingNone}
+          {count === 0
+            ? t.community.ratingNone
+            : fmt(count === 1 ? t.community.ratingSummaryOne : t.community.ratingSummary, { avg: average.toFixed(1), count })}
         </p>
 
         {loggedIn === false && (
