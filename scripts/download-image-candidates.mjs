@@ -6,6 +6,7 @@
 //   node scripts/download-image-candidates.mjs                    # all original perfumes
 //   node scripts/download-image-candidates.mjs --entries          # the "inspired by" ones instead
 //   node scripts/download-image-candidates.mjs --only creed-aventus
+//   node scripts/download-image-candidates.mjs --source fragrantica   # bottle picture straight from Fragrantica (see below)
 //   options: --per 3 (candidates per perfume, default 3)  --force (redo perfumes already done)
 //            --free-licenses (Google Custom Search only: ask for reusable-licence images)
 //
@@ -18,6 +19,11 @@
 //   SERPAPI_KEY                    SerpApi "google_images" (a free plan has a small monthly quota)
 //   GOOGLE_API_KEY + GOOGLE_CSE_ID Google Custom Search JSON API, image search
 // Google's own result pages are NOT scraped (that is blocked by CAPTCHAs, which we never bypass).
+//
+// --source fragrantica (owner's request, 2026-09-23): instead of searching, take each perfume's own Fragrantica
+// picture, using the Fragrantica numbers listed in data-import/fragrantica-image-ids.json and the perfumes in
+// data-import/fragrantica-image-targets.json. It is slow on purpose (1.5 s between pictures) and stops at the first
+// 403/429 answer: if the site says "too many requests", we stop, we do not try to get around it.
 //
 // Reminder: a picture found this way is somebody's copyright until you have checked otherwise.
 // Downloading it here to look at is fine; before one goes on the site, use the manifest to check
@@ -37,6 +43,7 @@ const FREE_LICENSES = has('--free-licenses');
 const PER = Math.min(Math.max(parseInt(val('--per', '3'), 10) || 3, 1), 8);
 const LIMIT = parseInt(val('--limit', '0'), 10) || 0;
 const ONLY = val('--only', '');
+const SOURCE = val('--source', 'search');
 const OUT = 'data-import/images';
 const MANIFEST = path.join(OUT, 'manifest.json');
 
@@ -149,7 +156,7 @@ async function run() {
   if (!provider) {
     console.error('No search service configured. Add SERPAPI_KEY, or GOOGLE_API_KEY + GOOGLE_CSE_ID, to .env.local (see the top of this file).');
     process.exitCode = 1;
-      return;
+    return;
   }
 
   fs.mkdirSync(OUT, { recursive: true });
@@ -170,7 +177,7 @@ async function run() {
       if (e.quota) console.error('The search quota looks used up. Nothing is lost: run the same command again later and it continues where it stopped.');
       save();
       process.exitCode = 2;
-        return;
+      return;
     }
 
     const dir = path.join(OUT, p.slug);
@@ -195,4 +202,50 @@ async function run() {
   console.log(`Look at the pictures in ${OUT}/<perfume>/ ; where each one came from is in ${MANIFEST}.`);
 }
 
-await run();
+// ---- Fragrantica mode ---------------------------------------------------------------------------------
+async function runFragrantica() {
+  const targets = JSON.parse(fs.readFileSync('data-import/fragrantica-image-targets.json', 'utf8'));
+  const ids = JSON.parse(fs.readFileSync('data-import/fragrantica-image-ids.json', 'utf8'));
+  let list = targets.filter(t => ids[t.slug]);
+  if (ONLY) list = list.filter(t => t.slug === ONLY);
+  if (LIMIT) list = list.slice(0, LIMIT);
+  console.log(`${list.length} pictures to take from Fragrantica (${targets.length - targets.filter(t => ids[t.slug]).length} targets have no Fragrantica number yet)${DRY ? ' (dry run)' : ''}.`);
+  if (DRY) { for (const t of list) console.log(`  ${t.slug}  ->  o.${ids[t.slug]}.jpg`); return; }
+
+  fs.mkdirSync(OUT, { recursive: true });
+  const manifest = fs.existsSync(MANIFEST) ? JSON.parse(fs.readFileSync(MANIFEST, 'utf8')) : {};
+  const save = () => fs.writeFileSync(MANIFEST, JSON.stringify(manifest, null, 1), 'utf8');
+
+  let done = 0, skipped = 0, failed = 0;
+  for (const t of list) {
+    const entry = manifest[t.slug] ||= { brand: t.brand, name: t.name, files: [] };
+    if (!FORCE && entry.files.some(x => x.source === 'fragrantica')) { skipped++; continue; }
+    process.stdout.write(`[${done + skipped + failed + 1}/${list.length}] ${t.slug} ... `);
+
+    const url = `https://fimgs.net/mdimg/perfume/o.${ids[t.slug]}.jpg`;
+    const dir = path.join(OUT, t.slug);
+    fs.mkdirSync(dir, { recursive: true });
+    const res = await download(url, path.join(dir, 'fragrantica'));
+    if (res.ok) {
+      entry.files = entry.files.filter(x => x.source !== 'fragrantica');
+      entry.files.unshift({ file: path.relative(OUT, res.file).replace(/\\/g, '/'), source: 'fragrantica', imageUrl: url, pageUrl: `https://www.fragrantica.com/perfume/-${ids[t.slug]}.html`, fragranticaId: ids[t.slug], bytes: res.bytes });
+      save();
+      done++;
+      console.log('saved');
+    } else {
+      failed++;
+      console.log(`failed (${res.why})`);
+      if (/HTTP (403|429)/.test(res.why)) {
+        console.error('\nThe site answered "too many requests / forbidden". Stopping here on purpose. Wait a good while (an hour or more) before trying again, and do not run it in a loop.');
+        save();
+        process.exitCode = 2;
+        return;
+      }
+    }
+    await sleep(1500);
+  }
+  save();
+  console.log(`\nDone. ${done} saved, ${failed} failed, ${skipped} skipped (already done). Files are in ${OUT}/<perfume>/fragrantica.jpg`);
+}
+
+await (SOURCE === 'fragrantica' ? runFragrantica() : run());
