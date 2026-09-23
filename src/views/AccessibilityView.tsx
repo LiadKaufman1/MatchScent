@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { getDict, withLang, type Lang } from '@/lib/i18n';
+import { getDict, LANGS, withLang, type Lang } from '@/lib/i18n';
 import { SiteFooter, SiteHeader } from '@/app/components/SiteChrome';
 
 export function accessibilityMetadata(lang: Lang): Metadata {
@@ -9,7 +9,7 @@ export function accessibilityMetadata(lang: Lang): Metadata {
     description: t.st.intro,
     alternates: {
       canonical: withLang(lang, '/accessibility'),
-      languages: { en: '/accessibility', he: '/he/accessibility' },
+      languages: Object.fromEntries(LANGS.map(l => [l, withLang(l, '/accessibility')])),
     },
   };
 }

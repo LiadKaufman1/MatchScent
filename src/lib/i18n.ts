@@ -2,7 +2,7 @@
 // Placeholders like {n} or {name} are filled in with fmt().
 
 export type Lang = 'en' | 'he';
-export const LANGS: Lang[] = ['en', 'he'];
+export const LANGS: Lang[] = ['he', 'en'];
 
 type CountryStrings = { IL: string; US: string; GB: string; WORLD: string };
 
@@ -314,10 +314,10 @@ export const isLang = (value: string): value is Lang => value === 'en' || value 
 export const fmt = (template: string, values: Record<string, string | number>) =>
   template.replace(/\{(\w+)\}/g, (_, key: string) => String(values[key] ?? ''));
 
-// English pages keep their old addresses; Hebrew pages live under /he.
+// Hebrew is the site's main language and keeps the plain addresses; English lives under /en.
 export const withLang = (lang: Lang, path: string): string => {
-  if (lang === 'en') return path;
-  return path === '/' ? '/he' : `/he${path}`;
+  if (lang === 'he') return path;
+  return path === '/' ? '/en' : `/en${path}`;
 };
 
 export const otherLang = (lang: Lang): Lang => (lang === 'en' ? 'he' : 'en');

@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { siteUrl } from './site';
-import { getDict, withLang, type Lang } from './i18n';
+import { getDict, LANGS, withLang, type Lang } from './i18n';
 
 // Page title/description settings shared by the English and Hebrew versions.
 export function siteMetadata(lang: Lang): Metadata {
@@ -11,7 +11,7 @@ export function siteMetadata(lang: Lang): Metadata {
     description: t.metaDescription,
     alternates: {
       canonical: withLang(lang, '/'),
-      languages: { en: '/', he: '/he', 'x-default': '/' },
+      languages: { ...Object.fromEntries(LANGS.map(l => [l, withLang(l, '/')])), 'x-default': '/' },
     },
     openGraph: { siteName: 'MatchScent', type: 'website', locale: lang === 'he' ? 'he_IL' : 'en_US' },
   };

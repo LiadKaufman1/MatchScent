@@ -46,10 +46,12 @@ const pick = (data: Record<string, unknown>, fields: readonly string[]) => {
   return out;
 };
 
-// After an admin edit, refresh the home page, every perfume page and the sitemap.
+// After an admin edit, refresh the home page and every perfume page, in both languages, plus the sitemap.
 const refreshPublicPages = () => {
   revalidatePath('/');
+  revalidatePath('/en');
   revalidatePath('/perfume/[slug]', 'page');
+  revalidatePath('/en/perfume/[slug]', 'page');
   revalidatePath('/sitemap.xml');
 };
 
