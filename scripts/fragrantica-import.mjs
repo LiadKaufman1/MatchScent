@@ -1,6 +1,6 @@
 // Turns text you copied from Fragrantica pages into "inspired by" entries for the site.
 //
-//   node scripts/fragrantica-import.mjs [input.txt]
+//   node scripts/fragrantica-import.mjs [input.txt] [--top 10]
 //
 // Input  (default data-import/fragrantica-30.txt): one "### N. Brand | Name" heading per
 //        perfume, with the copied page text underneath.
@@ -11,7 +11,7 @@
 //   - use the "This perfume reminds me of" list
 //   - never the same brand as the original perfume
 //   - only fragrances with more likes than dislikes
-//   - best first, by (likes - dislikes); keep the top 5
+//   - best first, by (likes - dislikes); keep the top 5 (or --top N, up to 15)
 //   - at least MIN_VOTES votes, and not a supermarket/body-care line (EXCLUDED_BRANDS)
 // One extra rule: several versions of the same fragrance from one brand (for example
 // "Club de Nuit Intense Man" and its "Parfum" / "Limited Edition") count once, using the
@@ -23,10 +23,27 @@ import path from 'node:path';
 import { MIN_VOTES, isExcludedBrand, norm, sameBrand, parseCount } from './lib/rules.mjs';
 
 const COLLAPSE_VARIANTS = true;
-const TOP = 5;
-const SCORES = [100, 95, 90, 85, 80]; // stored in similarity_score so the site keeps this order
+// How many "inspired by" options to keep per perfume: --top 10 (default 5, at most 15).
+const argv = process.argv.slice(2);
+const topAt = argv.indexOf('--top');
+const TOP = Math.min(Math.max(topAt > -1 ? parseInt(argv[topAt + 1], 10) || 5 : 5, 1), 15);
+if (topAt > -1) argv.splice(topAt, 2);
+// Stored in similarity_score so the site keeps this order: 100, 95, 90, 85, 80 for 5 options; 100, 96, 92, ... for more.
+const SCORES = Array.from({ length: TOP }, (_, i) => (TOP <= 5 ? 100 - 5 * i : 100 - 4 * i));
 
-const input = process.argv[2] || 'data-import/fragrantica-30.txt';
+// Pictures already on the site (scripts/prepare-site-images.mjs writes this list). An entry that has one is
+// inserted WITH its picture, so re-importing never throws the pictures away.
+const picturesFile = 'data-import/site-images/index.json';
+const pictures = fs.existsSync(picturesFile) ? JSON.parse(fs.readFileSync(picturesFile, 'utf8')) : {};
+const envText = fs.existsSync('.env.local') ? fs.readFileSync('.env.local', 'utf8') : '';
+const supabaseUrl = envText.match(/^NEXT_PUBLIC_SUPABASE_URL=(.*)$/m)?.[1]?.trim().replace(/^["']|["']$/g, '');
+const pictureSlugs = new Map(Object.entries(pictures).map(([slug, v]) => [`${v.brand.toLowerCase()}|${v.name.toLowerCase()}`, slug]));
+const pictureUrl = (brand, name) => {
+  const slug = pictureSlugs.get(`${brand.toLowerCase()}|${name.toLowerCase()}`);
+  return slug && supabaseUrl ? `${supabaseUrl}/storage/v1/object/public/perfume-images/${slug}.jpg` : null;
+};
+
+const input = argv[0] || 'data-import/fragrantica-30.txt';
 const outDir = path.dirname(input);
 const now = new Date().toISOString();
 const today = `${now.slice(0, 10).replace(/-/g, '')}_${now.slice(11, 16).replace(':', '')}`; // date + time, so a re-run never clashes with an older backup
@@ -82,7 +99,7 @@ function choose(sec, items) {
       if (twin) { it.note = `removed: another version of "${twin.name}"`; continue; }
     }
     if (kept.length < TOP) { it.note = `KEPT #${kept.length + 1}`; kept.push(it); }
-    else it.note = 'not in the top 5';
+    else it.note = `not in the top ${TOP}`;
   }
   return { pool, kept, log };
 }
@@ -183,7 +200,10 @@ BEGIN
     sql += `  -- ${r.sec.brand} | ${r.sec.name}\n`;
     sql += `  SELECT id INTO pid FROM perfumes WHERE lower(brand) = ${sqlText(r.sec.brand.toLowerCase())} AND lower(name) = ${sqlText(r.sec.name.toLowerCase())} ORDER BY created_at DESC LIMIT 1;\n`;
     r.kept.forEach((k, idx) => {
-      sql += `  INSERT INTO dupes (original_perfume_id, name, brand, similarity_score) VALUES (pid, ${sqlText(k.name)}, ${sqlText(k.brand)}, ${SCORES[idx]});\n`;
+      const pic = pictureUrl(k.brand, k.name);
+      sql += pic
+        ? `  INSERT INTO dupes (original_perfume_id, name, brand, similarity_score, image_url) VALUES (pid, ${sqlText(k.name)}, ${sqlText(k.brand)}, ${SCORES[idx]}, ${sqlText(pic)});\n`
+        : `  INSERT INTO dupes (original_perfume_id, name, brand, similarity_score) VALUES (pid, ${sqlText(k.name)}, ${sqlText(k.brand)}, ${SCORES[idx]});\n`;
       sql += `  n_inserted := n_inserted + 1;\n`;
     });
     sql += '\n';
