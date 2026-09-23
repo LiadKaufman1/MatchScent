@@ -191,7 +191,7 @@ const en: Dict = {
   countriesIn: { IL: 'in Israel', US: 'in the US', GB: 'in the UK', WORLD: 'near you' },
 
   footer:
-    'MatchScent is an independent fragrance guide. We are not affiliated with, or endorsed by, any of the brands mentioned. All trademarks belong to their respective owners.',
+    'MatchScent is an independent fragrance guide. We are not affiliated with, or endorsed by, any of the brands mentioned. All trademarks belong to their respective owners. Product pictures belong to their respective owners and are shown to help identify each fragrance; if you own one and want it removed, contact us and we will remove it promptly.',
   footerA11y: 'Accessibility statement',
 
   a11yButton: 'Accessibility',
@@ -327,7 +327,7 @@ const he: Dict = {
   countriesIn: { IL: 'בישראל', US: 'בארה״ב', GB: 'בבריטניה', WORLD: 'באזור שלכם' },
 
   footer:
-    'MatchScent הוא מדריך בשמים עצמאי. אין לנו קשר למותגים המוזכרים ואיננו מטעמם או בחסותם. כל סימני המסחר שייכים לבעליהם.',
+    'MatchScent הוא מדריך בשמים עצמאי. אין לנו קשר למותגים המוזכרים ואיננו מטעמם או בחסותם. כל סימני המסחר שייכים לבעליהם. תמונות המוצרים שייכות לבעליהן ומוצגות לצורך זיהוי הבושם; אם אתם בעלי תמונה ומבקשים להסירה, צרו קשר ונסיר אותה בהקדם.',
   footerA11y: 'הצהרת נגישות',
 
   a11yButton: 'נגישות',
