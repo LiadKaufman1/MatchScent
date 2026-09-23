@@ -4,6 +4,9 @@ import { prepareCatalog } from './catalog';
 import { mockPerfumes, mockDupes } from './mockData';
 import { slugify } from './slug';
 
+export type ReviewWithAuthor = { id: string; body: string; created_at: string; author: string };
+export type PerfumeCommunity = { average: number; count: number; reviews: ReviewWithAuthor[] };
+
 export type ShownPerfume = Perfume & { entryCount: number; slug: string };
 
 // Supabase returns at most 1000 rows per request, so read in pages.
@@ -74,6 +77,46 @@ const hash = (s: string) => {
   return h;
 };
 
+// Average rating + reviews for one perfume. This is public data (same for every
+// visitor), so it is safe to bake into a static/ISR page - unlike "did THIS visitor
+// already rate it", which belongs client-side, per browser session, never here.
+//
+// The "ratings"/"reviews" tables are new and may not exist yet if the owner hasn't
+// run db-migrations/2026-09-accounts-and-reviews.sql. Unlike perfumes/dupes above,
+// a missing table here must not break the page - it just means no ratings yet.
+async function getPerfumeCommunity(perfumeId: string): Promise<PerfumeCommunity> {
+  const empty: PerfumeCommunity = { average: 0, count: 0, reviews: [] };
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) return empty;
+
+  try {
+    const supabase = getSupabase();
+    const [{ data: scoreRows }, { data: reviewRows }] = await Promise.all([
+      supabase.from('ratings').select('score').eq('perfume_id', perfumeId),
+      supabase
+        .from('reviews')
+        .select('id, body, created_at, author:profiles(display_name)')
+        .eq('perfume_id', perfumeId)
+        .order('created_at', { ascending: false })
+        .limit(50),
+    ]);
+
+    const scores = (scoreRows ?? []) as { score: number }[];
+    const average = scores.length ? scores.reduce((sum, r) => sum + r.score, 0) / scores.length : 0;
+
+    type ReviewRow = { id: string; body: string; created_at: string; author: { display_name: string } | { display_name: string }[] | null };
+    const reviews = ((reviewRows ?? []) as ReviewRow[]).map(r => ({
+      id: r.id,
+      body: r.body,
+      created_at: r.created_at,
+      author: (Array.isArray(r.author) ? r.author[0]?.display_name : r.author?.display_name) ?? '',
+    }));
+
+    return { average, count: scores.length, reviews };
+  } catch {
+    return empty; // tables not migrated yet, or a transient error - the rest of the page still works
+  }
+}
+
 // Everything one perfume page needs.
 export async function getPerfumePage(slug: string) {
   const { perfumes, dupes } = await getCatalog();
@@ -91,5 +134,7 @@ export async function getPerfumePage(slug: string) {
   const start = pool.length ? hash(slug) % pool.length : 0;
   const more = Array.from({ length: Math.min(6, pool.length) }, (_, i) => pool[(start + i) % pool.length]);
 
-  return { perfume, entries, sameBrand, more };
+  const community = await getPerfumeCommunity(perfume.id);
+
+  return { perfume, entries, sameBrand, more, community };
 }

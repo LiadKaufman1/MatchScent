@@ -33,6 +33,28 @@ export type LivePrice = {
   link: string;
 }
 
+export type Profile = {
+  id: string
+  display_name: string
+  created_at: string
+}
+
+export type Rating = {
+  id: string
+  perfume_id: string
+  user_id: string
+  score: number
+  created_at: string
+}
+
+export type Review = {
+  id: string
+  perfume_id: string
+  user_id: string
+  body: string
+  created_at: string
+}
+
 export type Dupe = {
   id: string
   original_perfume_id: string

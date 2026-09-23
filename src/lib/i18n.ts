@@ -96,6 +96,39 @@ export type Dict = {
   notFoundTitle: string;
   notFoundText: string;
   backHome: string;
+
+  auth: {
+    loginCta: string;
+    registerCta: string;
+    logoutCta: string;
+    greeting: string;
+    loginTitle: string;
+    registerTitle: string;
+    emailLabel: string;
+    passwordLabel: string;
+    passwordHint: string;
+    displayNameLabel: string;
+    loginSubmit: string;
+    registerSubmit: string;
+    submitting: string;
+    noAccountYet: string;
+    haveAccountAlready: string;
+    registerSuccess: string;
+    errorGeneric: string;
+  };
+
+  community: {
+    ratingsHeading: string;
+    ratingSummary: string;
+    ratingNone: string;
+    yourRating: string;
+    reviewsHeading: string;
+    reviewPlaceholder: string;
+    reviewSubmit: string;
+    reviewNone: string;
+    loginToParticipate: string;
+    thanks: string;
+  };
 };
 
 const en: Dict = {
@@ -199,6 +232,39 @@ const en: Dict = {
   notFoundTitle: 'Page not found',
   notFoundText: 'The page you are looking for does not exist.',
   backHome: 'Back to the home page',
+
+  auth: {
+    loginCta: 'Log in',
+    registerCta: 'Sign up',
+    logoutCta: 'Log out',
+    greeting: 'Hi, {name}',
+    loginTitle: 'Log in',
+    registerTitle: 'Create an account',
+    emailLabel: 'Email',
+    passwordLabel: 'Password',
+    passwordHint: 'At least 8 characters',
+    displayNameLabel: 'Display name',
+    loginSubmit: 'Log in',
+    registerSubmit: 'Sign up',
+    submitting: 'One moment...',
+    noAccountYet: "Don't have an account? Sign up",
+    haveAccountAlready: 'Already have an account? Log in',
+    registerSuccess: 'Account created! Check your email to confirm it, then log in.',
+    errorGeneric: 'Something went wrong. Please try again.',
+  },
+
+  community: {
+    ratingsHeading: 'Ratings & reviews',
+    ratingSummary: '{avg} out of 5 ({count} ratings)',
+    ratingNone: 'No ratings yet - be the first to rate it.',
+    yourRating: 'Your rating',
+    reviewsHeading: 'Reviews',
+    reviewPlaceholder: 'What do you think of this fragrance?',
+    reviewSubmit: 'Post review',
+    reviewNone: 'No reviews yet.',
+    loginToParticipate: 'Log in to rate and review this fragrance.',
+    thanks: 'Thanks! Your rating was saved.',
+  },
 };
 
 const he: Dict = {
@@ -302,6 +368,39 @@ const he: Dict = {
   notFoundTitle: 'הדף לא נמצא',
   notFoundText: 'הדף שחיפשתם אינו קיים.',
   backHome: 'חזרה לדף הבית',
+
+  auth: {
+    loginCta: 'התחברות',
+    registerCta: 'הרשמה',
+    logoutCta: 'התנתקות',
+    greeting: 'שלום, {name}',
+    loginTitle: 'התחברות',
+    registerTitle: 'יצירת חשבון',
+    emailLabel: 'אימייל',
+    passwordLabel: 'סיסמה',
+    passwordHint: 'לפחות 8 תווים',
+    displayNameLabel: 'שם תצוגה',
+    loginSubmit: 'התחברות',
+    registerSubmit: 'הרשמה',
+    submitting: 'רגע אחד...',
+    noAccountYet: 'עדיין אין לכם חשבון? הרשמו',
+    haveAccountAlready: 'כבר יש לכם חשבון? התחברו',
+    registerSuccess: 'החשבון נוצר! בדקו את המייל לאישור, ואז התחברו.',
+    errorGeneric: 'משהו השתבש. נסו שוב.',
+  },
+
+  community: {
+    ratingsHeading: 'דירוגים וביקורות',
+    ratingSummary: '{avg} מתוך 5 ({count} דירוגים)',
+    ratingNone: 'אין עדיין דירוגים - היו הראשונים לדרג.',
+    yourRating: 'הדירוג שלכם',
+    reviewsHeading: 'ביקורות',
+    reviewPlaceholder: 'מה דעתכם על הבושם הזה?',
+    reviewSubmit: 'פרסום ביקורת',
+    reviewNone: 'אין עדיין ביקורות.',
+    loginToParticipate: 'התחברו כדי לדרג ולכתוב ביקורת על הבושם.',
+    thanks: 'תודה! הדירוג שלכם נשמר.',
+  },
 };
 
 const dictionaries: Record<Lang, Dict> = { en, he };
