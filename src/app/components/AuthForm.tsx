@@ -27,7 +27,9 @@ export default function AuthForm({ lang, mode }: { lang: Lang; mode: 'login' | '
         setError(t.auth.errorGeneric);
         return;
       }
-      if (mode === 'register') {
+      // Registering without email confirmation (the current setup) logs the visitor in
+      // immediately, exactly like a login - only show "check your email" when it's actually needed.
+      if (mode === 'register' && result.needsConfirmation) {
         setDone(true);
         return;
       }

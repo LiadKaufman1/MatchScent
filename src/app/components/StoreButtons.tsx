@@ -1,12 +1,12 @@
 'use client';
 
-import { ArrowUpRight, ExternalLink, Search } from 'lucide-react';
+import { ArrowUpRight, Search } from 'lucide-react';
 import { useCountry } from '@/lib/use-country';
 import { COUNTRIES, compareUrl } from '@/lib/stores';
 import { fmt, getDict, type Lang } from '@/lib/i18n';
 
-// "Where to buy" for one fragrance. The big button compares prices across all the
-// stores in the visitor's country; the smaller buttons go straight to one store.
+// "Where to buy" for one fragrance: compares prices across all the stores in the
+// visitor's country. (Direct single-store buttons were removed at the owner's request.)
 export default function StoreButtons({ brand, name, lang }: { brand: string; name: string; lang: Lang }) {
   const t = getDict(lang);
   const country = useCountry();
@@ -34,28 +34,6 @@ export default function StoreButtons({ brand, name, lang }: { brand: string; nam
       ) : (
         <span className="block h-[60px] animate-pulse rounded-xl bg-blush" aria-hidden="true" />
       )}
-
-      <p className="mb-2 mt-3 text-[11px] font-medium uppercase tracking-[0.16em] text-smoke">{t.goDirect}</p>
-
-      <div
-        className="grid gap-2"
-        style={{ gridTemplateColumns: `repeat(${info ? info.stores.length : 2}, minmax(0, 1fr))` }}
-      >
-        {info
-          ? info.stores.map(store => (
-              <a
-                key={store.id}
-                href={store.url(query)}
-                target="_blank"
-                rel="noopener noreferrer nofollow"
-                className="flex items-center justify-center gap-2 rounded-xl border border-line bg-white px-3 py-2 text-sm font-semibold text-ink transition hover:border-wine-600 hover:text-wine-700"
-              >
-                <span dir="ltr">{store.name}</span>
-                <ExternalLink className="h-3.5 w-3.5 opacity-70" aria-hidden="true" />
-              </a>
-            ))
-          : [0, 1].map(i => <span key={i} className="h-[38px] animate-pulse rounded-xl bg-blush" aria-hidden="true" />)}
-      </div>
     </div>
   );
 }

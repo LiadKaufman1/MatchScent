@@ -60,7 +60,6 @@ export type Dict = {
   whereToBuy: string;
   compareCta: string;
   compareHint: string;
-  goDirect: string;
   shopFrom: string;
   countries: CountryStrings;
   countriesIn: CountryStrings;
@@ -185,7 +184,6 @@ const en: Dict = {
   whereToBuy: 'Where to buy',
   compareCta: 'Compare prices across stores {in}',
   compareHint: 'Every store that sells it, with prices',
-  goDirect: 'Or go straight to a store',
   shopFrom: 'Shop from',
   countries: { IL: 'Israel', US: 'United States', GB: 'United Kingdom', WORLD: 'Rest of the world' },
   countriesIn: { IL: 'in Israel', US: 'in the US', GB: 'in the UK', WORLD: 'near you' },
@@ -321,7 +319,6 @@ const he: Dict = {
   whereToBuy: 'איפה לקנות',
   compareCta: 'השוואת מחירים בין חנויות {in}',
   compareHint: 'כל החנויות שמוכרות אותו, עם מחירים',
-  goDirect: 'או ישר לחנות',
   shopFrom: 'קונים מ',
   countries: { IL: 'ישראל', US: 'ארצות הברית', GB: 'בריטניה', WORLD: 'שאר העולם' },
   countriesIn: { IL: 'בישראל', US: 'בארה״ב', GB: 'בבריטניה', WORLD: 'באזור שלכם' },
