@@ -7,6 +7,7 @@ import { siteUrl } from '@/lib/site';
 import { fmt, getDict, withLang, type Lang } from '@/lib/i18n';
 import Photo from '@/app/components/Photo';
 import EntryCard from '@/app/components/EntryCard';
+import RatingsReviews from '@/app/components/RatingsReviews';
 import { SiteFooter, SiteHeader } from '@/app/components/SiteChrome';
 
 export async function perfumeStaticParams() {
@@ -73,7 +74,7 @@ export default async function PerfumeView({ lang, slug }: { lang: Lang; slug: st
   const data = await getPerfumePage(slug);
   if (!data) notFound();
 
-  const { perfume, entries, sameBrand, more } = data;
+  const { perfume, entries, sameBrand, more, community } = data;
   const full = `${perfume.brand} ${perfume.name}`;
   const path = `/perfume/${perfume.slug}`;
   const base = siteUrl();
@@ -174,6 +175,14 @@ export default async function PerfumeView({ lang, slug }: { lang: Lang; slug: st
             </div>
           </section>
         )}
+
+        <RatingsReviews
+          lang={lang}
+          perfumeId={perfume.id}
+          average={community.average}
+          count={community.count}
+          reviews={community.reviews}
+        />
 
         {more.length > 0 && (
           <section className="mt-14" aria-labelledby="more-heading">

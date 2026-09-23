@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { getDict, otherLang, withLang, type Lang } from '@/lib/i18n';
 import CountrySelect from './CountrySelect';
+import AuthStatus from './AuthStatus';
 
 export function Wordmark({ className = '' }: { className?: string }) {
   return (
@@ -45,6 +46,7 @@ export function SiteHeader({ lang, path }: { lang: Lang; path: string }) {
           </Link>
           <LanguageSwitch lang={lang} path={path} />
           <CountrySelect lang={lang} />
+          <AuthStatus lang={lang} />
         </div>
       </div>
     </header>
