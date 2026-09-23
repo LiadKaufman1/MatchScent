@@ -1,13 +1,15 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { getCatalog, getPerfumePage, type ShownPerfume } from '@/lib/load-catalog';
+import { entryKey, getCatalog, getPerfumePage, type ShownPerfume } from '@/lib/load-catalog';
 import { ils, usd } from '@/lib/format';
 import { siteUrl } from '@/lib/site';
 import { fmt, getDict, withLang, type Lang } from '@/lib/i18n';
 import Photo from '@/app/components/Photo';
 import EntryCard from '@/app/components/EntryCard';
 import RatingsReviews from '@/app/components/RatingsReviews';
+import NotePyramid from '@/app/components/NotePyramid';
+import ShelfButtons from '@/app/components/ShelfButtons';
 import { SiteFooter, SiteHeader } from '@/app/components/SiteChrome';
 
 export async function perfumeStaticParams() {
@@ -149,8 +151,11 @@ export default async function PerfumeView({ lang, slug }: { lang: Lang; slug: st
                 <dd className="font-bold text-ink">{audienceLabel}</dd>
               </div>
             </dl>
+            <ShelfButtons lang={lang} perfumeId={perfume.id} own={community.shelf.own} want={community.shelf.want} />
           </div>
         </header>
+
+        <NotePyramid pyramid={perfume.note_pyramid} lang={lang} />
 
         <section className="mt-14" aria-labelledby="inspired-heading">
           <h2 id="inspired-heading" className="mb-5 text-sm font-bold uppercase tracking-[0.14em] text-wine-600">
@@ -160,7 +165,9 @@ export default async function PerfumeView({ lang, slug }: { lang: Lang; slug: st
             <p className="rounded-2xl border border-line bg-white py-12 text-center text-smoke">{t.curatingSimilar}</p>
           ) : (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              {entries.map(e => <EntryCard key={e.id} entry={e} lang={lang} />)}
+              {entries.map(e => (
+                <EntryCard key={e.id} entry={e} lang={lang} perfumeId={perfume.id} votes={community.entryVotes[entryKey(e.brand, e.name)]} />
+              ))}
             </div>
           )}
         </section>
@@ -181,6 +188,7 @@ export default async function PerfumeView({ lang, slug }: { lang: Lang; slug: st
           perfumeId={perfume.id}
           average={community.average}
           count={community.count}
+          aspects={community.aspects}
           reviews={community.reviews}
         />
 

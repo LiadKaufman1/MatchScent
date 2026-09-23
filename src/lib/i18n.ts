@@ -128,6 +128,35 @@ export type Dict = {
     reviewNone: string;
     loginToParticipate: string;
     thanks: string;
+    aspectsHint: string;
+    aspectScent: string;
+    aspectLongevity: string;
+    aspectSillage: string;
+    aspectBottle: string;
+    aspectValue: string;
+    breakdownHeading: string;
+    entryVoteQuestion: string;
+    entryVoteYes: string;
+    entryVoteNo: string;
+    entryVoteSummary: string;
+    entryVoteNone: string;
+    entryVoteLogin: string;
+    shelfHeading: string;
+    shelfOwn: string;
+    shelfHad: string;
+    shelfWant: string;
+    shelfCounts: string;
+    shelfLogin: string;
+  };
+  notes: { heading: string; top: string; heart: string; base: string; notes: string };
+  profile: {
+    metaTitle: string;
+    joined: string;
+    shelfHeading: string;
+    reviewsHeading: string;
+    empty: string;
+    notFound: string;
+    back: string;
   };
 };
 
@@ -264,6 +293,35 @@ const en: Dict = {
     reviewNone: 'No reviews yet.',
     loginToParticipate: 'Log in to rate and review this fragrance.',
     thanks: 'Thanks! Your rating was saved.',
+    aspectsHint: 'Rate the details too (optional):',
+    aspectScent: 'Scent',
+    aspectLongevity: 'Longevity',
+    aspectSillage: 'Sillage (scent trail)',
+    aspectBottle: 'Bottle',
+    aspectValue: 'Value for money',
+    breakdownHeading: 'What people say',
+    entryVoteQuestion: 'Does it smell like the original?',
+    entryVoteYes: 'Yes',
+    entryVoteNo: 'No',
+    entryVoteSummary: '{up} of {total} say it matches',
+    entryVoteNone: 'Be the first to vote',
+    entryVoteLogin: 'Log in to vote',
+    shelfHeading: 'Your shelf',
+    shelfOwn: 'I own it',
+    shelfHad: 'I had it',
+    shelfWant: 'I want it',
+    shelfCounts: '{own} own it · {want} want it',
+    shelfLogin: 'Log in to add it to your shelf.',
+  },
+  notes: { heading: 'Notes', top: 'Top notes', heart: 'Heart notes', base: 'Base notes', notes: 'Notes' },
+  profile: {
+    metaTitle: 'Profile: {name}',
+    joined: 'Member since {date}',
+    shelfHeading: 'Shelf',
+    reviewsHeading: 'Reviews',
+    empty: 'Nothing here yet.',
+    notFound: 'This profile was not found.',
+    back: 'Back to the home page',
   },
 };
 
@@ -400,6 +458,35 @@ const he: Dict = {
     reviewNone: 'אין עדיין ביקורות.',
     loginToParticipate: 'התחברו כדי לדרג ולכתוב ביקורת על הבושם.',
     thanks: 'תודה! הדירוג שלכם נשמר.',
+    aspectsHint: 'אפשר לדרג גם את הפרטים (לא חובה):',
+    aspectScent: 'ריח',
+    aspectLongevity: 'עמידות',
+    aspectSillage: 'שובל (עוצמת הריח באוויר)',
+    aspectBottle: 'בקבוק',
+    aspectValue: 'תמורה למחיר',
+    breakdownHeading: 'מה אומרים המשתמשים',
+    entryVoteQuestion: 'האם הריח דומה למקור?',
+    entryVoteYes: 'כן',
+    entryVoteNo: 'לא',
+    entryVoteSummary: '{up} מתוך {total} אומרים שזה מתאים',
+    entryVoteNone: 'היו הראשונים להצביע',
+    entryVoteLogin: 'התחברו כדי להצביע',
+    shelfHeading: 'המדף שלכם',
+    shelfOwn: 'יש לי',
+    shelfHad: 'היה לי',
+    shelfWant: 'אני רוצה',
+    shelfCounts: '{own} משתמשים מחזיקים בו · {want} רוצים אותו',
+    shelfLogin: 'התחברו כדי להוסיף אותו למדף שלכם.',
+  },
+  notes: { heading: 'תווים', top: 'תווי ראש', heart: 'תווי לב', base: 'תווי בסיס', notes: 'תווים' },
+  profile: {
+    metaTitle: 'פרופיל: {name}',
+    joined: 'חברים מאז {date}',
+    shelfHeading: 'מדף',
+    reviewsHeading: 'ביקורות',
+    empty: 'אין כאן עדיין כלום.',
+    notFound: 'הפרופיל לא נמצא.',
+    back: 'חזרה לעמוד הבית',
   },
 };
 

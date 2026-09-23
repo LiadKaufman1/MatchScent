@@ -22,7 +22,8 @@
 //
 // --source fragrantica (owner's request, 2026-09-23): instead of searching, take each perfume's own Fragrantica
 // picture, using the Fragrantica numbers listed in data-import/fragrantica-image-ids.json and the perfumes in
-// data-import/fragrantica-image-targets.json. It is slow on purpose (1.5 s between pictures) and stops at the first
+// data-import/fragrantica-image-targets.json. It is slow on purpose (about 6 s between pictures, --delay-ms to change), takes at most
+// 300 NEW pictures per run (--limit N to change; the owner's daily cap), and stops at the first
 // 403/429 answer: if the site says "too many requests", we stop, we do not try to get around it.
 //
 // Reminder: a picture found this way is somebody's copyright until you have checked otherwise.
@@ -208,7 +209,8 @@ async function runFragrantica() {
   const ids = JSON.parse(fs.readFileSync('data-import/fragrantica-image-ids.json', 'utf8'));
   let list = targets.filter(t => ids[t.slug]);
   if (ONLY) list = list.filter(t => t.slug === ONLY);
-  if (LIMIT) list = list.slice(0, LIMIT);
+  const CAP = LIMIT || 300; // new pictures per run (the owner's daily cap); ones already downloaded do not count
+  const DELAY = parseInt(val('--delay-ms', '6000'), 10) || 6000;
   console.log(`${list.length} pictures to take from Fragrantica (${targets.length - targets.filter(t => ids[t.slug]).length} targets have no Fragrantica number yet)${DRY ? ' (dry run)' : ''}.`);
   if (DRY) { for (const t of list) console.log(`  ${t.slug}  ->  o.${ids[t.slug]}.jpg`); return; }
 
@@ -220,7 +222,8 @@ async function runFragrantica() {
   for (const t of list) {
     const entry = manifest[t.slug] ||= { brand: t.brand, name: t.name, files: [] };
     if (!FORCE && entry.files.some(x => x.source === 'fragrantica')) { skipped++; continue; }
-    process.stdout.write(`[${done + skipped + failed + 1}/${list.length}] ${t.slug} ... `);
+    if (done + failed >= CAP) { console.log(`\nReached the limit of ${CAP} new pictures for this run. Run it again later (tomorrow) for the rest.`); break; }
+    process.stdout.write(`[${done + failed + 1}/${CAP}] ${t.slug} ... `);
 
     const url = `https://fimgs.net/mdimg/perfume/o.${ids[t.slug]}.jpg`;
     const dir = path.join(OUT, t.slug);
@@ -242,7 +245,7 @@ async function runFragrantica() {
         return;
       }
     }
-    await sleep(1500);
+    await sleep(DELAY * (0.7 + Math.random() * 0.6)); // a little random, never a steady machine-gun rhythm
   }
   save();
   console.log(`\nDone. ${done} saved, ${failed} failed, ${skipped} skipped (already done). Files are in ${OUT}/<perfume>/fragrantica.jpg`);
