@@ -55,11 +55,16 @@ export default function AuthStatus({ lang }: { lang: Lang }) {
   return (
     <div className="flex items-center gap-2 text-xs">
       <span className="hidden font-bold text-ink sm:inline">{fmt(t.auth.greeting, { name })}</span>
+      {/* Two sign-outs on purpose: logoutUser() (a Server Action) clears the cookie
+          Server Components read, but doesn't tell THIS browser tab's own Supabase client -
+          without also calling it here, this widget would keep showing "logged in" until
+          a full page reload. */}
       <button
         type="button"
         disabled={pending}
         onClick={() => startTransition(async () => {
-          await logoutUser();
+          await logoutUser(); // clears the httpOnly session cookie used by the server
+          await getSupabaseBrowser().auth.signOut(); // updates this tab's own client + repaints immediately (see comment below)
           router.refresh();
         })}
         className="font-bold uppercase tracking-[0.1em] text-smoke transition hover:text-wine-600 disabled:opacity-50"
