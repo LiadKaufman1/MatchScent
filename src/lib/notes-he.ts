@@ -451,6 +451,14 @@ export const NOTES_HE: Record<string, string> = {
   'acajou wood': 'עץ מהגוני',
   'akigalawood®': 'אקיגלווד',
   'coriander seed': 'גרגרי כוסברה',
+  'granny smith apple': 'תפוח גרני סמית׳',
+  'scotch whisky absolute': 'ויסקי סקוטי (אבסולוט)',
+  'italian iris concrete': 'איריס איטלקי (קונקרט)',
+  'madagascan ginger': 'ג׳ינג׳ר מדגסקרי',
+  'namibian myrrh': 'מור נמיבי',
+  'ambrette seed': 'גרעיני אמברט',
+  'salted vanilla': 'וניל מלוח',
+  'kahili ginger': 'ג׳ינג׳ר קהילי',
 };
 
 // Place and variety words that Fragrantica puts in front of a note ("Moroccan Jasmine",
