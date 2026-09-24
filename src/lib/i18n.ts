@@ -231,6 +231,10 @@ export type Dict = {
     total: string;
     others: string;
     count: string;
+    byLetter: string;
+    letterTitle: string;
+    letterDescription: string;
+    otherLetter: string;
   };
   search: {
     metaTitle: string;
@@ -593,8 +597,12 @@ const en: Dict = {
     intro: 'All the perfume houses, A to Z. Houses with perfumes on the site are links.',
     onSite: 'Houses with perfumes on the site',
     total: 'All houses',
+    byLetter: 'Every perfume house, by letter',
+    letterTitle: 'Perfume houses: {l}',
+    letterDescription: 'Every perfume house starting with {l}.',
+    otherLetter: 'Other',
     others: 'More houses (no perfumes on the site yet)',
-    count: '{n} fragrances',
+    count: '{n} houses',
   },
   search: {
     metaTitle: 'Search',
@@ -957,8 +965,12 @@ const he: Dict = {
     intro: 'כל בתי הבישום, לפי סדר האלף-בית. בתי בישום שיש להם בשמים באתר מסומנים כקישור.',
     onSite: 'בתי בישום עם בשמים באתר',
     total: 'כל בתי הבישום',
+    byLetter: 'כל בתי הבישום בעולם, לפי אות',
+    letterTitle: 'בתי בישום: {l}',
+    letterDescription: 'כל בתי הבישום שמתחילים ב-{l}.',
+    otherLetter: 'אחר',
     others: 'עוד בתי בישום (עדיין אין להם בשמים באתר)',
-    count: '{n} בשמים',
+    count: '{n} בתי בישום',
   },
   search: {
     metaTitle: 'חיפוש',

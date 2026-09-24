@@ -48,7 +48,8 @@ src/app/sitemap.ts, robots.ts   Sitemap (both languages, with alternates) and ro
 src/views/                Page bodies shared by English and Hebrew (HomeView, PerfumeView, ProfileView, AuthView, AccessibilityView, NotFoundView)
 src/lib/i18n.ts           All text, English + Hebrew, helpers getDict / fmt / withLang / otherLang
 src/lib/stores.ts         Countries, stores, search-URL builders, compareUrl()
-src/lib/load-catalog.ts   Loads perfumes + entries (cached), slugs, per-perfume page data
+src/lib/load-catalog.ts   Loads perfumes + entries (cached), slugs, per-perfume page data (incl. "inspired by" originals + siblings)
+src/lib/load-directory.ts, src/views/DirectoryViews.tsx   /inspired (every inspired fragrance next to its original) and /brands + /brands/<letter> (houses A-Z)
 src/lib/catalog.ts        Cleans the data: hides risky/broken entries, merges duplicate perfumes
 src/lib/images.ts         isRealPhoto(): only /perfumes/… or Supabase Storage URLs count as real photos
 src/lib/actions.ts        Admin server actions (login, edit/add/delete), whitelisted fields, refreshes public pages
@@ -67,6 +68,8 @@ scripts/prepare-site-images.mjs   Normalizes the chosen pictures (800x1000, whit
 scripts/upload-site-images.mjs    Uploads them to the public Supabase bucket "perfume-images"
 scripts/merge-collected.mjs      Merges slow in-browser collections (data-import/collected-*.json) into picture numbers + notes
 scripts/notes-to-sql.mjs         Notes -> reviewable SQL (data-import/notes.sql) + list of notes lacking a Hebrew name
+scripts/inspired-perfumes-sql.mjs   Every inspired fragrance -> a perfumes row + dupes.inspired_perfume_id link (data-import/inspired-perfumes.sql)
+scripts/brands-sql.mjs           All house names (data-import/fragrantica-designers.json) -> data-import/brands.sql for the brands table
 db-migrations/                   Owner-run SQL for new tables/columns (dry run first): accounts-and-reviews, perfume-images-bucket, community-v2-and-notes
 db-cleanup/2026-09-cleanup.sql   Database cleanup script (dry run by default, run by the owner)
 data-import/                     LOCAL ONLY, git-ignored: collected lists, generated SQL and reports
@@ -82,7 +85,8 @@ Replicate the mechanics, never their content or exact design. All per-visitor st
 - Votes are keyed by perfume + fragrance slug (not the entry row id) because the import script deletes and re-inserts entries; a re-import must never wipe community data. Do not put foreign keys to `dupes.id` on community tables.
 - Also done: brand pages `/brand/<slug>` (perfumes of the brand + its fragrances that appear as inspired-by) and note pages `/notes/<slug>` (every fragrance with that note; pages with fewer than 3 hits are noindex and not in the sitemap); admin moderation page `/admin/community` (delete any review or pro/con).
 - v4 (`db-migrations/2026-09-community-v4-photos-comments-suggestions.sql`): replies on reviews (`review_comments`); "I smell this note" votes (`note_votes`, bigger chips for notes many members smell); members' own bottle photos (`perfume_photos`, max 3 per member per perfume, shrunk in the browser to 1400 px JPEG, checked on the server by their first bytes, stored in the PRIVATE bucket `photo-uploads`, copied to the public bucket `community-photos` only when the owner approves in `/admin/community`); suggestions (`suggestions`: a similar scent for a perfume, never the same brand, or a missing perfume; the owner can fix spelling and approve, which inserts into `dupes` with similarity_score 50 or into `perfumes`). Home page community band (latest reviews, top rated, most wanted, new photos, "suggest a perfume"), `/top` charts (Bayesian top rated, most loved/wanted/owned/reviewed, most active members), `/suggest`. Members' texts containing the blocked words (dupe, clone...) are refused with a polite message (`hasBlockedWord` in catalog.ts).
-- Ideas not built yet: user-submitted perfumes for approval, ads (AdSense, the owner's own account).
+- v5 (`db-migrations/2026-09-v5-every-fragrance-a-page.sql`, owner asked 2026-09-24): every inspired fragrance is also a `perfumes` row with its own full page ("inspired by" section with its place in each list, other fragrances inspired by the same perfume, notes, ratings, reviews, price comparison); `dupes.inspired_perfume_id` links a list entry to that row (before the migration the code matches by brand + name). `isCatalogOriginal()` keeps the home page, brand and note pages to the main perfumes. `/inspired` lists every inspired fragrance next to its original(s); `/brands` lists the houses that have fragrances on the site and `/brands/<letter>` every house (table `brands`, names only). Run order: merge the code first, then the v5 migration, then `data-import/inspired-perfumes.sql` and `data-import/brands.sql` (each dry run first); running the SQL before the code is live would show ~900 inspired fragrances on the old home page.
+- Ideas not built yet: ads (AdSense, the owner's own account).
 
 ## How data loads
 
@@ -97,7 +101,9 @@ Replicate the mechanics, never their content or exact design. All per-visitor st
 
 **Community tables** (see `db-migrations/`; v3 = `perfume_votes`, `perfume_points`, `point_votes`, `review_votes`, `perfumes.year/perfumers/accords`, `profiles.bio`): `profiles` (id = auth user), `ratings` (score 1-5 + optional scent/longevity/sillage/bottle/value), `reviews`, `entry_votes` (perfume_id, entry_key, vote +1/-1), `collections` (user_id, perfume_id, status own/had/want). `perfumes.note_pyramid` and `dupes.note_pyramid` (jsonb: `{top, heart, base}` or `{notes}`, English names). All new reads fall back to "nothing yet" when a migration has not run.
 
-**`dupes`**: `id` (uuid, PK), `original_perfume_id` (uuid, FK to `perfumes.id`, ON DELETE CASCADE), `name`, `brand`, `image_url`, `similarity_score` (int, 1-100), `price_usd`, `price_ils`, `purchase_link_il`, `purchase_link_amazon`, `notes`, `live_prices_il` (jsonb), `live_prices_amazon` (jsonb), `created_at`
+**`dupes`**: `id` (uuid, PK), `original_perfume_id` (uuid, FK to `perfumes.id`, ON DELETE CASCADE), `name`, `brand`, `image_url`, `similarity_score` (int, 1-100), `price_usd`, `price_ils`, `purchase_link_il`, `purchase_link_amazon`, `notes`, `live_prices_il` (jsonb), `live_prices_amazon` (jsonb), `created_at`, `inspired_perfume_id` (v5, FK to `perfumes.id`, ON DELETE SET NULL)
+
+**`brands`** (v5): `slug` (PK, our own web address), `name`, `created_at`. Public read; filled by the owner's SQL.
 
 RLS is enabled with public read-only (`SELECT`) policies. Writes go through the service role key on the server only. The Supabase SQL Editor may not have `public` in its `search_path`; scripts do `PERFORM set_config('search_path','public, extensions', true)` and qualify tables with `public.`.
 
@@ -120,6 +126,8 @@ Old SQL files in the repo root (`supabase_setup.sql`, `add_live_prices.sql`, `fi
 - Owner's picture budget: at most ~300 new pictures per day from fimgs.net (`download-image-candidates.mjs` caps each run at 300; count what already ran that day). The owner prefers Fragrantica as the picture source (not Parfumo).
 - Prefer one request that answers many questions: a designer page gives the Fragrantica number of every fragrance of that brand (numbers are in the links: `/perfume/<Brand>/<Name>-<id>.html`); the picture host `fimgs.net` is separate and was never blocked (still keep ~6 s between pictures, max 300 new per run).
 - The in-page collector is a plain `fetch` loop with a queue, results kept in `window`, stopping at the first non-200; save results into `data-import/collected-N.json`, then `node scripts/merge-collected.mjs`.
+- Big results: return the whole JSON from the browser tool; when it is too large the tool saves it to a file under the session's `tool-results/`, and a node script reads that file (a JSON array of `{type, text}`; `text` is the JSON string) straight into `data-import/`. Nothing has to pass through the chat.
+- The designer index is 11 pages (`/designers-1/` ... `/designers-11/`), about 8,200 houses (`data-import/fragrantica-designers.json`: name + number of fragrances).
 
 ## Keeping the catalog fresh (monthly refresh)
 

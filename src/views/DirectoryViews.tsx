@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowLeft, Search } from 'lucide-react';
-import { searchInspired, getHouses, houseLetter, type InspiredItem } from '@/lib/load-directory';
+import { searchInspired, getHouses, houseLetter, type HouseEntry, type InspiredItem } from '@/lib/load-directory';
 import { fmt, getDict, withLang, type Lang } from '@/lib/i18n';
 import Photo from '@/app/components/Photo';
 import { SiteFooter, SiteHeader } from '@/app/components/SiteChrome';
@@ -127,24 +127,95 @@ export async function InspiredIndexView({ lang, q, brand, page }: { lang: Lang; 
   );
 }
 
-export function housesMetadata(lang: Lang): Metadata {
+// Letter pages: /brands/a ... /brands/z, /brands/num (digits) and /brands/other (other alphabets).
+export const HOUSE_LETTERS = [...'abcdefghijklmnopqrstuvwxyz', 'num', 'other'];
+const letterOf = (name: string) => {
+  const l = houseLetter(name);
+  return l === '#' ? 'num' : l === '…' ? 'other' : l.toLowerCase();
+};
+const letterLabel = (key: string, lang: Lang) =>
+  key === 'num' ? '0-9' : key === 'other' ? getDict(lang).brandsIndex.otherLetter : key.toUpperCase();
+
+export function housesMetadata(lang: Lang, letter?: string): Metadata {
   const t = getDict(lang).brandsIndex;
+  const path = letter ? `/brands/${letter}` : '/brands';
+  const l = letter ? letterLabel(letter, lang) : '';
   return {
-    title: t.metaTitle,
-    description: t.metaDescription,
-    alternates: { canonical: withLang(lang, '/brands'), languages: { he: '/brands', en: '/en/brands', 'x-default': '/brands' } },
+    title: letter ? fmt(t.letterTitle, { l }) : t.metaTitle,
+    description: letter ? fmt(t.letterDescription, { l }) : t.metaDescription,
+    alternates: { canonical: withLang(lang, path), languages: { he: path, en: `/en${path}`, 'x-default': path } },
   };
 }
 
-// Every perfume house A-Z: houses with fragrances on the site are links (with a count), the rest are
-// listed by name so the directory is complete.
-export async function HousesView({ lang }: { lang: Lang }) {
+function LetterBar({ lang, current }: { lang: Lang; current?: string }) {
+  const t = getDict(lang).brandsIndex;
+  return (
+    <nav aria-label={t.byLetter} className="section-nav -mx-4 mb-8 border-y border-line px-4 sm:-mx-6 sm:px-6">
+      <ul className="flex flex-wrap gap-1 py-2 text-sm font-bold" dir="ltr">
+        {HOUSE_LETTERS.map(k => (
+          <li key={k}>
+            <Link
+              href={withLang(lang, `/brands/${k}`)}
+              prefetch={false}
+              aria-current={k === current ? 'page' : undefined}
+              className={`block rounded-full px-2.5 py-1 ${k === current ? 'bg-wine-600 text-white' : 'text-smoke hover:bg-blush hover:text-wine-700'}`}
+            >
+              {letterLabel(k, lang)}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  );
+}
+
+function HouseList({ houses, lang }: { houses: HouseEntry[]; lang: Lang }) {
+  return (
+    <ul className="grid gap-x-6 gap-y-1.5 sm:grid-cols-2 lg:grid-cols-4" dir="ltr">
+      {houses.map(h => (
+        <li key={h.slug} className="truncate text-sm">
+          {h.onSite ? (
+            <Link href={withLang(lang, `/brand/${h.slug}`)} prefetch={false} className="font-bold text-ink hover:text-wine-700">
+              {h.name} <span className="font-medium text-smoke">({h.count})</span>
+            </Link>
+          ) : (
+            <span className="text-smoke">{h.name}</span>
+          )}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+// /brands: the houses that have fragrances on the site, A-Z, and the letter pages with every house.
+// /brands/<letter>: every perfume house starting with that letter (the ones on the site are links).
+export async function HousesView({ lang, letter }: { lang: Lang; letter?: string }) {
   const t = getDict(lang);
   const x = t.brandsIndex;
   const houses = await getHouses();
-  const letters = [...new Set(houses.map(h => houseLetter(h.name)))];
-  const onSite = houses.filter(h => h.onSite).length;
+  const onSite = houses.filter(h => h.onSite);
 
+  if (letter) {
+    const shown = houses.filter(h => letterOf(h.name) === letter);
+    return (
+      <div className="site">
+        <SiteHeader lang={lang} path={`/brands/${letter}`} />
+        <main className="mx-auto max-w-6xl px-4 pb-12 pt-10 sm:px-6">
+          <nav className="mb-3 text-sm text-smoke">
+            <Link href={withLang(lang, '/brands')} className="font-bold text-wine-600 hover:text-wine-700">{x.heading}</Link>
+          </nav>
+          <h1 className="text-4xl font-extrabold text-ink sm:text-5xl">{fmt(x.letterTitle, { l: letterLabel(letter, lang) })}</h1>
+          <p className="mt-3 text-sm font-medium text-smoke">{fmt(x.count, { n: shown.length })}</p>
+          <div className="wine-rule my-6 w-32" />
+          <LetterBar lang={lang} current={letter} />
+          {shown.length ? <HouseList houses={shown} lang={lang} /> : <p className="text-smoke">{t.inspiredIndex.none}</p>}
+        </main>
+        <SiteFooter lang={lang} />
+      </div>
+    );
+  }
+
+  const groups = [...new Set(onSite.map(h => letterOf(h.name)))];
   return (
     <div className="site">
       <SiteHeader lang={lang} path="/brands" />
@@ -152,36 +223,20 @@ export async function HousesView({ lang }: { lang: Lang }) {
         <h1 className="text-4xl font-extrabold text-ink sm:text-5xl">{x.heading}</h1>
         <p className="mt-3 max-w-2xl text-smoke">{x.intro}</p>
         <p className="mt-2 text-sm font-medium text-smoke">
-          {x.onSite}: <span dir="ltr">{onSite}</span>
-          {houses.length > onSite && <> · {x.total}: <span dir="ltr">{houses.length}</span></>}
+          {x.onSite}: <span dir="ltr">{onSite.length}</span>
+          {houses.length > onSite.length && <> · {x.total}: <span dir="ltr">{houses.length}</span></>}
         </p>
         <div className="wine-rule my-6 w-32" />
 
-        <nav aria-label={x.heading} className="section-nav -mx-4 mb-6 border-y border-line px-4 sm:-mx-6 sm:px-6" dir="ltr">
-          <ul className="flex flex-wrap gap-1 py-2 text-sm font-bold">
-            {letters.map(l => (
-              <li key={l}><a href={`#letter-${l === '#' ? 'num' : l === '…' ? 'other' : l}`} className="block rounded-full px-2.5 py-1 text-smoke hover:bg-blush hover:text-wine-700">{l}</a></li>
-            ))}
-          </ul>
-        </nav>
+        <h2 className="section-title mb-3">{x.byLetter}</h2>
+        <LetterBar lang={lang} />
 
-        <div className="space-y-8" dir="ltr">
-          {letters.map(l => (
-            <section key={l} aria-labelledby={`letter-${l === '#' ? 'num' : l === '…' ? 'other' : l}`}>
-              <h2 id={`letter-${l === '#' ? 'num' : l === '…' ? 'other' : l}`} className="section-title mb-3">{l}</h2>
-              <ul className="grid gap-x-6 gap-y-1.5 sm:grid-cols-2 lg:grid-cols-4">
-                {houses.filter(h => houseLetter(h.name) === l).map(h => (
-                  <li key={h.slug} className="truncate text-sm">
-                    {h.onSite ? (
-                      <Link href={withLang(lang, `/brand/${h.slug}`)} prefetch={false} className="font-bold text-ink hover:text-wine-700">
-                        {h.name} <span className="font-medium text-smoke">({h.count})</span>
-                      </Link>
-                    ) : (
-                      <span className="text-smoke">{h.name}</span>
-                    )}
-                  </li>
-                ))}
-              </ul>
+        <h2 className="section-title mb-5">{x.onSite}</h2>
+        <div className="space-y-8">
+          {groups.map(k => (
+            <section key={k} aria-labelledby={`letter-${k}`}>
+              <h3 id={`letter-${k}`} className="mb-3 text-lg font-extrabold text-wine-700" dir="ltr">{letterLabel(k, lang)}</h3>
+              <HouseList houses={onSite.filter(h => letterOf(h.name) === k)} lang={lang} />
             </section>
           ))}
         </div>

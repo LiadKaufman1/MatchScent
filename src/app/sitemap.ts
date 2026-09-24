@@ -3,6 +3,7 @@ import { getCatalog } from '@/lib/load-catalog';
 import { getBrandSlugs, getNoteSlugs } from '@/lib/load-browse';
 import { LANGS, withLang } from '@/lib/i18n';
 import { siteUrl } from '@/lib/site';
+import { HOUSE_LETTERS } from '@/views/DirectoryViews';
 
 export const revalidate = 3600;
 
@@ -20,6 +21,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: '/top', changeFrequency: 'daily', priority: 0.7 },
     { path: '/inspired', changeFrequency: 'daily', priority: 0.7 },
     { path: '/brands', changeFrequency: 'weekly', priority: 0.5 },
+    ...HOUSE_LETTERS.map(l => ({ path: `/brands/${l}`, changeFrequency: 'weekly' as const, priority: 0.3 })),
     ...perfumes
       .filter(p => p.entryCount > 0)
       .map(p => ({ path: `/perfume/${p.slug}`, changeFrequency: 'weekly' as const, priority: 0.8 })),
