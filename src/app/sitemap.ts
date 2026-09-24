@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next';
 import { getCatalog } from '@/lib/load-catalog';
+import { getBrandSlugs, getNoteSlugs } from '@/lib/load-browse';
 import { LANGS, withLang } from '@/lib/i18n';
 import { siteUrl } from '@/lib/site';
 
@@ -11,6 +12,7 @@ export const revalidate = 3600;
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = siteUrl();
   const { perfumes } = await getCatalog();
+  const [brands, notes] = await Promise.all([getBrandSlugs(), getNoteSlugs(3)]);
 
   const paths: { path: string; changeFrequency: 'daily' | 'weekly' | 'yearly'; priority: number }[] = [
     { path: '/', changeFrequency: 'daily', priority: 1 },
@@ -18,6 +20,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...perfumes
       .filter(p => p.entryCount > 0)
       .map(p => ({ path: `/perfume/${p.slug}`, changeFrequency: 'weekly' as const, priority: 0.8 })),
+    ...brands.map(slug => ({ path: `/brand/${slug}`, changeFrequency: 'weekly' as const, priority: 0.5 })),
+    ...notes.map(slug => ({ path: `/notes/${slug}`, changeFrequency: 'weekly' as const, priority: 0.4 })),
   ];
 
   return paths.flatMap(({ path, changeFrequency, priority }) =>

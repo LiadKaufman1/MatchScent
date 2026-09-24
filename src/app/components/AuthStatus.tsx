@@ -14,6 +14,7 @@ export default function AuthStatus({ lang }: { lang: Lang }) {
   const t = getDict(lang);
   const router = useRouter();
   const [name, setName] = useState<string | null>(null); // null = logged out (or not known yet)
+  const [uid, setUid] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
   const [pending, startTransition] = useTransition();
 
@@ -28,7 +29,7 @@ export default function AuthStatus({ lang }: { lang: Lang }) {
         return;
       }
       const { data: profile } = await supabase.from('profiles').select('display_name').eq('id', user.id).single();
-      if (active) { setName(profile?.display_name ?? user.email ?? ''); setReady(true); }
+      if (active) { setName(profile?.display_name ?? user.email ?? ''); setUid(user.id); setReady(true); }
     };
 
     load();
@@ -54,7 +55,14 @@ export default function AuthStatus({ lang }: { lang: Lang }) {
 
   return (
     <div className="flex items-center gap-2 text-xs">
-      <span className="hidden font-bold text-ink sm:inline">{fmt(t.auth.greeting, { name })}</span>
+      {uid ? (
+        <Link href={withLang(lang, `/u/${uid}`)} prefetch={false} title={t.auth.myProfile} className="font-bold text-ink transition hover:text-wine-600">
+          <span className="hidden sm:inline">{fmt(t.auth.greeting, { name })}</span>
+          <span className="sm:hidden">{t.auth.myProfile}</span>
+        </Link>
+      ) : (
+        <span className="hidden font-bold text-ink sm:inline">{fmt(t.auth.greeting, { name })}</span>
+      )}
       {/* Two sign-outs on purpose: logoutUser() (a Server Action) clears the cookie
           Server Components read, but doesn't tell THIS browser tab's own Supabase client -
           without also calling it here, this widget would keep showing "logged in" until

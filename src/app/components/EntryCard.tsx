@@ -1,6 +1,8 @@
+import Link from 'next/link';
 import type { Dupe } from '@/lib/supabase';
+import { slugify } from '@/lib/slug';
 import { usd } from '@/lib/format';
-import { getDict, type Lang } from '@/lib/i18n';
+import { getDict, withLang, type Lang } from '@/lib/i18n';
 import { noteGroups, noteLabel } from '@/lib/notes';
 import { entryKey, type EntryVoteCounts } from '@/lib/load-catalog';
 import Photo from './Photo';
@@ -25,7 +27,9 @@ export default function EntryCard({ entry, lang, perfumeId, votes }: {
         </div>
         <div className="min-w-0 flex-1">
           <h3 className="text-lg font-bold leading-tight text-ink">{entry.name}</h3>
-          <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-wine-600">{entry.brand}</p>
+          <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-wine-600">
+            <Link href={withLang(lang, `/brand/${slugify(entry.brand)}`)} prefetch={false} className="transition hover:text-wine-700">{entry.brand}</Link>
+          </p>
           {mainNotes.length > 0 && <p className="mt-2 text-sm text-smoke">{mainNotes.join(' · ')}</p>}
           {entry.notes && <p className="mt-2 line-clamp-3 text-sm text-smoke">{entry.notes}</p>}
           {usd(entry.price_usd) && (

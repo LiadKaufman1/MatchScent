@@ -131,3 +131,32 @@ export async function deleteDupe(id: string) {
   revalidatePath('/admin');
   return { success: true };
 }
+
+// --- Community moderation: remove abusive reviews and pros/cons ---
+// (Members can only delete their own; only the admin can delete anyone's. Uses the service role.)
+
+const refreshCommunityPages = () => {
+  revalidatePath('/perfume/[slug]', 'page');
+  revalidatePath('/en/perfume/[slug]', 'page');
+  revalidatePath('/u/[id]', 'page');
+  revalidatePath('/en/u/[id]', 'page');
+  revalidatePath('/admin/community');
+};
+
+export async function adminDeleteReview(id: string) {
+  await checkAuth();
+  if (typeof id !== 'string' || !id) throw new Error('Invalid id');
+  const { error } = await getSupabaseAdmin().from('reviews').delete().eq('id', id);
+  if (error) throw new Error(error.message);
+  refreshCommunityPages();
+  return { success: true };
+}
+
+export async function adminDeletePoint(id: string) {
+  await checkAuth();
+  if (typeof id !== 'string' || !id) throw new Error('Invalid id');
+  const { error } = await getSupabaseAdmin().from('perfume_points').delete().eq('id', id);
+  if (error) throw new Error(error.message);
+  refreshCommunityPages();
+  return { success: true };
+}

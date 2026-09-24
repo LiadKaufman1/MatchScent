@@ -2,6 +2,7 @@
 //   - Fragrantica numbers of "inspired by" fragrances -> data-import/fragrantica-image-ids.json (+ image-targets.json),
 //     so `download-image-candidates.mjs --source fragrantica` can fetch their pictures
 //   - note pyramids                                   -> data-import/notes-collected.json  (Fragrantica number -> notes)
+//   - year / perfumers / main accords                 -> data-import/details-collected.json (Fragrantica number -> facts)
 //
 //   node scripts/merge-collected.mjs
 //
@@ -16,6 +17,7 @@ const read = (f, d) => (fs.existsSync(`${DIR}/${f}`) ? JSON.parse(fs.readFileSyn
 const ids = read('fragrantica-image-ids.json', {});
 const targets = read('fragrantica-image-targets.json', []);
 const notes = read('notes-collected.json', {});
+const details = read('details-collected.json', {});
 const need = read('inspired-need.json', []); // { slug, brand, name } of every inspired fragrance shown on the site
 
 // "Lattafa Perfumes" -> "Lattafa-Perfumes" (the address of the brand's page on Fragrantica)
@@ -24,7 +26,8 @@ const designerSlug = brand => brand.trim().split(/\s+/).map(w => (w === w.toUppe
 const files = fs.readdirSync(DIR).filter(f => /^collected-.*\.json$/.test(f)).sort();
 let newIds = 0, newNotes = 0;
 for (const file of files) {
-  const { designers = {}, notes: pyramids = {} } = read(file, {});
+  const { designers = {}, notes: pyramids = {}, details: facts = {} } = read(file, {});
+  Object.assign(details, facts);
 
   for (const item of need) {
     const found = designers[designerSlug(item.brand)]?.found;
@@ -44,4 +47,5 @@ for (const file of files) {
 fs.writeFileSync(`${DIR}/fragrantica-image-ids.json`, JSON.stringify(ids), 'utf8');
 fs.writeFileSync(`${DIR}/fragrantica-image-targets.json`, JSON.stringify(targets), 'utf8');
 fs.writeFileSync(`${DIR}/notes-collected.json`, JSON.stringify(notes), 'utf8');
+fs.writeFileSync(`${DIR}/details-collected.json`, JSON.stringify(details), 'utf8');
 console.log(`${files.length} file(s): ${newIds} new picture numbers (${Object.keys(ids).length} in total), ${newNotes} new note lists (${Object.keys(notes).length} in total).`);

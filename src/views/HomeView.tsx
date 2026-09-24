@@ -13,7 +13,7 @@ export default async function HomeView({ lang }: { lang: Lang }) {
   return (
     <div className="site">
       <main>
-        <div className="mx-auto flex max-w-7xl items-center justify-end gap-2 px-4 pt-4 sm:px-6">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-end gap-2 px-4 pt-4 sm:px-6">
           <LanguageSwitch lang={lang} path="/" />
           <CountrySelect lang={lang} />
           <AuthStatus lang={lang} />

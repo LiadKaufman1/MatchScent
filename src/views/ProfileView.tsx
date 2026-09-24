@@ -4,33 +4,43 @@ import { getCatalog } from '@/lib/load-catalog';
 import { getSupabase } from '@/lib/supabase';
 import { fmt, getDict, withLang, type Lang } from '@/lib/i18n';
 import { SiteFooter, SiteHeader } from '@/app/components/SiteChrome';
+import ProfileEditor from '@/app/components/ProfileEditor';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 type ProfileData = {
   name: string;
+  bio: string;
   joined: string;
   shelf: { perfumeId: string; status: 'own' | 'had' | 'want' }[];
+  ratings: { perfumeId: string; score: number }[];
   reviews: { id: string; perfumeId: string; body: string }[];
 };
 
-// A member's public page: display name, shelf and reviews (all of it is public data).
+// A member's public page: display name, shelf, ratings and reviews (all of it is public data).
 async function loadProfile(id: string): Promise<ProfileData | null> {
   if (!UUID.test(id)) return null;
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) return null;
   try {
     const supabase = getSupabase();
-    const { data: profile } = await supabase.from('profiles').select('display_name, created_at').eq('id', id).maybeSingle();
+    // "bio" exists only after the v3 migration; without it, read the profile without it.
+    const withBio = await supabase.from('profiles').select('display_name, created_at, bio').eq('id', id).maybeSingle();
+    const profile = withBio.error
+      ? (await supabase.from('profiles').select('display_name, created_at').eq('id', id).maybeSingle()).data as { display_name: string; created_at: string; bio?: string | null } | null
+      : (withBio.data as { display_name: string; created_at: string; bio?: string | null } | null);
     if (!profile) return null;
-    // The shelf/reviews tables may not exist yet - an empty list is fine then.
-    const [shelf, reviews] = await Promise.all([
+    // The shelf table may not exist yet - an empty list is fine then.
+    const [shelf, reviews, ratings] = await Promise.all([
       supabase.from('collections').select('perfume_id, status').eq('user_id', id),
       supabase.from('reviews').select('id, perfume_id, body').eq('user_id', id).order('created_at', { ascending: false }).limit(50),
+      supabase.from('ratings').select('perfume_id, score').eq('user_id', id),
     ]);
     return {
-      name: profile.display_name as string,
-      joined: profile.created_at as string,
+      name: profile.display_name,
+      bio: profile.bio ?? '',
+      joined: profile.created_at,
       shelf: ((shelf.data ?? []) as { perfume_id: string; status: 'own' | 'had' | 'want' }[]).map(r => ({ perfumeId: r.perfume_id, status: r.status })),
+      ratings: ((ratings.data ?? []) as { perfume_id: string; score: number }[]).map(r => ({ perfumeId: r.perfume_id, score: r.score })),
       reviews: ((reviews.data ?? []) as { id: string; perfume_id: string; body: string }[]).map(r => ({ id: r.id, perfumeId: r.perfume_id, body: r.body })),
     };
   } catch {
@@ -56,11 +66,19 @@ export default async function ProfileView({ lang, id }: { lang: Lang; id: string
     ? new Intl.DateTimeFormat(lang === 'he' ? 'he-IL' : 'en-GB', { month: 'long', year: 'numeric' }).format(new Date(profile.joined))
     : '';
 
-  const groups: { status: 'own' | 'had' | 'want'; label: string }[] = [
+  const shelfGroups: { status: 'own' | 'had' | 'want'; label: string }[] = [
     { status: 'own', label: t.community.shelfOwn },
     { status: 'had', label: t.community.shelfHad },
     { status: 'want', label: t.community.shelfWant },
   ];
+  const rateLabels = t.community.panels.rate.options; // index 0 = hate ... 4 = love
+
+  const chip = (p: NonNullable<ReturnType<typeof byId.get>>, extra?: string) => (
+    <Link href={withLang(lang, `/perfume/${p.slug}`)} prefetch={false} className="block rounded-full border border-line bg-white px-3.5 py-1.5 text-sm font-medium text-ink transition hover:border-wine-600/60">
+      {p.brand} {p.name}
+      {extra && <span className="ms-2 text-xs font-bold text-wine-600">{extra}</span>}
+    </Link>
+  );
 
   return (
     <div className="site">
@@ -75,6 +93,12 @@ export default async function ProfileView({ lang, id }: { lang: Lang; id: string
           <>
             <h1 className="text-4xl font-extrabold text-ink">{profile.name}</h1>
             <p className="mt-2 text-sm text-smoke">{fmt(t.profile.joined, { date: joined })}</p>
+            {profile.bio && <p className="mt-3 max-w-xl whitespace-pre-line leading-relaxed text-ink">{profile.bio}</p>}
+            <p className="mt-1 text-sm font-medium text-ink">
+              {fmt(t.profile.stats, { ratings: profile.ratings.length, reviews: profile.reviews.length, shelf: profile.shelf.length })}
+            </p>
+
+            <ProfileEditor lang={lang} profileId={id} name={profile.name} bio={profile.bio} />
 
             <section className="mt-10" aria-labelledby="shelf-heading">
               <h2 id="shelf-heading" className="mb-4 text-sm font-bold uppercase tracking-[0.14em] text-wine-600">{t.profile.shelfHeading}</h2>
@@ -82,25 +106,36 @@ export default async function ProfileView({ lang, id }: { lang: Lang; id: string
                 <p className="text-smoke">{t.profile.empty}</p>
               ) : (
                 <div className="space-y-5">
-                  {groups.map(g => {
+                  {shelfGroups.map(g => {
                     const items = profile.shelf.filter(s => s.status === g.status).map(s => byId.get(s.perfumeId)).filter(p => !!p);
                     if (items.length === 0) return null;
                     return (
                       <div key={g.status}>
-                        <h3 className="mb-2 text-xs font-bold uppercase tracking-[0.12em] text-smoke">{g.label}</h3>
+                        <h3 className="mb-2 text-xs font-bold uppercase tracking-[0.12em] text-smoke">
+                          {g.label} <span dir="ltr">({items.length})</span>
+                        </h3>
                         <ul className="flex flex-wrap gap-2">
-                          {items.map(p => (
-                            <li key={p!.id}>
-                              <Link href={withLang(lang, `/perfume/${p!.slug}`)} prefetch={false} className="block rounded-full border border-line bg-white px-3.5 py-1.5 text-sm font-medium text-ink transition hover:border-wine-600/60">
-                                {p!.brand} {p!.name}
-                              </Link>
-                            </li>
-                          ))}
+                          {items.map(p => <li key={p!.id}>{chip(p!)}</li>)}
                         </ul>
                       </div>
                     );
                   })}
                 </div>
+              )}
+            </section>
+
+            <section className="mt-10" aria-labelledby="ratings-heading">
+              <h2 id="ratings-heading" className="mb-4 text-sm font-bold uppercase tracking-[0.14em] text-wine-600">{t.profile.ratingsHeading}</h2>
+              {profile.ratings.length === 0 ? (
+                <p className="text-smoke">{t.profile.empty}</p>
+              ) : (
+                <ul className="flex flex-wrap gap-2">
+                  {[...profile.ratings]
+                    .sort((a, b) => b.score - a.score)
+                    .map(r => ({ r, p: byId.get(r.perfumeId) }))
+                    .filter(x => !!x.p)
+                    .map(({ r, p }) => <li key={p!.id}>{chip(p!, rateLabels[r.score - 1])}</li>)}
+                </ul>
               )}
             </section>
 
@@ -119,7 +154,7 @@ export default async function ProfileView({ lang, id }: { lang: Lang; id: string
                             {p.brand} {p.name}
                           </Link>
                         )}
-                        <p className="mt-1.5 leading-relaxed text-smoke">{r.body}</p>
+                        <p className="mt-1.5 whitespace-pre-line leading-relaxed text-smoke">{r.body}</p>
                       </article>
                     );
                   })}
