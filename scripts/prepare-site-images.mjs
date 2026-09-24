@@ -32,6 +32,8 @@ if (fs.existsSync('.env.local')) {
   }
 }
 if (!env.NEXT_PUBLIC_SUPABASE_URL) throw new Error('NEXT_PUBLIC_SUPABASE_URL is missing in .env.local');
+// Date + time in the backup table's name, so running the SQL again on another day/hour never clashes with an older backup.
+const STAMP = new Date().toISOString().slice(0, 16).replace(/[-:T]/g, '_');
 const publicUrl = slug => `${env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${slug}.jpg`;
 
 const manifest = JSON.parse(fs.readFileSync(path.join(SRC, 'manifest.json'), 'utf8'));
@@ -119,10 +121,10 @@ DECLARE
 BEGIN
   PERFORM set_config('search_path', 'public, extensions', true);
 
-  EXECUTE 'CREATE TABLE image_url_backup_${new Date().toISOString().slice(0, 10).replace(/-/g, '')} AS
+  EXECUTE 'CREATE TABLE image_url_backup_${STAMP} AS
     SELECT ''perfumes''::text AS tbl, id, image_url FROM public.perfumes
     UNION ALL SELECT ''dupes''::text, id, image_url FROM public.dupes';
-  EXECUTE 'ALTER TABLE image_url_backup_${new Date().toISOString().slice(0, 10).replace(/-/g, '')} ENABLE ROW LEVEL SECURITY';
+  EXECUTE 'ALTER TABLE image_url_backup_${STAMP} ENABLE ROW LEVEL SECURITY';
 
   WITH v(b, n, u) AS (VALUES
 ${pRows.join(',\n')}
