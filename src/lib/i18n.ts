@@ -181,6 +181,18 @@ export type Dict = {
   };
   notes: { heading: string; top: string; heart: string; base: string; notes: string };
   facts: { year: string; perfumer: string; accords: string };
+  browse: {
+    brandMeta: string;
+    brandHeading: string;
+    brandPerfumes: string;
+    brandInspired: string;
+    inspiredBy: string;
+    noteMeta: string;
+    noteHeading: string;
+    noteInspired: string;
+    notFound: string;
+    empty: string;
+  };
   profile: {
     metaTitle: string;
     joined: string;
@@ -388,6 +400,18 @@ const en: Dict = {
   },
   notes: { heading: 'Notes', top: 'Top notes', heart: 'Heart notes', base: 'Base notes', notes: 'Notes' },
   facts: { year: 'Launched', perfumer: 'Perfumer', accords: 'Main accords' },
+  browse: {
+    brandMeta: '{brand}: perfumes and similar scents',
+    brandHeading: '{brand}',
+    brandPerfumes: 'Perfumes by {brand}',
+    brandInspired: 'Fragrances by {brand} that our lists compare to famous perfumes',
+    inspiredBy: 'Inspired by',
+    noteMeta: 'Perfumes with {note}',
+    noteHeading: 'Perfumes with {note}',
+    noteInspired: 'Similar scents with {note}',
+    notFound: 'Nothing was found here.',
+    empty: 'Nothing here yet.',
+  },
   profile: {
     metaTitle: 'Profile: {name}',
     joined: 'Member since {date}',
@@ -595,6 +619,18 @@ const he: Dict = {
   },
   notes: { heading: 'תווים', top: 'תווי ראש', heart: 'תווי לב', base: 'תווי בסיס', notes: 'תווים' },
   facts: { year: 'שנת הוצאה', perfumer: 'יוצר הבושם', accords: 'אקורדים עיקריים' },
+  browse: {
+    brandMeta: '{brand}: בשמים ובשמים דומים',
+    brandHeading: '{brand}',
+    brandPerfumes: 'הבשמים של {brand}',
+    brandInspired: 'בשמים של {brand} שהרשימות שלנו משוות לבשמים מפורסמים',
+    inspiredBy: 'בהשראת',
+    noteMeta: 'בשמים עם {note}',
+    noteHeading: 'בשמים עם {note}',
+    noteInspired: 'בשמים דומים עם {note}',
+    notFound: 'לא נמצא כלום כאן.',
+    empty: 'אין כאן עדיין כלום.',
+  },
   profile: {
     metaTitle: 'פרופיל: {name}',
     joined: 'חברים מאז {date}',

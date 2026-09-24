@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { entryKey, getCatalog, getPerfumePage, type ShownPerfume } from '@/lib/load-catalog';
 import { ils, usd } from '@/lib/format';
+import { slugify } from '@/lib/slug';
 import { siteUrl } from '@/lib/site';
 import { fmt, getDict, withLang, type Lang } from '@/lib/i18n';
 import Photo from '@/app/components/Photo';
@@ -135,7 +136,9 @@ export default async function PerfumeView({ lang, slug }: { lang: Lang; slug: st
             <Photo url={perfume.image_url} alt={full} seed={perfume.brand + perfume.name} sizes="256px" priority />
           </div>
           <div>
-            <p className="text-[12px] font-bold uppercase tracking-[0.2em] text-wine-600">{perfume.brand}</p>
+            <p className="text-[12px] font-bold uppercase tracking-[0.2em] text-wine-600">
+              <Link href={withLang(lang, `/brand/${slugify(perfume.brand)}`)} prefetch={false} className="transition hover:text-wine-700">{perfume.brand}</Link>
+            </p>
             <h1 className="mt-2 text-4xl font-extrabold leading-tight text-ink sm:text-5xl">{perfume.name}</h1>
             <div className="wine-rule my-6 w-32" />
             <p className="max-w-xl leading-relaxed text-smoke">{intro}</p>
