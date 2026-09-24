@@ -6,6 +6,7 @@ import { MessageCircle, ThumbsUp, Trash2 } from 'lucide-react';
 import { getSupabaseBrowser } from '@/lib/supabase-browser';
 import { addComment, deleteComment, markReviewHelpful, submitReview } from '@/lib/community-actions';
 import { useViewer } from '@/lib/use-viewer';
+import { useLatestSender } from '@/lib/use-latest-sender';
 import { fmt, getDict, withLang, type Lang } from '@/lib/i18n';
 import type { CommentRow, ReviewWithAuthor } from '@/lib/community-types';
 
@@ -106,6 +107,7 @@ export default function Reviews({ lang, perfumeId, reviews: initial }: { lang: L
   const [message, setMessage] = useState<string | null>(null);
   const [sort, setSort] = useState<'helpful' | 'newest'>('helpful');
   const [pending, startTransition] = useTransition();
+  const saveLatest = useLatestSender();
 
   useEffect(() => {
     if (!userId) return;
@@ -144,7 +146,7 @@ export default function Reviews({ lang, perfumeId, reviews: initial }: { lang: L
     const on = !helpedByMe[review.id];
     setHelpedByMe(m => ({ ...m, [review.id]: on }));
     setReviews(list => list.map(r => (r.id === review.id ? { ...r, helpful: Math.max(0, r.helpful + (on ? 1 : -1)) } : r)));
-    startTransition(async () => { await markReviewHelpful(review.id, on); });
+    saveLatest(review.id, on, v => markReviewHelpful(review.id, v));
   };
 
   return (
@@ -216,7 +218,7 @@ export default function Reviews({ lang, perfumeId, reviews: initial }: { lang: L
               <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-smoke">
                 <button
                   type="button"
-                  disabled={!userId || pending || r.user_id === userId}
+                  disabled={!userId || r.user_id === userId}
                   aria-pressed={!!helpedByMe[r.id]}
                   onClick={() => helpful(r)}
                   className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 font-bold transition disabled:cursor-default ${

@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ThumbsDown, ThumbsUp } from 'lucide-react';
 import { getSupabaseBrowser } from '@/lib/supabase-browser';
 import { voteEntry } from '@/lib/community-actions';
 import { useViewer } from '@/lib/use-viewer';
+import { useLatestSender } from '@/lib/use-latest-sender';
 import { fmt, getDict, withLang, type Lang } from '@/lib/i18n';
 
 // This visitor's votes on one perfume's entries: read once and shared by all its cards.
@@ -35,7 +36,7 @@ export default function EntryVotes({ lang, perfumeId, entryKey, up, down }: {
   const { ready, userId } = useViewer();
   const [savedVote, setMine] = useState<-1 | 0 | 1>(0);
   const [shown, setShown] = useState({ up, down });
-  const [pending, startTransition] = useTransition();
+  const send = useLatestSender();
 
   useEffect(() => {
     if (!userId) return;
@@ -58,14 +59,14 @@ export default function EntryVotes({ lang, perfumeId, entryKey, up, down }: {
     }));
     setMine(next);
     if (userId) myVotesCache.delete(`${perfumeId}:${userId}`);
-    startTransition(async () => { await voteEntry(perfumeId, entryKey, next); });
+    send('vote', next as -1 | 0 | 1, v => voteEntry(perfumeId, entryKey, v));
   };
 
   const total = shown.up + shown.down;
   const button = (vote: -1 | 1, label: string, Icon: typeof ThumbsUp) => (
     <button
       type="button"
-      disabled={pending || !userId}
+      disabled={!userId}
       aria-pressed={mine === vote}
       onClick={() => choose(vote)}
       className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-bold transition disabled:cursor-default ${
