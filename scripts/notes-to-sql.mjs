@@ -39,9 +39,12 @@ const hasHebrew = key => {
 };
 
 const facts = new Map(); // "kind|brand|name" (lower case) -> { brand, name, kind, pyramid, year, perfumers, accords }
+// The first source to know a fragrance wins; a later one only fills in what is still missing.
 const put = (kind, brand, name, data) => {
   const key = `${kind}|${brand.toLowerCase()}|${name.toLowerCase()}`;
-  if (!facts.has(key)) facts.set(key, { brand, name, kind, ...data });
+  const known = facts.get(key);
+  if (!known) { facts.set(key, { brand, name, kind, ...data }); return; }
+  for (const [field, value] of Object.entries(data)) if (known[field] == null && value != null) known[field] = value;
 };
 
 // 1. Fragrantica
@@ -73,10 +76,12 @@ for (const file of fs.readdirSync(DIR).filter(f => /^collected-parfumo-.*\.json$
       const k = HEADING_KEY[title.trim().toLowerCase()];
       if (k && list.length) pyramid[k] = list.map(clean);
     }
+    // Parfumo also lists the fragrance company (Givaudan, IFF ...) among the perfumers: keep only people.
+    const people = (page.perfumers ?? []).filter(p => !/givaudan|firmenich|\biff\b|international flavors|symrise|takasago|robertet|^mane$|drom|cpl aromas/i.test(p));
     put('original', brand, name, {
       pyramid: Object.keys(pyramid).length ? pyramid : null,
       year: page.year ?? null,
-      perfumers: page.perfumers?.length ? page.perfumers : null,
+      perfumers: people.length ? people : null,
       accords: page.accords?.length ? page.accords.map(a => a.toLowerCase()) : null,
     });
   }
