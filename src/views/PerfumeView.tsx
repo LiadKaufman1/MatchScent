@@ -53,10 +53,10 @@ export async function perfumeMetadata(lang: Lang, slug: string): Promise<Metadat
     description,
     alternates: {
       canonical: withLang(lang, path),
-      languages: { en: path, he: withLang('he', path), 'x-default': path },
+      languages: { he: withLang('he', path), en: withLang('en', path), 'x-default': path },
     },
-    // Pages with nothing on them yet are kept out of search results until they have content.
-    robots: entries.length || isInspired ? undefined : { index: false, follow: true },
+    // Pages with nothing on them yet (no similar scents, no notes) stay out of search results until they have content.
+    robots: entries.length || isInspired || noteGroups(perfume.note_pyramid).length ? undefined : { index: false, follow: true },
     openGraph: {
       title: `${title} | MatchScent`,
       description,
