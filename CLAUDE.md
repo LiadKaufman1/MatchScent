@@ -2,7 +2,7 @@
 
 # MatchScent
 
-A perfume website. It lists popular (expensive) original perfumes and, for each one, shows "inspired by" alternatives with links to compare prices and buy in the visitor's country. Hebrew (right-to-left) and English.
+A perfume website. It lists popular (expensive) original perfumes and, for each one, shows "inspired by" alternatives with links to compare prices and buy in the visitor's country. Hebrew (right-to-left, the default language) and English. Since 2026-09 it is also becoming a Hebrew-first, Israeli Parfumo/Fragrantica-style community site: accounts, ratings, reviews, notes, votes, shelves.
 
 ## Working rules (mandatory)
 
@@ -15,7 +15,7 @@ A perfume website. It lists popular (expensive) original perfumes and, for each 
 
 - **Never use the word "dupe"** (or "clone", "knockoff", "fake", "replica", "counterfeit") in anything a visitor can see: page text, titles, meta descriptions, URLs, image alt text, button labels. Use "Inspired by" / "Similar scents". Reason: the owner wants to avoid legal claims. Internal names such as the `dupes` table and `Dupe` type may stay; renaming the database needs the owner's approval (rule 3). `src/lib/catalog.ts` also hides any entry that contains such a word.
 - **Look and feel:** clean, elegant and premium: white background with burgundy/plum accents and near-black text (black and gold was tried and rejected). Font: Heebo (Latin + Hebrew), fairly bold and very readable, loaded with `next/font` in `src/lib/fonts.ts`. Fast pages (server-rendered, ISR).
-- **Bilingual:** English keeps the original URLs (`/`, `/perfume/<slug>`), Hebrew lives under `/he` (RTL). Every visible string is in `src/lib/i18n.ts` (both languages); use the `withLang()` helper for links. A language toggle and hreflang tags exist.
+- **Bilingual:** Hebrew is the default and owns the plain URLs (`/`, `/perfume/<slug>`, RTL); English lives under `/en` (`/en/perfume/<slug>`). Old `/he/...` addresses redirect. Every visible string is in `src/lib/i18n.ts` (both languages); use the `withLang()` helper for links. A language toggle and hreflang tags exist.
 - **Accessibility:** an accessibility button (text size, contrast, link highlight, readable font, stop animations) and an accessibility statement page. Set `NEXT_PUBLIC_CONTACT_EMAIL` so the statement shows a contact address.
 - **Price comparison is the main button:** "Compare prices across stores in {country}" (Google Shopping) is the most prominent action on every entry, above the individual store buttons.
 - **Store links by country** (`src/lib/stores.ts`): Israel (KSP, Super-Pharm), USA, UK, and a world fallback. The country comes from the `x-vercel-ip-country` header (`/api/country`) and the visitor can change it. Only store search URLs that were verified in a real browser are used; do not add stores without checking them.
@@ -39,13 +39,13 @@ This Next.js version has breaking changes; read `node_modules/next/dist/docs/` b
 ## Folder structure
 
 ```
-src/app/(en)/…            English site: layout, home page, perfume/[slug], accessibility, not-found
-src/app/he/…              Hebrew site (same pages, RTL)
+src/app/(he)/…            Hebrew site at the root: layout, home, perfume/[slug], accessibility, login, register, u/[id], not-found
+src/app/en/…              English site under /en (same pages)
 src/app/(admin)/…         Admin login + dashboard (own layout, password-gated)
 src/app/api/country/      Returns the visitor's country
 src/app/components/       Catalog, EntryCard, StoreButtons, CountrySelect, A11yWidget, SiteChrome, Photo, PerfumeArt, RootDocument
 src/app/sitemap.ts, robots.ts   Sitemap (both languages, with alternates) and robots
-src/views/                Page bodies shared by English and Hebrew (HomeView, PerfumeView, AccessibilityView, NotFoundView)
+src/views/                Page bodies shared by English and Hebrew (HomeView, PerfumeView, ProfileView, AuthView, AccessibilityView, NotFoundView)
 src/lib/i18n.ts           All text, English + Hebrew, helpers getDict / fmt / withLang / otherLang
 src/lib/stores.ts         Countries, stores, search-URL builders, compareUrl()
 src/lib/load-catalog.ts   Loads perfumes + entries (cached), slugs, per-perfume page data
@@ -53,6 +53,11 @@ src/lib/catalog.ts        Cleans the data: hides risky/broken entries, merges du
 src/lib/images.ts         isRealPhoto(): only /perfumes/… or Supabase Storage URLs count as real photos
 src/lib/actions.ts        Admin server actions (login, edit/add/delete), whitelisted fields, refreshes public pages
 src/lib/supabase.ts, supabase-admin.ts   Public (anon) and server-only (service role) clients, both created lazily
+src/lib/auth-actions.ts, community-actions.ts   Login/register/logout and rating/review/vote/shelf server actions (anon key + the visitor's own session; RLS enforces ownership)
+src/lib/supabase-server.ts, supabase-browser.ts, use-viewer.ts, middleware.ts   Cookie-session Supabase clients, "who is looking" hook, session refresh
+src/lib/community-types.ts   Types/constants shared by server and browser code (aspects, review, votes)
+src/lib/notes.ts, notes-he.ts   Note pyramid helpers and the Hebrew names of notes (a note missing there shows in English)
+src/app/components/      ...also AuthStatus, AuthForm, RatingsReviews, EntryVotes, ShelfButtons, NotePyramid
 src/lib/site.ts, site-metadata.ts, fonts.ts, slug.ts, format.ts, a11y-store.ts, use-country.ts, mockData.ts
 scripts/fragrantica-import.mjs   Ranking rules -> report + reviewable SQL (see below)
 scripts/fragrantica-refresh-report.mjs   Monthly "what are we missing?" report (new releases vs. our catalog)
@@ -60,10 +65,21 @@ scripts/lib/rules.mjs            Shared rules: same-brand check, excluded budget
 scripts/download-image-candidates.mjs   Downloads candidate bottle photos to data-import/images/ for the owner to review
 scripts/prepare-site-images.mjs   Normalizes the chosen pictures (800x1000, white) + writes the image_url SQL (data-import/site-images*)
 scripts/upload-site-images.mjs    Uploads them to the public Supabase bucket "perfume-images"
+scripts/merge-collected.mjs      Merges slow in-browser collections (data-import/collected-*.json) into picture numbers + notes
+scripts/notes-to-sql.mjs         Notes -> reviewable SQL (data-import/notes.sql) + list of notes lacking a Hebrew name
+db-migrations/                   Owner-run SQL for new tables/columns (dry run first): accounts-and-reviews, perfume-images-bucket, community-v2-and-notes
 db-cleanup/2026-09-cleanup.sql   Database cleanup script (dry run by default, run by the owner)
 data-import/                     LOCAL ONLY, git-ignored: collected lists, generated SQL and reports
 next.config.mjs                  The active Next config
 ```
+
+## Community features (Hebrew-first, Parfumo/Fragrantica-style)
+
+Replicate the mechanics, never their content or exact design. All per-visitor state (am I logged in, my rating/vote/shelf) is read in the browser (`useViewer`), so pages stay static/ISR; public numbers (averages, vote counts, shelf counts) come from the server. Every write is a server action using the visitor's own session; the database's RLS (public read, owner-only write) is the real guard. Registration currently needs no email confirmation (no domain yet); turn "Confirm email" on and set up SMTP before launch.
+
+- Done: accounts, overall rating + optional details (scent, longevity, sillage, bottle, value), reviews, "does it smell like the original?" yes/no votes per inspired-by entry, shelf (own/had/want), member page `/u/<id>` (noindex), notes pyramid.
+- Votes are keyed by perfume + fragrance slug (not the entry row id) because the import script deletes and re-inserts entries; a re-import must never wipe community data. Do not put foreign keys to `dupes.id` on community tables.
+- Ideas not built yet: review comments / helpful votes, photo uploads with moderation, season/day-night votes, user-submitted perfumes for approval, ads (AdSense, the owner's own account).
 
 ## How data loads
 
@@ -75,6 +91,8 @@ next.config.mjs                  The active Next config
 ## Database (Supabase, project "MatchScent")
 
 **`perfumes`**: `id` (uuid, PK), `name`, `brand`, `image_url`, `description`, `price_usd`, `price_ils`, `gender` ('male' | 'female' | 'unisex'), `created_at`
+
+**Community tables** (see `db-migrations/`): `profiles` (id = auth user), `ratings` (score 1-5 + optional scent/longevity/sillage/bottle/value), `reviews`, `entry_votes` (perfume_id, entry_key, vote +1/-1), `collections` (user_id, perfume_id, status own/had/want). `perfumes.note_pyramid` and `dupes.note_pyramid` (jsonb: `{top, heart, base}` or `{notes}`, English names). All new reads fall back to "nothing yet" when a migration has not run.
 
 **`dupes`**: `id` (uuid, PK), `original_perfume_id` (uuid, FK to `perfumes.id`, ON DELETE CASCADE), `name`, `brand`, `image_url`, `similarity_score` (int, 1-100), `price_usd`, `price_ils`, `purchase_link_il`, `purchase_link_amazon`, `notes`, `live_prices_il` (jsonb), `live_prices_amazon` (jsonb), `created_at`
 
@@ -90,6 +108,12 @@ Old SQL files in the repo root (`supabase_setup.sql`, `add_live_prices.sql`, `fi
 2. `node scripts/fragrantica-import.mjs` writes `data-import/fragrantica-result.txt` (readable report of every decision) and `data-import/fragrantica-import.sql`.
 3. The owner runs the SQL in Supabase: first as a dry run (ends with a red message that lists counts and saves nothing), then with `dry_run := false`. It is all-or-nothing and creates a backup table of the replaced entries. The assistant never runs it.
 4. Check the live site (up to 5 minutes for ISR).
+
+## Talking to Fragrantica: the pace that works (learned 2026-09-23)
+
+- Their perfume and designer pages are 2-3 MB each. Fetching them one every 9-15 s from the built-in browser still got HTTP 429 after only 21 requests (after an earlier 429 the same week). So the safe budget is far lower than "one every 10 s": a few dozen requests per session, a long pause after any 429 (hours), never retry in a loop.
+- Prefer one request that answers many questions: a designer page gives the Fragrantica number of every fragrance of that brand (numbers are in the links: `/perfume/<Brand>/<Name>-<id>.html`); the picture host `fimgs.net` is separate and was never blocked (still keep ~6 s between pictures, max 300 new per run).
+- The in-page collector is a plain `fetch` loop with a queue, results kept in `window`, stopping at the first non-200; save results into `data-import/collected-N.json`, then `node scripts/merge-collected.mjs`.
 
 ## Keeping the catalog fresh (monthly refresh)
 
@@ -127,6 +151,9 @@ npm run lint     # ESLint
 If `tsc`/build reports stale route types after moving files, delete the `.next` folder and build again. On Windows, files may have CRLF line endings; edit with tools that tolerate that.
 
 ## Open items
+
+- Owner runs, in this order (each dry run first): `db-migrations/2026-09-community-v2-and-notes.sql`, then `data-import/notes.sql`; the 10-options import (`node scripts/fragrantica-import.mjs --top 10` -> `data-import/fragrantica-import.sql`); then upload pictures (`upload-site-images.mjs`) and run `data-import/site-images.sql`.
+- Still to collect slowly from Fragrantica: notes of ~100 more originals, picture numbers of ~500 more inspired fragrances (brands beyond the first 11), notes of inspired fragrances.
 
 - Photos and prices for the new entries (legal source undecided: affiliate feed vs own photos).
 - Run the database cleanup script (PR #2), then import the remaining perfumes.

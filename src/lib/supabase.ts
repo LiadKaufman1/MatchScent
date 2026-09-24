@@ -16,6 +16,9 @@ export function getSupabase(): SupabaseClient {
   return client
 }
 
+// Top / heart / base notes (English names). A fragrance without that split uses only "notes".
+export type NotePyramid = { top?: string[]; heart?: string[]; base?: string[]; notes?: string[] }
+
 export type Perfume = {
   id: string
   name: string
@@ -25,6 +28,7 @@ export type Perfume = {
   price_usd: number
   price_ils: number
   gender: string
+  note_pyramid?: NotePyramid | null
 }
 
 export type LivePrice = {
@@ -44,6 +48,11 @@ export type Rating = {
   perfume_id: string
   user_id: string
   score: number
+  scent?: number | null
+  longevity?: number | null
+  sillage?: number | null
+  bottle?: number | null
+  value?: number | null
   created_at: string
 }
 
@@ -67,6 +76,7 @@ export type Dupe = {
   purchase_link_il: string
   purchase_link_amazon: string
   notes: string
+  note_pyramid?: NotePyramid | null
   live_prices_il?: LivePrice[]
   live_prices_amazon?: LivePrice[]
 }
