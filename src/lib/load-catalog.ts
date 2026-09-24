@@ -4,12 +4,9 @@ import { prepareCatalog } from './catalog';
 import { mockPerfumes, mockDupes } from './mockData';
 import { slugify } from './slug';
 
-import { ASPECTS, type Aspect, type PerfumeCommunity } from './community-types';
+import { getPerfumeCommunity } from './load-community';
+export { entryKey } from './load-community';
 export type { ReviewWithAuthor, EntryVoteCounts, PerfumeCommunity } from './community-types';
-
-// Votes on an "inspired by" fragrance belong to the perfume + this key (not to the row id),
-// so re-importing the lists never wipes the visitors' votes.
-export const entryKey = (brand: string, name: string) => slugify(`${brand} ${name}`);
 
 export type ShownPerfume = Perfume & { entryCount: number; slug: string };
 
@@ -80,87 +77,6 @@ const hash = (s: string) => {
   for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
   return h;
 };
-
-// Community data for one perfume: ratings (overall + details), reviews, votes on the
-// "inspired by" entries, and how many people have it on their shelf. All of it is public
-// data (same for every visitor), so it is safe to bake into a static/ISR page - unlike
-// "did THIS visitor already rate/vote", which belongs client-side, never here.
-//
-// These tables/columns are added by the owner-run migrations (2026-09-accounts-and-reviews.sql,
-// 2026-09-community-v2-and-notes.sql). Unlike perfumes/dupes above, a missing one must not
-// break the page - each part below falls back to "nothing yet" on its own.
-async function getPerfumeCommunity(perfumeId: string): Promise<PerfumeCommunity> {
-  const empty: PerfumeCommunity = {
-    average: 0,
-    count: 0,
-    aspects: { scent: null, longevity: null, sillage: null, bottle: null, value: null },
-    reviews: [],
-    entryVotes: {},
-    shelf: { own: 0, had: 0, want: 0 },
-  };
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) return empty;
-
-  const supabase = getSupabase();
-  const result: PerfumeCommunity = { ...empty, aspects: { ...empty.aspects } };
-
-  // Ratings: try with the detail columns; if they do not exist yet, fall back to the overall score.
-  try {
-    type RatingRow = { score: number } & Partial<Record<Aspect, number | null>>;
-    let rows: RatingRow[] | null = null;
-    const wide = await supabase.from('ratings').select('score, scent, longevity, sillage, bottle, value').eq('perfume_id', perfumeId);
-    if (!wide.error) rows = wide.data as RatingRow[];
-    else {
-      const narrow = await supabase.from('ratings').select('score').eq('perfume_id', perfumeId);
-      if (!narrow.error) rows = narrow.data as RatingRow[];
-    }
-    if (rows?.length) {
-      result.count = rows.length;
-      result.average = rows.reduce((sum, r) => sum + r.score, 0) / rows.length;
-      for (const aspect of ASPECTS) {
-        const values = rows.map(r => r[aspect]).filter((v): v is number => typeof v === 'number');
-        if (values.length) result.aspects[aspect] = { average: values.reduce((a, b) => a + b, 0) / values.length, count: values.length };
-      }
-    }
-  } catch { /* keep the empty ratings */ }
-
-  try {
-    const { data, error } = await supabase
-      .from('reviews')
-      .select('id, body, created_at, user_id, author:profiles(display_name)')
-      .eq('perfume_id', perfumeId)
-      .order('created_at', { ascending: false })
-      .limit(50);
-    if (!error) {
-      type ReviewRow = { id: string; body: string; created_at: string; user_id: string; author: { display_name: string } | { display_name: string }[] | null };
-      result.reviews = ((data ?? []) as ReviewRow[]).map(r => ({
-        id: r.id,
-        body: r.body,
-        created_at: r.created_at,
-        user_id: r.user_id,
-        author: (Array.isArray(r.author) ? r.author[0]?.display_name : r.author?.display_name) ?? '',
-      }));
-    }
-  } catch { /* keep no reviews */ }
-
-  try {
-    const { data, error } = await supabase.from('entry_votes').select('entry_key, vote').eq('perfume_id', perfumeId);
-    if (!error) {
-      for (const row of (data ?? []) as { entry_key: string; vote: number }[]) {
-        const counts = (result.entryVotes[row.entry_key] ??= { up: 0, down: 0 });
-        if (row.vote > 0) counts.up++; else counts.down++;
-      }
-    }
-  } catch { /* keep no votes */ }
-
-  try {
-    const { data, error } = await supabase.from('collections').select('status').eq('perfume_id', perfumeId);
-    if (!error) {
-      for (const row of (data ?? []) as { status: 'own' | 'had' | 'want' }[]) result.shelf[row.status]++;
-    }
-  } catch { /* keep an empty shelf */ }
-
-  return result;
-}
 
 // Everything one perfume page needs.
 export async function getPerfumePage(slug: string) {

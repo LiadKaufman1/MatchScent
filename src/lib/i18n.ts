@@ -101,6 +101,7 @@ export type Dict = {
     registerCta: string;
     logoutCta: string;
     greeting: string;
+    myProfile: string;
     loginTitle: string;
     registerTitle: string;
     emailLabel: string;
@@ -147,16 +148,57 @@ export type Dict = {
     shelfWant: string;
     shelfCounts: string;
     shelfLogin: string;
+    panels: {
+      heading: string;
+      overall: string;
+      overallOne: string;
+      overallNone: string;
+      votes: string;
+      loginToVote: string;
+      rate: { title: string; options: string[] };
+      wear: { title: string; winter: string; spring: string; summer: string; fall: string; day: string; night: string };
+      longevity: { title: string; options: string[] };
+      sillage: { title: string; options: string[] };
+      gender: { title: string; options: string[] };
+      price: { title: string; options: string[] };
+      extraHeading: string;
+    };
+    points: {
+      heading: string;
+      pros: string;
+      cons: string;
+      addPro: string;
+      addCon: string;
+      placeholder: string;
+      add: string;
+      none: string;
+      note: string;
+      remove: string;
+    };
+    helpful: string;
+    helpfulCount: string;
+    reviewOn: string;
   };
   notes: { heading: string; top: string; heart: string; base: string; notes: string };
+  facts: { year: string; perfumer: string; accords: string };
   profile: {
     metaTitle: string;
     joined: string;
     shelfHeading: string;
+    ratingsHeading: string;
+    stats: string;
     reviewsHeading: string;
     empty: string;
     notFound: string;
     back: string;
+    edit: string;
+    nameLabel: string;
+    bioLabel: string;
+    bioPlaceholder: string;
+    save: string;
+    cancel: string;
+    saved: string;
+    saveError: string;
   };
 };
 
@@ -266,6 +308,7 @@ const en: Dict = {
     registerCta: 'Sign up',
     logoutCta: 'Log out',
     greeting: 'Hi, {name}',
+    myProfile: 'My profile',
     loginTitle: 'Log in',
     registerTitle: 'Create an account',
     emailLabel: 'Email',
@@ -312,16 +355,57 @@ const en: Dict = {
     shelfWant: 'I want it',
     shelfCounts: '{own} own it · {want} want it',
     shelfLogin: 'Log in to add it to your shelf.',
+    panels: {
+      heading: 'User ratings',
+      overall: 'Rated {avg} out of 5 with {count} votes',
+      overallOne: 'Rated {avg} out of 5 with 1 vote',
+      overallNone: 'No ratings yet - be the first!',
+      votes: '{n} votes',
+      loginToVote: 'Log in to vote',
+      rate: { title: 'Rating', options: ['Hate', 'Dislike', 'OK', 'Like', 'Love'] },
+      wear: { title: 'When to wear', winter: 'Winter', spring: 'Spring', summer: 'Summer', fall: 'Fall', day: 'Day', night: 'Night' },
+      longevity: { title: 'Longevity', options: ['Very weak', 'Weak', 'Moderate', 'Long lasting', 'Eternal'] },
+      sillage: { title: 'Sillage', options: ['Intimate', 'Moderate', 'Strong', 'Enormous'] },
+      gender: { title: 'Gender', options: ['Female', 'More female', 'Unisex', 'More male', 'Male'] },
+      price: { title: 'Price value', options: ['Way overpriced', 'Overpriced', 'OK', 'Good value', 'Great value'] },
+      extraHeading: 'More scores (optional)',
+    },
+    points: {
+      heading: 'What people say',
+      pros: 'Pros',
+      cons: 'Cons',
+      addPro: 'Add a pro',
+      addCon: 'Add a con',
+      placeholder: 'One short sentence (up to 140 characters)',
+      add: 'Add',
+      none: 'Nothing here yet.',
+      note: 'Pros and cons are written by community members.',
+      remove: 'Remove',
+    },
+    helpful: 'Helpful',
+    helpfulCount: '{n} found this helpful',
+    reviewOn: 'Review of {name}',
   },
   notes: { heading: 'Notes', top: 'Top notes', heart: 'Heart notes', base: 'Base notes', notes: 'Notes' },
+  facts: { year: 'Launched', perfumer: 'Perfumer', accords: 'Main accords' },
   profile: {
     metaTitle: 'Profile: {name}',
     joined: 'Member since {date}',
     shelfHeading: 'Shelf',
+    ratingsHeading: 'Ratings',
+    stats: '{ratings} ratings · {reviews} reviews · {shelf} on the shelf',
     reviewsHeading: 'Reviews',
     empty: 'Nothing here yet.',
     notFound: 'This profile was not found.',
     back: 'Back to the home page',
+    edit: 'Edit profile',
+    nameLabel: 'Display name',
+    bioLabel: 'About me',
+    bioPlaceholder: 'A few words about you and the scents you love (up to 300 characters)',
+    save: 'Save',
+    cancel: 'Cancel',
+    saved: 'Saved.',
+    saveError: 'Could not save. Please try again.',
   },
 };
 
@@ -431,6 +515,7 @@ const he: Dict = {
     registerCta: 'הרשמה',
     logoutCta: 'התנתקות',
     greeting: 'שלום, {name}',
+    myProfile: 'הפרופיל שלי',
     loginTitle: 'התחברות',
     registerTitle: 'יצירת חשבון',
     emailLabel: 'אימייל',
@@ -477,16 +562,57 @@ const he: Dict = {
     shelfWant: 'אני רוצה',
     shelfCounts: '{own} משתמשים מחזיקים בו · {want} רוצים אותו',
     shelfLogin: 'התחברו כדי להוסיף אותו למדף שלכם.',
+    panels: {
+      heading: 'דירוגי משתמשים',
+      overall: 'דירוג הבושם {avg} מתוך 5 עם {count} הצבעות',
+      overallOne: 'דירוג הבושם {avg} מתוך 5 עם הצבעה אחת',
+      overallNone: 'עדיין אין דירוגים - היו הראשונים!',
+      votes: '{n} הצבעות',
+      loginToVote: 'התחברו כדי להצביע',
+      rate: { title: 'דירוג', options: ['שנאתי', 'לא אהבתי', 'בסדר', 'אהבתי', 'אהבתי מאוד'] },
+      wear: { title: 'מתי ללבוש', winter: 'חורף', spring: 'אביב', summer: 'קיץ', fall: 'סתיו', day: 'יום', night: 'לילה' },
+      longevity: { title: 'עמידות', options: ['חלשה מאוד', 'חלשה', 'בינונית', 'מחזיקה זמן רב', 'נצחית'] },
+      sillage: { title: 'שובל', options: ['אינטימי', 'בינוני', 'חזק', 'עצום'] },
+      gender: { title: 'מתאים ל...', options: ['נשי', 'יותר נשי', 'יוניסקס', 'יותר גברי', 'גברי'] },
+      price: { title: 'תמורה למחיר', options: ['יקר בהרבה מדי', 'יקר', 'סביר', 'תמורה טובה', 'תמורה מעולה'] },
+      extraHeading: 'ציונים נוספים (לא חובה)',
+    },
+    points: {
+      heading: 'מה אומרים המשתמשים',
+      pros: 'יתרונות',
+      cons: 'חסרונות',
+      addPro: 'הוסיפו יתרון',
+      addCon: 'הוסיפו חסרון',
+      placeholder: 'משפט קצר אחד (עד 140 תווים)',
+      add: 'הוספה',
+      none: 'אין כאן עדיין כלום.',
+      note: 'היתרונות והחסרונות נכתבים על ידי חברי הקהילה.',
+      remove: 'הסרה',
+    },
+    helpful: 'מועיל',
+    helpfulCount: '{n} מצאו את זה מועיל',
+    reviewOn: 'ביקורת על {name}',
   },
   notes: { heading: 'תווים', top: 'תווי ראש', heart: 'תווי לב', base: 'תווי בסיס', notes: 'תווים' },
+  facts: { year: 'שנת הוצאה', perfumer: 'יוצר הבושם', accords: 'אקורדים עיקריים' },
   profile: {
     metaTitle: 'פרופיל: {name}',
     joined: 'חברים מאז {date}',
     shelfHeading: 'מדף',
+    ratingsHeading: 'דירוגים',
+    stats: '{ratings} דירוגים · {reviews} ביקורות · {shelf} על המדף',
     reviewsHeading: 'ביקורות',
     empty: 'אין כאן עדיין כלום.',
     notFound: 'הפרופיל לא נמצא.',
     back: 'חזרה לעמוד הבית',
+    edit: 'עריכת פרופיל',
+    nameLabel: 'שם תצוגה',
+    bioLabel: 'קצת עליי',
+    bioPlaceholder: 'כמה מילים עליכם ועל הניחוחות שאתם אוהבים (עד 300 תווים)',
+    save: 'שמירה',
+    cancel: 'ביטול',
+    saved: 'נשמר.',
+    saveError: 'לא הצלחנו לשמור. נסו שוב.',
   },
 };
 

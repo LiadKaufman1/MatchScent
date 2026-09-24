@@ -77,9 +77,10 @@ next.config.mjs                  The active Next config
 
 Replicate the mechanics, never their content or exact design. All per-visitor state (am I logged in, my rating/vote/shelf) is read in the browser (`useViewer`), so pages stay static/ISR; public numbers (averages, vote counts, shelf counts) come from the server. Every write is a server action using the visitor's own session; the database's RLS (public read, owner-only write) is the real guard. Registration currently needs no email confirmation (no domain yet); turn "Confirm email" on and set up SMTP before launch.
 
-- Done: accounts, overall rating + optional details (scent, longevity, sillage, bottle, value), reviews, "does it smell like the original?" yes/no votes per inspired-by entry, shelf (own/had/want), member page `/u/<id>` (noindex), notes pyramid.
+- Done: accounts; Fragrantica-style "User ratings" panels on every perfume page (rating love/like/ok/dislike/hate stored as ratings.score 5..1, when to wear winter/spring/summer/fall/day/night, longevity, sillage, gender, price value in `perfume_votes`, plus optional Parfumo-style scent/bottle stars); short pros/cons written by members with thumbs up/down (`perfume_points`, `point_votes`); reviews with "helpful" votes (`review_votes`); "does it smell like the original?" yes/no votes per inspired-by entry; shelf (own/had/want); member page `/u/<id>` (noindex) with bio, shelf, ratings and reviews, editable by its owner; notes pyramid, year, perfumers and main accords per perfume.
+- Do NOT copy Fragrantica's/Parfumo's texts, AI summaries, vote numbers or note pictures; facts (note names, year, perfumer, accord names) are fine. Nothing here is generated from their user votes.
 - Votes are keyed by perfume + fragrance slug (not the entry row id) because the import script deletes and re-inserts entries; a re-import must never wipe community data. Do not put foreign keys to `dupes.id` on community tables.
-- Ideas not built yet: review comments / helpful votes, photo uploads with moderation, season/day-night votes, user-submitted perfumes for approval, ads (AdSense, the owner's own account).
+- Ideas not built yet: review comments/replies, photo uploads with moderation, admin moderation of community content (delete abusive reviews/points via /admin), brand and note pages, top-rated charts, user-submitted perfumes for approval, ads (AdSense, the owner's own account).
 
 ## How data loads
 
@@ -92,7 +93,7 @@ Replicate the mechanics, never their content or exact design. All per-visitor st
 
 **`perfumes`**: `id` (uuid, PK), `name`, `brand`, `image_url`, `description`, `price_usd`, `price_ils`, `gender` ('male' | 'female' | 'unisex'), `created_at`
 
-**Community tables** (see `db-migrations/`): `profiles` (id = auth user), `ratings` (score 1-5 + optional scent/longevity/sillage/bottle/value), `reviews`, `entry_votes` (perfume_id, entry_key, vote +1/-1), `collections` (user_id, perfume_id, status own/had/want). `perfumes.note_pyramid` and `dupes.note_pyramid` (jsonb: `{top, heart, base}` or `{notes}`, English names). All new reads fall back to "nothing yet" when a migration has not run.
+**Community tables** (see `db-migrations/`; v3 = `perfume_votes`, `perfume_points`, `point_votes`, `review_votes`, `perfumes.year/perfumers/accords`, `profiles.bio`): `profiles` (id = auth user), `ratings` (score 1-5 + optional scent/longevity/sillage/bottle/value), `reviews`, `entry_votes` (perfume_id, entry_key, vote +1/-1), `collections` (user_id, perfume_id, status own/had/want). `perfumes.note_pyramid` and `dupes.note_pyramid` (jsonb: `{top, heart, base}` or `{notes}`, English names). All new reads fall back to "nothing yet" when a migration has not run.
 
 **`dupes`**: `id` (uuid, PK), `original_perfume_id` (uuid, FK to `perfumes.id`, ON DELETE CASCADE), `name`, `brand`, `image_url`, `similarity_score` (int, 1-100), `price_usd`, `price_ils`, `purchase_link_il`, `purchase_link_amazon`, `notes`, `live_prices_il` (jsonb), `live_prices_amazon` (jsonb), `created_at`
 
@@ -152,7 +153,7 @@ If `tsc`/build reports stale route types after moving files, delete the `.next` 
 
 ## Open items
 
-- Owner runs, in this order (each dry run first): `db-migrations/2026-09-community-v2-and-notes.sql`, then `data-import/notes.sql`; the 10-options import (`node scripts/fragrantica-import.mjs --top 10` -> `data-import/fragrantica-import.sql`); then upload pictures (`upload-site-images.mjs`) and run `data-import/site-images.sql`.
+- Owner runs first `db-migrations/2026-09-community-v3-ratings-panels.sql`, then `data-import/notes.sql` (rebuilt by `node scripts/notes-to-sql.mjs` whenever more facts are collected; Parfumo fallback: `data-import/collected-parfumo-*.json`). Earlier order (each dry run first): `db-migrations/2026-09-community-v2-and-notes.sql`, then `data-import/notes.sql`; the 10-options import (`node scripts/fragrantica-import.mjs --top 10` -> `data-import/fragrantica-import.sql`); then upload pictures (`upload-site-images.mjs`) and run `data-import/site-images.sql`.
 - Still to collect slowly from Fragrantica: notes of ~100 more originals, picture numbers of ~500 more inspired fragrances (brands beyond the first 11), notes of inspired fragrances.
 
 - Photos and prices for the new entries (legal source undecided: affiliate feed vs own photos).

@@ -7,8 +7,11 @@ import { siteUrl } from '@/lib/site';
 import { fmt, getDict, withLang, type Lang } from '@/lib/i18n';
 import Photo from '@/app/components/Photo';
 import EntryCard from '@/app/components/EntryCard';
-import RatingsReviews from '@/app/components/RatingsReviews';
+import Reviews from '@/app/components/Reviews';
+import UserRatings from '@/app/components/UserRatings';
+import ProsCons from '@/app/components/ProsCons';
 import NotePyramid from '@/app/components/NotePyramid';
+import { accordLabel } from '@/lib/notes';
 import ShelfButtons from '@/app/components/ShelfButtons';
 import { SiteFooter, SiteHeader } from '@/app/components/SiteChrome';
 
@@ -150,7 +153,29 @@ export default async function PerfumeView({ lang, slug }: { lang: Lang; slug: st
                 <dt className="text-[11px] font-medium uppercase tracking-[0.16em] text-smoke">{t.audience}</dt>
                 <dd className="font-bold text-ink">{audienceLabel}</dd>
               </div>
+              {perfume.year ? (
+                <div>
+                  <dt className="text-[11px] font-medium uppercase tracking-[0.16em] text-smoke">{t.facts.year}</dt>
+                  <dd className="font-bold text-ink" dir="ltr">{perfume.year}</dd>
+                </div>
+              ) : null}
+              {perfume.perfumers && perfume.perfumers.length > 0 && (
+                <div>
+                  <dt className="text-[11px] font-medium uppercase tracking-[0.16em] text-smoke">{t.facts.perfumer}</dt>
+                  <dd className="font-bold text-ink">{perfume.perfumers.join(', ')}</dd>
+                </div>
+              )}
             </dl>
+            {perfume.accords && perfume.accords.length > 0 && (
+              <div className="mt-5">
+                <p className="mb-2 text-[11px] font-medium uppercase tracking-[0.16em] text-smoke">{t.facts.accords}</p>
+                <ul className="flex flex-wrap gap-1.5">
+                  {perfume.accords.slice(0, 8).map(a => (
+                    <li key={a} className="rounded-full bg-wine-600/10 px-3 py-1 text-sm font-medium text-wine-700">{accordLabel(a, lang)}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
             <ShelfButtons lang={lang} perfumeId={perfume.id} own={community.shelf.own} want={community.shelf.want} />
           </div>
         </header>
@@ -172,6 +197,19 @@ export default async function PerfumeView({ lang, slug }: { lang: Lang; slug: st
           )}
         </section>
 
+        <UserRatings
+          lang={lang}
+          perfumeId={perfume.id}
+          average={community.average}
+          ratingCounts={community.ratingCounts}
+          votes={community.votes}
+          aspects={community.aspects}
+        />
+
+        <ProsCons lang={lang} perfumeId={perfume.id} points={community.points} />
+
+        <Reviews lang={lang} perfumeId={perfume.id} reviews={community.reviews} />
+
         {sameBrand.length > 0 && (
           <section className="mt-14" aria-labelledby="brand-heading">
             <h2 id="brand-heading" className="mb-5 text-sm font-bold uppercase tracking-[0.14em] text-wine-600">
@@ -182,15 +220,6 @@ export default async function PerfumeView({ lang, slug }: { lang: Lang; slug: st
             </div>
           </section>
         )}
-
-        <RatingsReviews
-          lang={lang}
-          perfumeId={perfume.id}
-          average={community.average}
-          count={community.count}
-          aspects={community.aspects}
-          reviews={community.reviews}
-        />
 
         {more.length > 0 && (
           <section className="mt-14" aria-labelledby="more-heading">

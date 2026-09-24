@@ -29,6 +29,9 @@ export type Perfume = {
   price_ils: number
   gender: string
   note_pyramid?: NotePyramid | null
+  year?: number | null
+  perfumers?: string[] | null
+  accords?: string[] | null
 }
 
 export type LivePrice = {

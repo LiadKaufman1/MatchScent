@@ -33,11 +33,11 @@ export function SiteHeader({ lang, path }: { lang: Lang; path: string }) {
   const t = getDict(lang);
   return (
     <header className="border-b border-line bg-white/80 backdrop-blur">
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-4 sm:px-6">
+      <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-6">
         <Link href={withLang(lang, '/')} aria-label="MatchScent">
           <Wordmark className="text-2xl font-extrabold" />
         </Link>
-        <div className="flex items-center gap-2 sm:gap-4">
+        <div className="flex flex-wrap items-center justify-end gap-x-2 gap-y-2 sm:gap-x-4">
           <Link
             href={withLang(lang, '/')}
             className="hidden text-xs font-bold uppercase tracking-[0.14em] text-smoke transition hover:text-wine-600 md:inline"

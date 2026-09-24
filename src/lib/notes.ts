@@ -1,6 +1,6 @@
 import type { NotePyramid } from './supabase';
 import type { Lang } from './i18n';
-import { NOTES_HE, NOTE_ADJECTIVES_HE } from './notes-he';
+import { ACCORDS_HE, NOTES_HE, NOTE_ADJECTIVES_HE } from './notes-he';
 
 // Note names are stored in English; Hebrew visitors see the Hebrew name from NOTES_HE
 // (a note that is not in that list yet is shown in English rather than left out).
@@ -19,6 +19,10 @@ export function noteLabel(name: string, lang: Lang): string {
   }
   return name;
 }
+
+// A main accord ("woody", "warm spicy" ...): Hebrew name when known, otherwise the English one.
+export const accordLabel = (name: string, lang: Lang): string =>
+  lang === 'he' ? ACCORDS_HE[name.trim().toLowerCase()] ?? name : name;
 
 export type NoteGroup = { key: 'top' | 'heart' | 'base' | 'notes'; notes: string[] };
 
