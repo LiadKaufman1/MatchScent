@@ -22,7 +22,7 @@ export const isVoteKind = (kind: string): kind is VoteKind =>
 export type VoteCounts = Partial<Record<VoteKind, Record<number, number>>>;
 
 export type CommentRow = { id: string; body: string; created_at: string; author: string; user_id: string };
-export type ReviewWithAuthor = { id: string; body: string; created_at: string; author: string; user_id: string; helpful: number; comments: CommentRow[] };
+export type ReviewWithAuthor = { id: string; body: string; created_at: string; author: string; user_id: string; helpful: number; comments: CommentRow[]; score?: number | null };
 export type PhotoRow = { id: string; url: string; author: string; user_id: string; created_at: string };
 export type PointRow = { id: string; kind: 'pro' | 'con'; body: string; user_id: string; up: number; down: number };
 export type EntryVoteCounts = { up: number; down: number };

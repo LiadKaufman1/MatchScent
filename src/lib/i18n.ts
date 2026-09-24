@@ -177,6 +177,8 @@ export type Dict = {
     };
     helpful: string;
     helpfulCount: string;
+    sortHelpful: string;
+    sortNewest: string;
     reviewOn: string;
     blockedWord: string;
   };
@@ -489,6 +491,8 @@ const en: Dict = {
     },
     helpful: 'Helpful',
     helpfulCount: '{n} found this helpful',
+    sortHelpful: 'Most helpful',
+    sortNewest: 'Newest',
     reviewOn: 'Review of {name}',
     blockedWord: 'Please write "similar" or "inspired by" instead of that word.',
   },
@@ -801,6 +805,8 @@ const he: Dict = {
     },
     helpful: 'מועיל',
     helpfulCount: '{n} מצאו את זה מועיל',
+    sortHelpful: 'הכי מועילות',
+    sortNewest: 'הכי חדשות',
     reviewOn: 'ביקורת על {name}',
     blockedWord: 'נא לכתוב "דומה" או "בהשראת" במקום המילה הזו.',
   },

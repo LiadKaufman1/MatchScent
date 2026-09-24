@@ -104,6 +104,7 @@ export default function Reviews({ lang, perfumeId, reviews: initial }: { lang: L
   const [helpedByMe, setHelpedByMe] = useState<Record<string, boolean>>({});
   const [text, setText] = useState('');
   const [message, setMessage] = useState<string | null>(null);
+  const [sort, setSort] = useState<'helpful' | 'newest'>('helpful');
   const [pending, startTransition] = useTransition();
 
   useEffect(() => {
@@ -183,12 +184,34 @@ export default function Reviews({ lang, perfumeId, reviews: initial }: { lang: L
       </div>
 
       <div className="mt-5 space-y-3">
+        {reviews.length > 1 && (
+          <div className="flex gap-2" role="group" aria-label={t.community.reviewsHeading}>
+            {(['helpful', 'newest'] as const).map(k => (
+              <button
+                key={k}
+                type="button"
+                aria-pressed={sort === k}
+                onClick={() => setSort(k)}
+                className={`rounded-full border px-3 py-1 text-xs font-bold transition ${sort === k ? 'border-wine-600 bg-wine-600 text-white' : 'border-line bg-white text-smoke hover:border-wine-600/60'}`}
+              >
+                {k === 'helpful' ? t.community.sortHelpful : t.community.sortNewest}
+              </button>
+            ))}
+          </div>
+        )}
         {reviews.length === 0 ? (
           <p className="rounded-2xl border border-line bg-white py-8 text-center text-smoke">{t.community.reviewNone}</p>
         ) : (
-          reviews.map(r => (
+          [...reviews]
+            .sort((a, b) => (sort === 'newest' ? b.created_at.localeCompare(a.created_at) : b.helpful - a.helpful || b.created_at.localeCompare(a.created_at)))
+            .map(r => (
             <article key={r.id} className="rounded-2xl border border-line bg-white p-4">
-              <p className="text-sm font-bold text-ink">{authorLink(lang, r.user_id, r.author)}</p>
+              <p className="flex flex-wrap items-center gap-2 text-sm font-bold text-ink">
+                {authorLink(lang, r.user_id, r.author)}
+                {r.score ? (
+                  <span className="rounded-full bg-blush px-2 py-0.5 text-[11px] font-bold text-wine-700">{t.community.panels.rate.options[r.score - 1]}</span>
+                ) : null}
+              </p>
               <p className="mt-1.5 whitespace-pre-line leading-relaxed text-smoke">{r.body}</p>
               <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-smoke">
                 <button

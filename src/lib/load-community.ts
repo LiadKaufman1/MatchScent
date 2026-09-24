@@ -130,15 +130,18 @@ async function loadReviews(supabase: Supa, perfumeId: string, result: PerfumeCom
     // its part simply stays empty.
     const helpful = new Map<string, number>();
     const comments = new Map<string, CommentRow[]>();
+    const scores = new Map<string, number>(); // the author's own rating of this perfume, shown next to the review
     if (ids.length) {
-      const [votes, replies] = await Promise.all([
+      const [votes, replies, authorRatings] = await Promise.all([
         supabase.from('review_votes').select('review_id').in('review_id', ids),
         supabase
           .from('review_comments')
           .select('id, review_id, body, created_at, user_id, author:profiles(display_name)')
           .in('review_id', ids)
           .order('created_at', { ascending: true }),
+        supabase.from('ratings').select('user_id, score').eq('perfume_id', perfumeId).in('user_id', [...new Set(rows.map(r => r.user_id))]),
       ]);
+      if (!authorRatings.error) for (const r of (authorRatings.data ?? []) as { user_id: string; score: number }[]) scores.set(r.user_id, r.score);
       if (!votes.error) for (const v of (votes.data ?? []) as { review_id: string }[]) helpful.set(v.review_id, (helpful.get(v.review_id) ?? 0) + 1);
       if (!replies.error) {
         type CommentDbRow = { id: string; review_id: string; body: string; created_at: string; user_id: string; author: Author };
@@ -158,6 +161,7 @@ async function loadReviews(supabase: Supa, perfumeId: string, result: PerfumeCom
       author: one(r.author)?.display_name ?? '',
       helpful: helpful.get(r.id) ?? 0,
       comments: comments.get(r.id) ?? [],
+      score: scores.get(r.user_id) ?? null,
     }));
     result.reviews = reviews.sort((x, y) => y.helpful - x.helpful || y.created_at.localeCompare(x.created_at));
   } catch { /* keep no reviews */ }
