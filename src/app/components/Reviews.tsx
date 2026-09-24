@@ -149,7 +149,7 @@ export default function Reviews({ lang, perfumeId, reviews: initial }: { lang: L
 
   return (
     <section className="mt-14" aria-labelledby="reviews-heading">
-      <h2 id="reviews-heading" className="mb-5 text-sm font-bold uppercase tracking-[0.14em] text-wine-600">
+      <h2 id="reviews-heading" className="mb-5 section-title">
         {t.community.reviewsHeading} {reviews.length > 0 && <span className="text-smoke" dir="ltr">({reviews.length})</span>}
       </h2>
 

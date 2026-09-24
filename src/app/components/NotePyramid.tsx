@@ -5,6 +5,7 @@ import Link from 'next/link';
 import type { NotePyramid as Pyramid } from '@/lib/supabase';
 import { noteGroups, noteLabel } from '@/lib/notes';
 import { slugify } from '@/lib/slug';
+import { scentColor } from '@/lib/scent-colors';
 import { getSupabaseBrowser } from '@/lib/supabase-browser';
 import { toggleNoteVote } from '@/lib/community-actions';
 import { useViewer } from '@/lib/use-viewer';
@@ -56,7 +57,7 @@ export default function NotePyramid({ pyramid, lang, perfumeId, noteVotes = {} }
   return (
     <section className="mt-14" aria-labelledby="notes-heading">
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <h2 id="notes-heading" className="text-sm font-bold uppercase tracking-[0.14em] text-wine-600">{t.notes.heading}</h2>
+        <h2 id="notes-heading" className="section-title">{t.notes.heading}</h2>
         {userId ? (
           <button
             type="button"
@@ -71,11 +72,13 @@ export default function NotePyramid({ pyramid, lang, perfumeId, noteVotes = {} }
         ) : null}
       </div>
       {voting && <p className="mb-3 text-sm text-smoke">{t.noteVotes.hint}</p>}
-      <div className="grid gap-3 rounded-2xl border border-line bg-white p-5 sm:grid-cols-3">
+      <div className="space-y-6 rounded-3xl border border-line bg-white px-5 py-7">
         {groups.map(g => (
           <div key={g.key}>
-            <h3 className="text-xs font-bold uppercase tracking-[0.14em] text-smoke">{t.notes[g.key]}</h3>
-            <ul className="mt-2 flex flex-wrap items-center gap-1.5">
+            <h3 className="flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.18em] text-smoke before:h-px before:flex-1 before:bg-line after:h-px after:flex-1 after:bg-line">
+              {t.notes[g.key]}
+            </h3>
+            <ul className="mt-3 flex flex-wrap items-center justify-center gap-2">
               {g.notes.map(n => {
                 const key = n.toLowerCase();
                 const count = counts[key] ?? 0;
@@ -94,6 +97,7 @@ export default function NotePyramid({ pyramid, lang, perfumeId, noteVotes = {} }
                           mine[key] ? 'border-wine-600 bg-wine-600 text-white' : 'border-line bg-blush text-ink hover:border-wine-600/50'
                         }`}
                       >
+                        <span aria-hidden="true" className="me-1.5 inline-block h-2.5 w-2.5 rounded-full align-middle ring-1 ring-white/70" style={{ backgroundColor: scentColor(n) }} />
                         {label}{count > 0 && <span className="ms-1.5 text-xs opacity-80" dir="ltr">{count}</span>}
                       </button>
                     ) : (
@@ -101,8 +105,9 @@ export default function NotePyramid({ pyramid, lang, perfumeId, noteVotes = {} }
                         href={withLang(lang, `/notes/${slugify(n)}`)}
                         prefetch={false}
                         title={title}
-                        className={`block rounded-full border border-line bg-blush font-medium text-ink transition hover:border-wine-600/50 ${size(n)}`}
+                        className={`block rounded-full border border-line bg-[#FCFAF9] font-medium text-ink transition hover:border-wine-600/50 hover:bg-white ${size(n)}`}
                       >
+                        <span aria-hidden="true" className="me-1.5 inline-block h-2.5 w-2.5 rounded-full align-middle" style={{ backgroundColor: scentColor(n) }} />
                         {label}{count > 0 && <span className="ms-1.5 text-xs text-smoke" dir="ltr">{count}</span>}
                       </Link>
                     )}

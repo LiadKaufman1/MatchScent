@@ -80,7 +80,7 @@ export async function BrandView({ lang, slug }: { lang: Lang; slug: string }) {
 
         {data.perfumes.length > 0 && (
           <section aria-labelledby="brand-perfumes">
-            <h2 id="brand-perfumes" className="mb-4 text-sm font-bold uppercase tracking-[0.14em] text-wine-600">{fmt(t.browse.brandPerfumes, { brand: data.brand })}</h2>
+            <h2 id="brand-perfumes" className="mb-4 section-title">{fmt(t.browse.brandPerfumes, { brand: data.brand })}</h2>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {data.perfumes.map(p => <PerfumeCard key={p.id} perfume={p} lang={lang} />)}
             </div>
@@ -89,7 +89,7 @@ export async function BrandView({ lang, slug }: { lang: Lang; slug: string }) {
 
         {data.inspired.length > 0 && (
           <section className="mt-12" aria-labelledby="brand-inspired">
-            <h2 id="brand-inspired" className="mb-4 text-sm font-bold uppercase tracking-[0.14em] text-wine-600">{fmt(t.browse.brandInspired, { brand: data.brand })}</h2>
+            <h2 id="brand-inspired" className="mb-4 section-title">{fmt(t.browse.brandInspired, { brand: data.brand })}</h2>
             <InspiredList items={data.inspired} lang={lang} />
           </section>
         )}
@@ -125,7 +125,7 @@ export async function NoteView({ lang, slug }: { lang: Lang; slug: string }) {
 
         {data.inspired.length > 0 && (
           <section className="mt-12" aria-labelledby="note-inspired">
-            <h2 id="note-inspired" className="mb-4 text-sm font-bold uppercase tracking-[0.14em] text-wine-600">{fmt(t.browse.noteInspired, { note })}</h2>
+            <h2 id="note-inspired" className="mb-4 section-title">{fmt(t.browse.noteInspired, { note })}</h2>
             <InspiredList items={data.inspired} lang={lang} />
           </section>
         )}

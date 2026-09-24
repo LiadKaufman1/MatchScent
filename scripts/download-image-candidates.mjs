@@ -225,10 +225,17 @@ async function runFragrantica() {
     if (done + failed >= CAP) { console.log(`\nReached the limit of ${CAP} new pictures for this run. Run it again later (tomorrow) for the rest.`); break; }
     process.stdout.write(`[${done + failed + 1}/${CAP}] ${t.slug} ... `);
 
-    const url = `https://fimgs.net/mdimg/perfume/o.${ids[t.slug]}.jpg`;
+    let url = `https://fimgs.net/mdimg/perfume/o.${ids[t.slug]}.jpg`;
     const dir = path.join(OUT, t.slug);
     fs.mkdirSync(dir, { recursive: true });
-    const res = await download(url, path.join(dir, 'fragrantica'));
+    let res = await download(url, path.join(dir, 'fragrantica'));
+    // A few main pictures are tiny; the larger catalogue picture (750 x 1000) is used instead.
+    if (!res.ok && /too small/.test(res.why)) {
+      await sleep(DELAY * 0.5);
+      const bigger = `https://fimgs.net/mdimg/perfume-thumbs/375x500.${ids[t.slug]}.2x.jpg`;
+      const second = await download(bigger, path.join(dir, 'fragrantica'));
+      if (second.ok) { res = second; url = bigger; }
+    }
     if (res.ok) {
       entry.files = entry.files.filter(x => x.source !== 'fragrantica');
       entry.files.unshift({ file: path.relative(OUT, res.file).replace(/\\/g, '/'), source: 'fragrantica', imageUrl: url, pageUrl: `https://www.fragrantica.com/perfume/-${ids[t.slug]}.html`, fragranticaId: ids[t.slug], bytes: res.bytes });

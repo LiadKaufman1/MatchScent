@@ -5,7 +5,7 @@ import { getOverview, type RankedPerfume } from '@/lib/load-home';
 import { fmt, getDict, withLang, type Lang } from '@/lib/i18n';
 import PerfumeCard from './PerfumeCard';
 
-const heading = 'mb-4 text-sm font-bold uppercase tracking-[0.14em] text-wine-600';
+const heading = 'mb-4 section-title';
 
 // The home page's community band: latest reviews, top rated, most wanted, new members' photos,
 // and "missing a perfume? suggest it". Sections without data are simply left out.

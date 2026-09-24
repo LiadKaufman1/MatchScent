@@ -60,7 +60,7 @@ export default function PhotoGallery({ lang, perfumeId, photos, alt }: { lang: L
 
   return (
     <section className="mt-14" aria-labelledby="photos-heading">
-      <h2 id="photos-heading" className="mb-5 text-sm font-bold uppercase tracking-[0.14em] text-wine-600">
+      <h2 id="photos-heading" className="mb-5 section-title">
         {p.heading} {photos.length > 0 && <span className="text-smoke" dir="ltr">({photos.length})</span>}
       </h2>
 

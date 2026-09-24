@@ -8,7 +8,7 @@ import Photo from '@/app/components/Photo';
 import PerfumeCard from '@/app/components/PerfumeCard';
 import { SiteFooter, SiteHeader } from '@/app/components/SiteChrome';
 
-const heading = 'mb-4 text-sm font-bold uppercase tracking-[0.14em] text-wine-600';
+const heading = 'mb-4 section-title';
 
 export function searchMetadata(lang: Lang): Metadata {
   return { title: getDict(lang).search.metaTitle, robots: { index: false, follow: true } };

@@ -6,7 +6,7 @@ import PerfumeCard from '@/app/components/PerfumeCard';
 import SuggestForm from '@/app/components/SuggestForm';
 import { SiteFooter, SiteHeader } from '@/app/components/SiteChrome';
 
-const heading = 'mb-4 text-sm font-bold uppercase tracking-[0.14em] text-wine-600';
+const heading = 'mb-4 section-title';
 
 export function topMetadata(lang: Lang): Metadata {
   const t = getDict(lang).top;

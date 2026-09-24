@@ -107,7 +107,7 @@ export default async function ProfileView({ lang, id }: { lang: Lang; id: string
             <ProfileEditor lang={lang} profileId={id} name={profile.name} bio={profile.bio} />
 
             <section className="mt-10" aria-labelledby="shelf-heading">
-              <h2 id="shelf-heading" className="mb-4 text-sm font-bold uppercase tracking-[0.14em] text-wine-600">{t.profile.shelfHeading}</h2>
+              <h2 id="shelf-heading" className="mb-4 section-title">{t.profile.shelfHeading}</h2>
               {profile.shelf.length === 0 ? (
                 <p className="text-smoke">{t.profile.empty}</p>
               ) : (
@@ -131,7 +131,7 @@ export default async function ProfileView({ lang, id }: { lang: Lang; id: string
             </section>
 
             <section className="mt-10" aria-labelledby="ratings-heading">
-              <h2 id="ratings-heading" className="mb-4 text-sm font-bold uppercase tracking-[0.14em] text-wine-600">{t.profile.ratingsHeading}</h2>
+              <h2 id="ratings-heading" className="mb-4 section-title">{t.profile.ratingsHeading}</h2>
               {profile.ratings.length === 0 ? (
                 <p className="text-smoke">{t.profile.empty}</p>
               ) : (
@@ -147,7 +147,7 @@ export default async function ProfileView({ lang, id }: { lang: Lang; id: string
 
             {profile.photos.length > 0 && (
               <section className="mt-10" aria-labelledby="photos-heading">
-                <h2 id="photos-heading" className="mb-4 text-sm font-bold uppercase tracking-[0.14em] text-wine-600">{t.profile.photosHeading}</h2>
+                <h2 id="photos-heading" className="mb-4 section-title">{t.profile.photosHeading}</h2>
                 <ul className="grid grid-cols-3 gap-3 sm:grid-cols-4">
                   {profile.photos.map(ph => {
                     const p = byId.get(ph.perfumeId);
@@ -165,7 +165,7 @@ export default async function ProfileView({ lang, id }: { lang: Lang; id: string
             )}
 
             <section className="mt-10" aria-labelledby="reviews-heading">
-              <h2 id="reviews-heading" className="mb-4 text-sm font-bold uppercase tracking-[0.14em] text-wine-600">{t.profile.reviewsHeading}</h2>
+              <h2 id="reviews-heading" className="mb-4 section-title">{t.profile.reviewsHeading}</h2>
               {profile.reviews.length === 0 ? (
                 <p className="text-smoke">{t.profile.empty}</p>
               ) : (

@@ -150,7 +150,7 @@ export default function ProsCons({ lang, perfumeId, points: initial }: { lang: L
 
   return (
     <section className="mt-14" aria-labelledby="points-heading">
-      <h2 id="points-heading" className="mb-5 text-sm font-bold uppercase tracking-[0.14em] text-wine-600">{c.heading}</h2>
+      <h2 id="points-heading" className="mb-5 section-title">{c.heading}</h2>
       <div className="grid gap-4 md:grid-cols-2">
         {column('pro')}
         {column('con')}

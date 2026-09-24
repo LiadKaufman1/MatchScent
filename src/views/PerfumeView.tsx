@@ -12,11 +12,14 @@ import Reviews from '@/app/components/Reviews';
 import UserRatings from '@/app/components/UserRatings';
 import ProsCons from '@/app/components/ProsCons';
 import NotePyramid from '@/app/components/NotePyramid';
-import { accordLabel } from '@/lib/notes';
+import { noteGroups } from '@/lib/notes';
 import { similarByNotes } from '@/lib/search';
 import ShelfButtons from '@/app/components/ShelfButtons';
 import PhotoGallery from '@/app/components/PhotoGallery';
 import SuggestForm from '@/app/components/SuggestForm';
+import AccordBars from '@/app/components/AccordBars';
+import SectionNav from '@/app/components/SectionNav';
+import { Star } from 'lucide-react';
 import { SiteFooter, SiteHeader } from '@/app/components/SiteChrome';
 
 export async function perfumeStaticParams() {
@@ -135,70 +138,83 @@ export default async function PerfumeView({ lang, slug }: { lang: Lang; slug: st
           <span className="text-ink/80">{full}</span>
         </nav>
 
-        <header className="rise mt-8 grid gap-8 md:grid-cols-[16rem_1fr] md:items-center">
-          <div className="relative mx-auto aspect-[4/5] w-full max-w-[16rem] overflow-hidden rounded-2xl border border-line bg-white shadow-[0_1px_2px_rgba(28,21,24,0.04)] md:mx-0">
-            <Photo url={perfume.image_url} alt={full} seed={perfume.brand + perfume.name} sizes="256px" priority />
+        <header className="rise mt-6 grid grid-cols-[7.5rem_1fr] items-center gap-x-5 gap-y-5 md:grid-cols-[18rem_1fr] md:items-start md:gap-x-10">
+          <div className="w-full md:row-span-2">
+            <div className="relative aspect-[4/5] w-full overflow-hidden rounded-3xl border border-line bg-white shadow-[0_18px_40px_-28px_rgba(28,21,24,0.45)]">
+              <Photo url={perfume.image_url} alt={full} seed={perfume.brand + perfume.name} sizes="288px" priority />
+            </div>
           </div>
-          <div>
+          <div className="min-w-0 md:self-end">
             <p className="text-[12px] font-bold uppercase tracking-[0.2em] text-wine-600">
               <Link href={withLang(lang, `/brand/${slugify(perfume.brand)}`)} prefetch={false} className="transition hover:text-wine-700">{perfume.brand}</Link>
             </p>
-            <h1 className="mt-2 text-4xl font-extrabold leading-tight text-ink sm:text-5xl">{perfume.name}</h1>
-            <div className="wine-rule my-6 w-32" />
-            <p className="max-w-xl leading-relaxed text-smoke">{intro}</p>
-            <dl className="mt-6 flex flex-wrap gap-x-8 gap-y-3 text-sm">
-              {usd(perfume.price_usd) && (
-                <div>
-                  <dt className="text-[11px] font-medium uppercase tracking-[0.16em] text-smoke">{t.originalFrom}</dt>
-                  <dd className="font-bold text-ink" dir="ltr">
-                    {usd(perfume.price_usd)}
-                    {ils(perfume.price_ils) && <span className="ms-2 font-medium text-smoke">{ils(perfume.price_ils)}</span>}
-                  </dd>
-                </div>
+            <h1 className="mt-1.5 text-3xl font-extrabold leading-tight text-ink sm:text-5xl">{perfume.name}</h1>
+            <p className="mt-2 text-sm text-smoke">
+              {[audienceLabel, perfume.year ? String(perfume.year) : null, perfume.perfumers?.length ? perfume.perfumers.join(', ') : null].filter(Boolean).join(' · ')}
+            </p>
+          </div>
+
+          <div className="col-span-2 min-w-0 md:col-span-1 md:col-start-2">
+            {/* The community's verdict at a glance (like the score next to the name on Parfumo). */}
+            <a href="#panels-heading" className="inline-flex items-center gap-3 rounded-2xl border border-line bg-white px-4 py-2.5 transition hover:border-wine-600/50">
+              <Star className="h-6 w-6 fill-wine-600 text-wine-600" aria-hidden="true" />
+              {community.count > 0 ? (
+                <span className="flex items-baseline gap-2">
+                  <span className="text-2xl font-extrabold text-ink" dir="ltr">{community.average.toFixed(1)}</span>
+                  <span className="text-sm text-smoke">{t.perfumeHead.outOf}</span>
+                  <span className="text-sm text-smoke">· {fmt(t.perfumeHead.votes, { n: community.count })}</span>
+                  {community.reviews.length > 0 && <span className="text-sm text-smoke">· {fmt(t.perfumeHead.reviews, { n: community.reviews.length })}</span>}
+                </span>
+              ) : (
+                <span className="text-sm">
+                  <span className="font-bold text-ink">{t.perfumeHead.noRatings}</span>
+                  <span className="ms-2 font-bold text-wine-600 underline underline-offset-4">{t.perfumeHead.rateIt}</span>
+                </span>
               )}
-              <div>
-                <dt className="text-[11px] font-medium uppercase tracking-[0.16em] text-smoke">{t.audience}</dt>
-                <dd className="font-bold text-ink">{audienceLabel}</dd>
-              </div>
-              {perfume.year ? (
-                <div>
-                  <dt className="text-[11px] font-medium uppercase tracking-[0.16em] text-smoke">{t.facts.year}</dt>
-                  <dd className="font-bold text-ink" dir="ltr">{perfume.year}</dd>
-                </div>
-              ) : null}
-              {perfume.perfumers && perfume.perfumers.length > 0 && (
-                <div>
-                  <dt className="text-[11px] font-medium uppercase tracking-[0.16em] text-smoke">{t.facts.perfumer}</dt>
-                  <dd className="font-bold text-ink">{perfume.perfumers.join(', ')}</dd>
-                </div>
-              )}
-            </dl>
+            </a>
+
+            <p className="mt-5 max-w-xl leading-relaxed text-smoke">{intro}</p>
+
+            {usd(perfume.price_usd) && (
+              <p className="mt-4 text-sm">
+                <span className="text-[11px] font-medium uppercase tracking-[0.16em] text-smoke">{t.originalFrom}</span>{' '}
+                <span className="font-bold text-ink" dir="ltr">
+                  {usd(perfume.price_usd)}
+                  {ils(perfume.price_ils) && <span className="ms-2 font-medium text-smoke">{ils(perfume.price_ils)}</span>}
+                </span>
+              </p>
+            )}
+
             {perfume.accords && perfume.accords.length > 0 && (
-              <div className="mt-5">
-                <p className="mb-2 text-[11px] font-medium uppercase tracking-[0.16em] text-smoke">{t.facts.accords}</p>
-                <ul className="flex flex-wrap gap-1.5">
-                  {perfume.accords.slice(0, 8).map(a => (
-                    <li key={a} className="rounded-full bg-wine-600/10 px-3 py-1 text-sm font-medium text-wine-700">{accordLabel(a, lang)}</li>
-                  ))}
-                </ul>
-              </div>
+              <AccordBars accords={perfume.accords} lang={lang} title={t.facts.accords} />
             )}
             <ShelfButtons lang={lang} perfumeId={perfume.id} own={community.shelf.own} want={community.shelf.want} />
           </div>
         </header>
 
+        <SectionNav
+          label={t.perfumeHead.sections}
+          items={[
+            ...(noteGroups(perfume.note_pyramid).length ? [{ id: 'notes-heading', label: t.perfumeHead.navNotes }] : []),
+            { id: 'inspired-heading', label: t.perfumeHead.navInspired },
+            { id: 'photos-heading', label: t.perfumeHead.navPhotos },
+            { id: 'panels-heading', label: t.perfumeHead.navRatings },
+            { id: 'reviews-heading', label: t.perfumeHead.navReviews },
+          ]}
+        />
+
         <NotePyramid pyramid={perfume.note_pyramid} lang={lang} perfumeId={perfume.id} noteVotes={community.noteVotes} />
 
         <section className="mt-14" aria-labelledby="inspired-heading">
-          <h2 id="inspired-heading" className="mb-5 text-sm font-bold uppercase tracking-[0.14em] text-wine-600">
+          <h2 id="inspired-heading" className="mb-5 section-title">
             {fmt(t.inspiredHeading, { name: perfume.name })}
           </h2>
           {entries.length === 0 ? (
             <p className="rounded-2xl border border-line bg-white py-12 text-center text-smoke">{t.curatingSimilar}</p>
           ) : (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              {entries.map(e => (
-                <EntryCard key={e.id} entry={e} lang={lang} perfumeId={perfume.id} votes={community.entryVotes[entryKey(e.brand, e.name)]} />
+              {entries.map((e, i) => (
+                <EntryCard key={e.id} entry={e} rank={i + 1} lang={lang} perfumeId={perfume.id} votes={community.entryVotes[entryKey(e.brand, e.name)]} />
               ))}
             </div>
           )}
@@ -224,7 +240,7 @@ export default async function PerfumeView({ lang, slug }: { lang: Lang; slug: st
 
         {alike.length > 0 && (
           <section className="mt-14" aria-labelledby="alike-heading">
-            <h2 id="alike-heading" className="mb-5 text-sm font-bold uppercase tracking-[0.14em] text-wine-600">
+            <h2 id="alike-heading" className="mb-5 section-title">
               {t.similarByNotes}
             </h2>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -235,7 +251,7 @@ export default async function PerfumeView({ lang, slug }: { lang: Lang; slug: st
 
         {sameBrand.length > 0 && (
           <section className="mt-14" aria-labelledby="brand-heading">
-            <h2 id="brand-heading" className="mb-5 text-sm font-bold uppercase tracking-[0.14em] text-wine-600">
+            <h2 id="brand-heading" className="mb-5 section-title">
               {fmt(t.moreFrom, { brand: perfume.brand })}
             </h2>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -246,7 +262,7 @@ export default async function PerfumeView({ lang, slug }: { lang: Lang; slug: st
 
         {more.length > 0 && (
           <section className="mt-14" aria-labelledby="more-heading">
-            <h2 id="more-heading" className="mb-5 text-sm font-bold uppercase tracking-[0.14em] text-wine-600">
+            <h2 id="more-heading" className="mb-5 section-title">
               {t.keepExploring}
             </h2>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

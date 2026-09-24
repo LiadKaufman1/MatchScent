@@ -212,6 +212,21 @@ export type Dict = {
     count: string;
   };
   similarByNotes: string;
+  perfumeHead: {
+    outOf: string;
+    votes: string;
+    reviews: string;
+    noRatings: string;
+    rateIt: string;
+    sections: string;
+    navNotes: string;
+    navInspired: string;
+    navPhotos: string;
+    navRatings: string;
+    navReviews: string;
+  };
+  hero: { searchLabel: string; popular: string; browse: string };
+  footerNav: { explore: string; community: string; about: string };
   homeCommunity: {
     latestReviews: string;
     topRated: string;
@@ -526,6 +541,21 @@ const en: Dict = {
     count: '{n} fragrances',
   },
   similarByNotes: 'Perfumes with a similar character',
+  perfumeHead: {
+    outOf: 'out of 5',
+    votes: '{n} votes',
+    reviews: '{n} reviews',
+    noRatings: 'Not rated yet',
+    rateIt: 'Rate it',
+    sections: 'On this page',
+    navNotes: 'Notes',
+    navInspired: 'Similar scents',
+    navPhotos: 'Photos',
+    navRatings: 'Ratings',
+    navReviews: 'Reviews',
+  },
+  hero: { searchLabel: 'Search a perfume, a brand or a note', popular: 'Popular:', browse: 'All perfumes' },
+  footerNav: { explore: 'Explore', community: 'Community', about: 'About' },
   homeCommunity: {
     latestReviews: 'Latest reviews',
     topRated: 'Top rated by our members',
@@ -840,6 +870,21 @@ const he: Dict = {
     count: '{n} בשמים',
   },
   similarByNotes: 'בשמים עם אופי דומה',
+  perfumeHead: {
+    outOf: 'מתוך 5',
+    votes: '{n} הצבעות',
+    reviews: '{n} ביקורות',
+    noRatings: 'עדיין לא דורג',
+    rateIt: 'דרגו אותו',
+    sections: 'בעמוד הזה',
+    navNotes: 'תווים',
+    navInspired: 'בשמים דומים',
+    navPhotos: 'תמונות',
+    navRatings: 'דירוגים',
+    navReviews: 'ביקורות',
+  },
+  hero: { searchLabel: 'חפשו בושם, מותג או תו', popular: 'פופולרי:', browse: 'כל הבשמים' },
+  footerNav: { explore: 'לגלות', community: 'קהילה', about: 'על האתר' },
   homeCommunity: {
     latestReviews: 'ביקורות אחרונות',
     topRated: 'הכי מדורגים אצל החברים שלנו',
