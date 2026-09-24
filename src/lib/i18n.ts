@@ -186,6 +186,7 @@ export type Dict = {
   facts: { year: string; perfumer: string; accords: string };
   browse: {
     brandMeta: string;
+    brandCounts: string;
     brandHeading: string;
     brandPerfumes: string;
     brandInspired: string;
@@ -515,6 +516,7 @@ const en: Dict = {
   facts: { year: 'Launched', perfumer: 'Perfumer', accords: 'Main accords' },
   browse: {
     brandMeta: '{brand}: perfumes and similar scents',
+    brandCounts: '{perfumes} perfumes on the site · {inspired} similar scents',
     brandHeading: '{brand}',
     brandPerfumes: 'Perfumes by {brand}',
     brandInspired: 'Fragrances by {brand} that our lists compare to famous perfumes',
@@ -844,6 +846,7 @@ const he: Dict = {
   facts: { year: 'שנת הוצאה', perfumer: 'יוצר הבושם', accords: 'אקורדים עיקריים' },
   browse: {
     brandMeta: '{brand}: בשמים ובשמים דומים',
+    brandCounts: '{perfumes} בשמים באתר · {inspired} בשמים דומים',
     brandHeading: '{brand}',
     brandPerfumes: 'הבשמים של {brand}',
     brandInspired: 'בשמים של {brand} שהרשימות שלנו משוות לבשמים מפורסמים',

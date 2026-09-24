@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { getBrandPage, getBrandSlugs, getNotePage, getNoteSlugs, type InspiredHit } from '@/lib/load-browse';
 import { fmt, getDict, withLang, type Lang } from '@/lib/i18n';
 import { noteLabel } from '@/lib/notes';
+import { scentColor } from '@/lib/scent-colors';
 import Photo from '@/app/components/Photo';
 import PerfumeCard from '@/app/components/PerfumeCard';
 import { SiteFooter, SiteHeader } from '@/app/components/SiteChrome';
@@ -42,8 +43,8 @@ function InspiredList({ items, lang }: { items: InspiredHit[]; lang: Lang }) {
     <ul className="grid gap-3 sm:grid-cols-2">
       {items.map(({ entry, originals }) => (
         <li key={entry.id} className="flex items-start gap-3 rounded-xl border border-line bg-white p-3">
-          <span className="relative h-16 w-12 shrink-0 overflow-hidden rounded-lg border border-line">
-            <Photo url={entry.image_url} alt={`${entry.brand} ${entry.name}`} seed={entry.brand + entry.name} sizes="48px" />
+          <span className="relative h-24 w-[4.5rem] shrink-0 overflow-hidden rounded-xl border border-line bg-white">
+            <Photo url={entry.image_url} alt={`${entry.brand} ${entry.name}`} seed={entry.brand + entry.name} sizes="72px" />
           </span>
           <span className="min-w-0">
             <span className="block text-[11px] font-bold uppercase tracking-[0.16em] text-wine-600">{entry.brand}</span>
@@ -76,6 +77,7 @@ export async function BrandView({ lang, slug }: { lang: Lang; slug: string }) {
       <SiteHeader lang={lang} path={`/brand/${slug}`} />
       <main className="mx-auto max-w-5xl px-4 pb-12 pt-10 sm:px-6">
         <h1 className="text-4xl font-extrabold text-ink sm:text-5xl">{fmt(t.browse.brandHeading, { brand: data.brand })}</h1>
+        <p className="mt-3 text-smoke">{fmt(t.browse.brandCounts, { perfumes: data.perfumes.length, inspired: data.inspired.length })}</p>
         <div className="wine-rule my-6 w-32" />
 
         {data.perfumes.length > 0 && (
@@ -109,7 +111,12 @@ export async function NoteView({ lang, slug }: { lang: Lang; slug: string }) {
     <div className="site">
       <SiteHeader lang={lang} path={`/notes/${slug}`} />
       <main className="mx-auto max-w-5xl px-4 pb-12 pt-10 sm:px-6">
-        <h1 className="text-4xl font-extrabold text-ink sm:text-5xl">{fmt(t.browse.noteHeading, { note })}</h1>
+        <h1 className="flex items-center gap-3 text-4xl font-extrabold text-ink sm:text-5xl">
+          <span aria-hidden="true" className="inline-block h-5 w-5 shrink-0 rounded-full" style={{ backgroundColor: scentColor(data.name) }} />
+          {fmt(t.browse.noteHeading, { note })}
+        </h1>
+        {lang === 'he' && note !== data.name && <p className="mt-2 text-smoke"><span dir="ltr">{data.name}</span></p>}
+        <p className="mt-3 text-smoke">{fmt(t.browse.brandCounts, { perfumes: data.perfumes.length, inspired: data.inspired.length })}</p>
         <div className="wine-rule my-6 w-32" />
 
         {data.perfumes.length > 0 && (
