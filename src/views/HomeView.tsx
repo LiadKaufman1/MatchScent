@@ -5,6 +5,7 @@ import CountrySelect from '@/app/components/CountrySelect';
 import AuthStatus from '@/app/components/AuthStatus';
 import CommunityHighlights from '@/app/components/CommunityHighlights';
 import Link from 'next/link';
+import { Search } from 'lucide-react';
 import { LanguageSwitch, SiteFooter, Wordmark } from '@/app/components/SiteChrome';
 
 // The home page, in either language.
@@ -17,6 +18,9 @@ export default async function HomeView({ lang }: { lang: Lang }) {
       <main>
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-end gap-2 px-4 pt-4 sm:px-6">
           <Link href={withLang(lang, '/top')} className="text-xs font-bold uppercase tracking-[0.14em] text-smoke transition hover:text-wine-600">{t.nav.top}</Link>
+          <Link href={withLang(lang, '/search')} aria-label={t.nav.search} title={t.nav.search} className="text-smoke transition hover:text-wine-600">
+            <Search className="h-4 w-4" aria-hidden="true" />
+          </Link>
           <LanguageSwitch lang={lang} path="/" />
           <CountrySelect lang={lang} />
           <AuthStatus lang={lang} />

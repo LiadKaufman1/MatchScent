@@ -13,6 +13,7 @@ import UserRatings from '@/app/components/UserRatings';
 import ProsCons from '@/app/components/ProsCons';
 import NotePyramid from '@/app/components/NotePyramid';
 import { accordLabel } from '@/lib/notes';
+import { similarByNotes } from '@/lib/search';
 import ShelfButtons from '@/app/components/ShelfButtons';
 import PhotoGallery from '@/app/components/PhotoGallery';
 import SuggestForm from '@/app/components/SuggestForm';
@@ -83,6 +84,7 @@ export default async function PerfumeView({ lang, slug }: { lang: Lang; slug: st
   if (!data) notFound();
 
   const { perfume, entries, sameBrand, more, community } = data;
+  const alike = await similarByNotes(perfume);
   const full = `${perfume.brand} ${perfume.name}`;
   const path = `/perfume/${perfume.slug}`;
   const base = siteUrl();
@@ -219,6 +221,17 @@ export default async function PerfumeView({ lang, slug }: { lang: Lang; slug: st
         <ProsCons lang={lang} perfumeId={perfume.id} points={community.points} />
 
         <Reviews lang={lang} perfumeId={perfume.id} reviews={community.reviews} />
+
+        {alike.length > 0 && (
+          <section className="mt-14" aria-labelledby="alike-heading">
+            <h2 id="alike-heading" className="mb-5 text-sm font-bold uppercase tracking-[0.14em] text-wine-600">
+              {t.similarByNotes}
+            </h2>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {alike.map(p => <PerfumeLink key={p.id} p={p} lang={lang} />)}
+            </div>
+          </section>
+        )}
 
         {sameBrand.length > 0 && (
           <section className="mt-14" aria-labelledby="brand-heading">

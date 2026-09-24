@@ -194,7 +194,22 @@ export type Dict = {
     notFound: string;
     empty: string;
   };
-  nav: { top: string; suggest: string };
+  nav: { top: string; suggest: string; search: string };
+  search: {
+    metaTitle: string;
+    heading: string;
+    placeholder: string;
+    submit: string;
+    perfumes: string;
+    inspired: string;
+    brands: string;
+    notes: string;
+    none: string;
+    hint: string;
+    inspiredBy: string;
+    count: string;
+  };
+  similarByNotes: string;
   homeCommunity: {
     latestReviews: string;
     topRated: string;
@@ -491,7 +506,22 @@ const en: Dict = {
     notFound: 'Nothing was found here.',
     empty: 'Nothing here yet.',
   },
-  nav: { top: 'Top rated', suggest: 'Suggest a perfume' },
+  nav: { top: 'Top rated', suggest: 'Suggest a perfume', search: 'Search' },
+  search: {
+    metaTitle: 'Search',
+    heading: 'Search the site',
+    placeholder: 'A perfume, a brand or a note (for example: vanilla)...',
+    submit: 'Search',
+    perfumes: 'Perfumes',
+    inspired: 'Similar scents',
+    brands: 'Brands',
+    notes: 'Notes',
+    none: 'Nothing found for "{q}".',
+    hint: 'Search perfumes, the fragrances inspired by them, brands and notes.',
+    inspiredBy: 'Inspired by',
+    count: '{n} fragrances',
+  },
+  similarByNotes: 'Perfumes with a similar character',
   homeCommunity: {
     latestReviews: 'Latest reviews',
     topRated: 'Top rated by our members',
@@ -788,7 +818,22 @@ const he: Dict = {
     notFound: 'לא נמצא כלום כאן.',
     empty: 'אין כאן עדיין כלום.',
   },
-  nav: { top: 'המובילים', suggest: 'הציעו בושם' },
+  nav: { top: 'המובילים', suggest: 'הציעו בושם', search: 'חיפוש' },
+  search: {
+    metaTitle: 'חיפוש',
+    heading: 'חיפוש באתר',
+    placeholder: 'בושם, מותג או תו (למשל: וניל)...',
+    submit: 'חיפוש',
+    perfumes: 'בשמים',
+    inspired: 'בשמים דומים',
+    brands: 'מותגים',
+    notes: 'תווים',
+    none: 'לא נמצא דבר עבור "{q}".',
+    hint: 'חפשו בשמים, בשמים בהשראתם, מותגים ותווים.',
+    inspiredBy: 'בהשראת',
+    count: '{n} בשמים',
+  },
+  similarByNotes: 'בשמים עם אופי דומה',
   homeCommunity: {
     latestReviews: 'ביקורות אחרונות',
     topRated: 'הכי מדורגים אצל החברים שלנו',

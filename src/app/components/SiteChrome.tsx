@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { Search } from 'lucide-react';
 import { getDict, otherLang, withLang, type Lang } from '@/lib/i18n';
 import CountrySelect from './CountrySelect';
 import AuthStatus from './AuthStatus';
@@ -49,6 +50,9 @@ export function SiteHeader({ lang, path }: { lang: Lang; path: string }) {
             className="text-xs font-bold uppercase tracking-[0.14em] text-smoke transition hover:text-wine-600"
           >
             {t.nav.top}
+          </Link>
+          <Link href={withLang(lang, '/search')} aria-label={t.nav.search} title={t.nav.search} className="text-smoke transition hover:text-wine-600">
+            <Search className="h-4 w-4" aria-hidden="true" />
           </Link>
           <LanguageSwitch lang={lang} path={path} />
           <CountrySelect lang={lang} />
