@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import Image from 'next/image';
 import { getCatalog } from '@/lib/load-catalog';
 import { getSupabase } from '@/lib/supabase';
 import { fmt, getDict, withLang, type Lang } from '@/lib/i18n';
@@ -15,6 +16,7 @@ type ProfileData = {
   shelf: { perfumeId: string; status: 'own' | 'had' | 'want' }[];
   ratings: { perfumeId: string; score: number }[];
   reviews: { id: string; perfumeId: string; body: string }[];
+  photos: { id: string; perfumeId: string; url: string }[];
 };
 
 // A member's public page: display name, shelf, ratings and reviews (all of it is public data).
@@ -30,10 +32,11 @@ async function loadProfile(id: string): Promise<ProfileData | null> {
       : (withBio.data as { display_name: string; created_at: string; bio?: string | null } | null);
     if (!profile) return null;
     // The shelf table may not exist yet - an empty list is fine then.
-    const [shelf, reviews, ratings] = await Promise.all([
+    const [shelf, reviews, ratings, photos] = await Promise.all([
       supabase.from('collections').select('perfume_id, status').eq('user_id', id),
       supabase.from('reviews').select('id, perfume_id, body').eq('user_id', id).order('created_at', { ascending: false }).limit(50),
       supabase.from('ratings').select('perfume_id, score').eq('user_id', id),
+      supabase.from('perfume_photos').select('id, perfume_id, public_url').eq('user_id', id).eq('status', 'approved').order('created_at', { ascending: false }).limit(40),
     ]);
     return {
       name: profile.display_name,
@@ -41,6 +44,9 @@ async function loadProfile(id: string): Promise<ProfileData | null> {
       joined: profile.created_at,
       shelf: ((shelf.data ?? []) as { perfume_id: string; status: 'own' | 'had' | 'want' }[]).map(r => ({ perfumeId: r.perfume_id, status: r.status })),
       ratings: ((ratings.data ?? []) as { perfume_id: string; score: number }[]).map(r => ({ perfumeId: r.perfume_id, score: r.score })),
+      photos: ((photos.data ?? []) as { id: string; perfume_id: string; public_url: string | null }[])
+        .filter(r => r.public_url)
+        .map(r => ({ id: r.id, perfumeId: r.perfume_id, url: r.public_url as string })),
       reviews: ((reviews.data ?? []) as { id: string; perfume_id: string; body: string }[]).map(r => ({ id: r.id, perfumeId: r.perfume_id, body: r.body })),
     };
   } catch {
@@ -138,6 +144,25 @@ export default async function ProfileView({ lang, id }: { lang: Lang; id: string
                 </ul>
               )}
             </section>
+
+            {profile.photos.length > 0 && (
+              <section className="mt-10" aria-labelledby="photos-heading">
+                <h2 id="photos-heading" className="mb-4 text-sm font-bold uppercase tracking-[0.14em] text-wine-600">{t.profile.photosHeading}</h2>
+                <ul className="grid grid-cols-3 gap-3 sm:grid-cols-4">
+                  {profile.photos.map(ph => {
+                    const p = byId.get(ph.perfumeId);
+                    const alt = p ? `${p.brand} ${p.name}` : '';
+                    return (
+                      <li key={ph.id}>
+                        <Link href={p ? withLang(lang, `/perfume/${p.slug}`) : ph.url} prefetch={false} className="relative block aspect-square overflow-hidden rounded-2xl border border-line" title={alt}>
+                          <Image src={ph.url} alt={alt} fill sizes="(min-width: 640px) 180px, 30vw" className="object-cover" />
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </section>
+            )}
 
             <section className="mt-10" aria-labelledby="reviews-heading">
               <h2 id="reviews-heading" className="mb-4 text-sm font-bold uppercase tracking-[0.14em] text-wine-600">{t.profile.reviewsHeading}</h2>

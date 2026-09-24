@@ -44,6 +44,12 @@ export function SiteHeader({ lang, path }: { lang: Lang; path: string }) {
           >
             {t.allFragrances}
           </Link>
+          <Link
+            href={withLang(lang, '/top')}
+            className="text-xs font-bold uppercase tracking-[0.14em] text-smoke transition hover:text-wine-600"
+          >
+            {t.nav.top}
+          </Link>
           <LanguageSwitch lang={lang} path={path} />
           <CountrySelect lang={lang} />
           <AuthStatus lang={lang} />

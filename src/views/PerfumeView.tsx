@@ -14,6 +14,8 @@ import ProsCons from '@/app/components/ProsCons';
 import NotePyramid from '@/app/components/NotePyramid';
 import { accordLabel } from '@/lib/notes';
 import ShelfButtons from '@/app/components/ShelfButtons';
+import PhotoGallery from '@/app/components/PhotoGallery';
+import SuggestForm from '@/app/components/SuggestForm';
 import { SiteFooter, SiteHeader } from '@/app/components/SiteChrome';
 
 export async function perfumeStaticParams() {
@@ -183,7 +185,7 @@ export default async function PerfumeView({ lang, slug }: { lang: Lang; slug: st
           </div>
         </header>
 
-        <NotePyramid pyramid={perfume.note_pyramid} lang={lang} />
+        <NotePyramid pyramid={perfume.note_pyramid} lang={lang} perfumeId={perfume.id} noteVotes={community.noteVotes} />
 
         <section className="mt-14" aria-labelledby="inspired-heading">
           <h2 id="inspired-heading" className="mb-5 text-sm font-bold uppercase tracking-[0.14em] text-wine-600">
@@ -198,7 +200,12 @@ export default async function PerfumeView({ lang, slug }: { lang: Lang; slug: st
               ))}
             </div>
           )}
+          <div className="mt-4">
+            <SuggestForm lang={lang} kind="similar" perfumeId={perfume.id} compact />
+          </div>
         </section>
+
+        <PhotoGallery lang={lang} perfumeId={perfume.id} photos={community.photos} alt={full} />
 
         <UserRatings
           lang={lang}

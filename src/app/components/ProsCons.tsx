@@ -54,7 +54,10 @@ export default function ProsCons({ lang, perfumeId, points: initial }: { lang: L
     if (body.length < 3) return;
     startTransition(async () => {
       const result = await addPoint(perfumeId, kind, body);
-      if (!result.success || !result.id) { setMessage(t.auth.errorGeneric); return; }
+      if (!result.success || !result.id) {
+        setMessage(!result.success && result.error === 'blocked word' ? t.community.blockedWord : t.auth.errorGeneric);
+        return;
+      }
       setMessage(null);
       setDrafts(d => ({ ...d, [kind]: '' }));
       setPoints(list => [...list, { id: result.id!, kind, body, user_id: userId ?? '', up: 0, down: 0 }]);

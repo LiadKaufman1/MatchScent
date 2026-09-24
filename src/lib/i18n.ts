@@ -178,6 +178,7 @@ export type Dict = {
     helpful: string;
     helpfulCount: string;
     reviewOn: string;
+    blockedWord: string;
   };
   notes: { heading: string; top: string; heart: string; base: string; notes: string };
   facts: { year: string; perfumer: string; accords: string };
@@ -193,12 +194,89 @@ export type Dict = {
     notFound: string;
     empty: string;
   };
+  nav: { top: string; suggest: string };
+  homeCommunity: {
+    latestReviews: string;
+    topRated: string;
+    mostWanted: string;
+    newPhotos: string;
+    seeCharts: string;
+    reviewOf: string;
+    missingHeading: string;
+    missingText: string;
+  };
+  top: {
+    metaTitle: string;
+    metaDescription: string;
+    heading: string;
+    intro: string;
+    topRated: string;
+    mostLoved: string;
+    mostWanted: string;
+    mostOwned: string;
+    mostReviewed: string;
+    topMembers: string;
+    ratingLine: string;
+    lovesLine: string;
+    wantLine: string;
+    ownLine: string;
+    reviewsLine: string;
+    memberLine: string;
+    empty: string;
+  };
+  comments: {
+    show: string;
+    hide: string;
+    reply: string;
+    placeholder: string;
+    submit: string;
+    remove: string;
+  };
+  noteVotes: {
+    vote: string;
+    done: string;
+    hint: string;
+    count: string;
+    login: string;
+  };
+  photos: {
+    heading: string;
+    none: string;
+    add: string;
+    own: string;
+    upload: string;
+    uploading: string;
+    sent: string;
+    tooMany: string;
+    invalid: string;
+    by: string;
+    remove: string;
+    login: string;
+  };
+  suggest: {
+    similarHeading: string;
+    similarText: string;
+    similarCta: string;
+    brand: string;
+    name: string;
+    note: string;
+    gender: string;
+    submit: string;
+    sent: string;
+    sameBrand: string;
+    tooMany: string;
+    login: string;
+    perfumeTitle: string;
+    perfumeMeta: string;
+    perfumeIntro: string;
+  };
   profile: {
     metaTitle: string;
     joined: string;
     shelfHeading: string;
     ratingsHeading: string;
     stats: string;
+    photosHeading: string;
     reviewsHeading: string;
     empty: string;
     notFound: string;
@@ -397,6 +475,7 @@ const en: Dict = {
     helpful: 'Helpful',
     helpfulCount: '{n} found this helpful',
     reviewOn: 'Review of {name}',
+    blockedWord: 'Please write "similar" or "inspired by" instead of that word.',
   },
   notes: { heading: 'Notes', top: 'Top notes', heart: 'Heart notes', base: 'Base notes', notes: 'Notes' },
   facts: { year: 'Launched', perfumer: 'Perfumer', accords: 'Main accords' },
@@ -412,11 +491,88 @@ const en: Dict = {
     notFound: 'Nothing was found here.',
     empty: 'Nothing here yet.',
   },
+  nav: { top: 'Top rated', suggest: 'Suggest a perfume' },
+  homeCommunity: {
+    latestReviews: 'Latest reviews',
+    topRated: 'Top rated by our members',
+    mostWanted: 'Most wanted',
+    newPhotos: 'New photos from members',
+    seeCharts: 'All the charts',
+    reviewOf: 'on {name}',
+    missingHeading: 'Missing a perfume?',
+    missingText: 'Tell us which perfume to add and we will add it with its similar scents.',
+  },
+  top: {
+    metaTitle: 'Top rated perfumes - community charts',
+    metaDescription: 'The perfumes our members rate highest, love most, own and want - updated all the time.',
+    heading: 'Community charts',
+    intro: 'Built from our members\' votes and updated all the time.',
+    topRated: 'Top rated',
+    mostLoved: 'Most loved',
+    mostWanted: 'Most wanted',
+    mostOwned: 'Most owned',
+    mostReviewed: 'Most reviewed',
+    topMembers: 'Most active members',
+    ratingLine: '{avg} out of 5 · {count} votes',
+    lovesLine: '{n} love it',
+    wantLine: '{n} want it',
+    ownLine: '{n} own it',
+    reviewsLine: '{n} reviews',
+    memberLine: '{ratings} ratings · {reviews} reviews',
+    empty: 'Not enough votes yet - rate perfumes to fill this chart!',
+  },
+  comments: {
+    show: 'Replies ({n})',
+    hide: 'Hide replies',
+    reply: 'Reply',
+    placeholder: 'Write a reply...',
+    submit: 'Post reply',
+    remove: 'Delete',
+  },
+  noteVotes: {
+    vote: 'Vote for notes',
+    done: 'Done voting',
+    hint: 'Tap the notes you really smell in it.',
+    count: '{n} members smell it',
+    login: 'Log in to vote for notes',
+  },
+  photos: {
+    heading: 'Members\' photos',
+    none: 'No photos yet - be the first to add one.',
+    add: 'Add a photo of your bottle',
+    own: 'This is my own photo (I took it myself)',
+    upload: 'Upload',
+    uploading: 'Uploading...',
+    sent: 'Thank you! Your photo will appear after we check it.',
+    tooMany: 'You have reached the photo limit for now.',
+    invalid: 'Please choose a JPG, PNG or WEBP picture.',
+    by: 'Photo: {name}',
+    remove: 'Delete',
+    login: 'Log in to add a photo',
+  },
+  suggest: {
+    similarHeading: 'Know a fragrance that smells like it?',
+    similarText: 'Suggest it and we will add it to the list after checking.',
+    similarCta: 'Suggest a similar scent',
+    brand: 'Brand',
+    name: 'Fragrance name',
+    note: 'Anything to add? (optional)',
+    gender: 'For',
+    submit: 'Send suggestion',
+    sent: 'Thank you! We will check it and add it.',
+    sameBrand: 'A similar scent has to be from a different brand.',
+    tooMany: 'You have many suggestions waiting. Please wait until we check them.',
+    login: 'Log in to send a suggestion',
+    perfumeTitle: 'Suggest a perfume',
+    perfumeMeta: 'Suggest a perfume to add to MatchScent',
+    perfumeIntro: 'Which perfume should we add? We will check it and add it together with the fragrances that smell like it.',
+  },
   profile: {
     metaTitle: 'Profile: {name}',
     joined: 'Member since {date}',
     shelfHeading: 'Shelf',
     ratingsHeading: 'Ratings',
+    photosHeading: 'Photos',
     stats: '{ratings} ratings · {reviews} reviews · {shelf} on the shelf',
     reviewsHeading: 'Reviews',
     empty: 'Nothing here yet.',
@@ -616,6 +772,7 @@ const he: Dict = {
     helpful: 'מועיל',
     helpfulCount: '{n} מצאו את זה מועיל',
     reviewOn: 'ביקורת על {name}',
+    blockedWord: 'נא לכתוב "דומה" או "בהשראת" במקום המילה הזו.',
   },
   notes: { heading: 'תווים', top: 'תווי ראש', heart: 'תווי לב', base: 'תווי בסיס', notes: 'תווים' },
   facts: { year: 'שנת הוצאה', perfumer: 'יוצר הבושם', accords: 'אקורדים עיקריים' },
@@ -631,11 +788,88 @@ const he: Dict = {
     notFound: 'לא נמצא כלום כאן.',
     empty: 'אין כאן עדיין כלום.',
   },
+  nav: { top: 'המובילים', suggest: 'הציעו בושם' },
+  homeCommunity: {
+    latestReviews: 'ביקורות אחרונות',
+    topRated: 'הכי מדורגים אצל החברים שלנו',
+    mostWanted: 'הכי מבוקשים',
+    newPhotos: 'תמונות חדשות מהחברים',
+    seeCharts: 'לכל הטבלאות',
+    reviewOf: 'על {name}',
+    missingHeading: 'חסר לכם בושם?',
+    missingText: 'ספרו לנו איזה בושם להוסיף, ונוסיף אותו יחד עם הבשמים הדומים לו.',
+  },
+  top: {
+    metaTitle: 'הבשמים המובילים - טבלאות הקהילה',
+    metaDescription: 'הבשמים שהחברים שלנו מדרגים הכי גבוה, אוהבים, מחזיקים ורוצים - מתעדכן כל הזמן.',
+    heading: 'טבלאות הקהילה',
+    intro: 'נבנות מההצבעות של החברים שלנו ומתעדכנות כל הזמן.',
+    topRated: 'הכי מדורגים',
+    mostLoved: 'הכי אהובים',
+    mostWanted: 'הכי מבוקשים',
+    mostOwned: 'הכי נפוצים על המדף',
+    mostReviewed: 'הכי הרבה ביקורות',
+    topMembers: 'החברים הכי פעילים',
+    ratingLine: '{avg} מתוך 5 · {count} הצבעות',
+    lovesLine: '{n} אוהבים מאוד',
+    wantLine: '{n} רוצים אותו',
+    ownLine: '{n} מחזיקים בו',
+    reviewsLine: '{n} ביקורות',
+    memberLine: '{ratings} דירוגים · {reviews} ביקורות',
+    empty: 'עדיין אין מספיק הצבעות - דרגו בשמים כדי למלא את הטבלה!',
+  },
+  comments: {
+    show: 'תגובות ({n})',
+    hide: 'הסתרת התגובות',
+    reply: 'הגיבו',
+    placeholder: 'כתבו תגובה...',
+    submit: 'פרסום תגובה',
+    remove: 'מחיקה',
+  },
+  noteVotes: {
+    vote: 'הצביעו על התווים',
+    done: 'סיום הצבעה',
+    hint: 'לחצו על התווים שאתם באמת מריחים בבושם.',
+    count: '{n} חברים מריחים אותו',
+    login: 'התחברו כדי להצביע על תווים',
+  },
+  photos: {
+    heading: 'תמונות של החברים',
+    none: 'עדיין אין תמונות - היו הראשונים להוסיף.',
+    add: 'הוסיפו תמונה של הבקבוק שלכם',
+    own: 'זו תמונה שלי (צילמתי אותה בעצמי)',
+    upload: 'העלאה',
+    uploading: 'מעלה...',
+    sent: 'תודה! התמונה תופיע אחרי שנבדוק אותה.',
+    tooMany: 'הגעתם למגבלת התמונות כרגע.',
+    invalid: 'נא לבחור תמונה מסוג JPG, PNG או WEBP.',
+    by: 'צילום: {name}',
+    remove: 'מחיקה',
+    login: 'התחברו כדי להוסיף תמונה',
+  },
+  suggest: {
+    similarHeading: 'מכירים בושם שמריח כמוהו?',
+    similarText: 'הציעו אותו, ואחרי בדיקה נוסיף אותו לרשימה.',
+    similarCta: 'הציעו בושם דומה',
+    brand: 'מותג',
+    name: 'שם הבושם',
+    note: 'משהו להוסיף? (לא חובה)',
+    gender: 'מתאים ל',
+    submit: 'שליחת ההצעה',
+    sent: 'תודה! נבדוק ונוסיף.',
+    sameBrand: 'בושם דומה צריך להיות ממותג אחר.',
+    tooMany: 'יש לכם הרבה הצעות שמחכות. נא לחכות שנבדוק אותן.',
+    login: 'התחברו כדי לשלוח הצעה',
+    perfumeTitle: 'הציעו בושם',
+    perfumeMeta: 'הציעו בושם שיתווסף ל-MatchScent',
+    perfumeIntro: 'איזה בושם כדאי שנוסיף? נבדוק ונוסיף אותו יחד עם הבשמים שמריחים כמוהו.',
+  },
   profile: {
     metaTitle: 'פרופיל: {name}',
     joined: 'חברים מאז {date}',
     shelfHeading: 'מדף',
     ratingsHeading: 'דירוגים',
+    photosHeading: 'תמונות',
     stats: '{ratings} דירוגים · {reviews} ביקורות · {shelf} על המדף',
     reviewsHeading: 'ביקורות',
     empty: 'אין כאן עדיין כלום.',
