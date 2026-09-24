@@ -59,6 +59,7 @@ export default async function HomeView({ lang }: { lang: Lang }) {
         <CommunityHighlights lang={lang} />
 
         <div id="catalog" className="scroll-mt-4">
+          <h2 className="mb-6 px-4 text-center text-3xl font-extrabold text-ink">{t.allFragrances}</h2>
           <Catalog perfumes={perfumes} lang={lang} />
         </div>
       </main>
