@@ -2,11 +2,11 @@
 
 import { useState, useTransition } from 'react';
 import { Trash2 } from 'lucide-react';
-import { adminDeletePoint, adminDeleteReview } from '@/lib/actions';
+import { adminDeleteComment, adminDeletePoint, adminDeleteReview } from '@/lib/actions';
 
 export type ModerationItem = {
   id: string;
-  type: 'review' | 'point';
+  type: 'review' | 'point' | 'comment';
   body: string;
   label: string;
   author: string;
@@ -24,6 +24,7 @@ export default function ModerationList({ items: initial }: { items: ModerationIt
     startTransition(async () => {
       try {
         if (item.type === 'review') await adminDeleteReview(item.id);
+        else if (item.type === 'comment') await adminDeleteComment(item.id);
         else await adminDeletePoint(item.id);
         setItems(list => list.filter(i => i.id !== item.id));
         setError(null);

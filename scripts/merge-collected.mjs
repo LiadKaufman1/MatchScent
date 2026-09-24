@@ -26,8 +26,16 @@ const designerSlug = brand => brand.trim().split(/\s+/).map(w => (w === w.toUppe
 const files = fs.readdirSync(DIR).filter(f => /^collected-.*\.json$/.test(f)).sort();
 let newIds = 0, newNotes = 0;
 for (const file of files) {
-  const { designers = {}, notes: pyramids = {}, details: facts = {} } = read(file, {});
+  const { designers = {}, notes: pyramids = {}, details: facts = {}, ids: direct = {} } = read(file, {});
   Object.assign(details, facts);
+
+  // "ids": { "<fragrance slug>": <Fragrantica number> } - already matched to our own fragrances.
+  for (const [slug, id] of Object.entries(direct)) {
+    const item = need.find(v => v.slug === slug);
+    if (!item || !id) continue;
+    if (!ids[slug]) { ids[slug] = id; newIds++; }
+    if (!targets.some(t => t.slug === slug)) targets.push({ slug, brand: item.brand, name: item.name, kind: 'inspired' });
+  }
 
   for (const item of need) {
     const found = designers[designerSlug(item.brand)]?.found;

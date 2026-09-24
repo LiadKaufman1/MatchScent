@@ -4,6 +4,8 @@ import {
   ASPECTS,
   isVoteKind,
   type PerfumeCommunity,
+  type CommentRow,
+  type PhotoRow,
   type PointRow,
   type ReviewWithAuthor,
 } from './community-types';
@@ -22,6 +24,8 @@ export const emptyCommunity = (): PerfumeCommunity => ({
   reviews: [],
   entryVotes: {},
   shelf: { own: 0, had: 0, want: 0 },
+  noteVotes: {},
+  photos: [],
 });
 
 type Supa = ReturnType<typeof getSupabase>;
@@ -47,6 +51,8 @@ export async function getPerfumeCommunity(perfumeId: string): Promise<PerfumeCom
     loadReviews(supabase, perfumeId, result),
     loadEntryVotes(supabase, perfumeId, result),
     loadShelf(supabase, perfumeId, result),
+    loadNoteVotes(supabase, perfumeId, result),
+    loadPhotos(supabase, perfumeId, result),
   ]);
   return result;
 }
@@ -108,39 +114,85 @@ async function loadPoints(supabase: Supa, perfumeId: string, result: PerfumeComm
 
 async function loadReviews(supabase: Supa, perfumeId: string, result: PerfumeCommunity) {
   try {
-    type ReviewRow = {
-      id: string; body: string; created_at: string; user_id: string;
-      author: { display_name: string } | { display_name: string }[] | null;
-      review_votes?: { user_id: string }[] | null;
-    };
-    // "review_votes" exists only after the v3 migration; without it, ask again without the counts.
-    let rows: ReviewRow[] | null = null;
-    const withVotes = await supabase
+    type Author = { display_name: string } | { display_name: string }[] | null;
+    type ReviewRow = { id: string; body: string; created_at: string; user_id: string; author: Author };
+    const { data, error } = await supabase
       .from('reviews')
-      .select('id, body, created_at, user_id, author:profiles(display_name), review_votes(user_id)')
+      .select('id, body, created_at, user_id, author:profiles(display_name)')
       .eq('perfume_id', perfumeId)
       .order('created_at', { ascending: false })
       .limit(50);
-    if (!withVotes.error) rows = withVotes.data as ReviewRow[];
-    else {
-      const plain = await supabase
-        .from('reviews')
-        .select('id, body, created_at, user_id, author:profiles(display_name)')
-        .eq('perfume_id', perfumeId)
-        .order('created_at', { ascending: false })
-        .limit(50);
-      if (!plain.error) rows = plain.data as ReviewRow[];
+    if (error) return;
+    const rows = (data ?? []) as ReviewRow[];
+    const ids = rows.map(r => r.id);
+
+    // "Helpful" votes (v3) and comments (v4) live in their own tables; if one is not there yet,
+    // its part simply stays empty.
+    const helpful = new Map<string, number>();
+    const comments = new Map<string, CommentRow[]>();
+    const scores = new Map<string, number>(); // the author's own rating of this perfume, shown next to the review
+    if (ids.length) {
+      const [votes, replies, authorRatings] = await Promise.all([
+        supabase.from('review_votes').select('review_id').in('review_id', ids),
+        supabase
+          .from('review_comments')
+          .select('id, review_id, body, created_at, user_id, author:profiles(display_name)')
+          .in('review_id', ids)
+          .order('created_at', { ascending: true }),
+        supabase.from('ratings').select('user_id, score').eq('perfume_id', perfumeId).in('user_id', [...new Set(rows.map(r => r.user_id))]),
+      ]);
+      if (!authorRatings.error) for (const r of (authorRatings.data ?? []) as { user_id: string; score: number }[]) scores.set(r.user_id, r.score);
+      if (!votes.error) for (const v of (votes.data ?? []) as { review_id: string }[]) helpful.set(v.review_id, (helpful.get(v.review_id) ?? 0) + 1);
+      if (!replies.error) {
+        type CommentDbRow = { id: string; review_id: string; body: string; created_at: string; user_id: string; author: Author };
+        for (const c of (replies.data ?? []) as CommentDbRow[]) {
+          const list = comments.get(c.review_id) ?? [];
+          list.push({ id: c.id, body: c.body, created_at: c.created_at, user_id: c.user_id, author: one(c.author)?.display_name ?? '' });
+          comments.set(c.review_id, list);
+        }
+      }
     }
-    const reviews: ReviewWithAuthor[] = (rows ?? []).map(r => ({
+
+    const reviews: ReviewWithAuthor[] = rows.map(r => ({
       id: r.id,
       body: r.body,
       created_at: r.created_at,
       user_id: r.user_id,
       author: one(r.author)?.display_name ?? '',
-      helpful: r.review_votes?.length ?? 0,
+      helpful: helpful.get(r.id) ?? 0,
+      comments: comments.get(r.id) ?? [],
+      score: scores.get(r.user_id) ?? null,
     }));
-    result.reviews = reviews.sort((a, b) => b.helpful - a.helpful || b.created_at.localeCompare(a.created_at));
+    result.reviews = reviews.sort((x, y) => y.helpful - x.helpful || y.created_at.localeCompare(x.created_at));
   } catch { /* keep no reviews */ }
+}
+
+async function loadNoteVotes(supabase: Supa, perfumeId: string, result: PerfumeCommunity) {
+  try {
+    const { data, error } = await supabase.from('note_votes').select('note').eq('perfume_id', perfumeId);
+    if (error) return;
+    for (const row of (data ?? []) as { note: string }[]) {
+      const key = row.note.toLowerCase();
+      result.noteVotes[key] = (result.noteVotes[key] ?? 0) + 1;
+    }
+  } catch { /* keep no note votes */ }
+}
+
+async function loadPhotos(supabase: Supa, perfumeId: string, result: PerfumeCommunity) {
+  try {
+    const { data, error } = await supabase
+      .from('perfume_photos')
+      .select('id, public_url, created_at, user_id, author:profiles(display_name)')
+      .eq('perfume_id', perfumeId)
+      .eq('status', 'approved')
+      .order('created_at', { ascending: false })
+      .limit(30);
+    if (error) return;
+    type Row = { id: string; public_url: string | null; created_at: string; user_id: string; author: { display_name: string } | { display_name: string }[] | null };
+    result.photos = ((data ?? []) as Row[])
+      .filter(r => r.public_url)
+      .map((r): PhotoRow => ({ id: r.id, url: r.public_url as string, created_at: r.created_at, user_id: r.user_id, author: one(r.author)?.display_name ?? '' }));
+  } catch { /* keep no photos */ }
 }
 
 async function loadEntryVotes(supabase: Supa, perfumeId: string, result: PerfumeCommunity) {

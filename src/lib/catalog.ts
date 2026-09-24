@@ -10,6 +10,10 @@ const isAllowedImageHost = (host: string) =>
 // Words we never show visitors (the old data contains raw store product titles).
 const BLOCKED_WORDS = /\b(dupes?|clones?|knock-?offs?|replicas?|fakes?|counterfeit)\b/i;
 
+// Members' texts (reviews, comments, pros/cons, suggestions) are refused when they use one of
+// these words, so they never appear on the site either (the owner's rule).
+export const hasBlockedWord = (text: string) => BLOCKED_WORDS.test(text);
+
 // An entry with no image is fine (the site shows a placeholder). An entry whose
 // image comes from a host we cannot load (for example Google thumbnails) is hidden.
 const isImageLoadable = (url: string | null | undefined) => {

@@ -11,8 +11,9 @@ import EntryVotes from './EntryVotes';
 
 // One "inspired by" fragrance: its picture, main notes, the community's vote on how
 // close it is to the original, and the price-comparison button.
-export default function EntryCard({ entry, lang, perfumeId, votes }: {
+export default function EntryCard({ entry, lang, perfumeId, votes, rank }: {
   entry: Dupe;
+  rank?: number;
   lang: Lang;
   perfumeId: string;
   votes?: EntryVoteCounts;
@@ -24,6 +25,9 @@ export default function EntryCard({ entry, lang, perfumeId, votes }: {
       <div className="flex gap-4">
         <div className="relative h-36 w-28 shrink-0 overflow-hidden rounded-xl border border-line">
           <Photo url={entry.image_url} alt={`${entry.brand} ${entry.name}`} seed={entry.brand + entry.name} sizes="112px" />
+          {rank ? (
+            <span className="absolute start-1.5 top-1.5 flex h-6 min-w-6 items-center justify-center rounded-full bg-wine-600 px-1.5 text-xs font-extrabold text-white shadow" dir="ltr">{rank}</span>
+          ) : null}
         </div>
         <div className="min-w-0 flex-1">
           <h3 className="text-lg font-bold leading-tight text-ink">{entry.name}</h3>

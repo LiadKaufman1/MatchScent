@@ -21,7 +21,9 @@ export const isVoteKind = (kind: string): kind is VoteKind =>
 // kind -> answer number -> how many visitors chose it
 export type VoteCounts = Partial<Record<VoteKind, Record<number, number>>>;
 
-export type ReviewWithAuthor = { id: string; body: string; created_at: string; author: string; user_id: string; helpful: number };
+export type CommentRow = { id: string; body: string; created_at: string; author: string; user_id: string };
+export type ReviewWithAuthor = { id: string; body: string; created_at: string; author: string; user_id: string; helpful: number; comments: CommentRow[]; score?: number | null };
+export type PhotoRow = { id: string; url: string; author: string; user_id: string; created_at: string };
 export type PointRow = { id: string; kind: 'pro' | 'con'; body: string; user_id: string; up: number; down: number };
 export type EntryVoteCounts = { up: number; down: number };
 export type PerfumeCommunity = {
@@ -34,4 +36,6 @@ export type PerfumeCommunity = {
   reviews: ReviewWithAuthor[];
   entryVotes: Record<string, EntryVoteCounts>; // key = entryKey(brand, name)
   shelf: { own: number; had: number; want: number };
+  noteVotes: Record<string, number>;     // note name (lower case) -> members who smell it
+  photos: PhotoRow[];                    // approved members' photos
 };

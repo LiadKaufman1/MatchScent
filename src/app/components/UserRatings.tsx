@@ -22,6 +22,10 @@ const compact = (n: number) => (n >= 1000 ? `${(n / 1000).toFixed(n >= 10000 ? 0
 const RATE_ICONS: Icon[] = [Angry, Frown, Meh, Smile, Heart];
 const WEAR_ICONS: Record<WearKey, Icon> = { winter: Snowflake, spring: Leaf, summer: Umbrella, fall: TreeDeciduous, day: Sun, night: Moon };
 
+// Colours: the rating goes from grey (hate) to wine (love); every season has its own colour.
+const RATE_COLORS = ['#8E8488', '#B39AA2', '#C9A27E', '#C26A7F', '#7E1F37'];
+const WEAR_COLORS: Record<WearKey, string> = { winter: '#5B8FB0', spring: '#6E9E5A', summer: '#E0955B', fall: '#B7743A', day: '#D9B23A', night: '#4B3A6B' };
+
 const aspectLabel = (t: ReturnType<typeof getDict>, a: Aspect) => (a === 'scent' ? t.community.aspectScent : t.community.aspectBottle);
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
@@ -33,10 +37,13 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
   );
 }
 
-function Bar({ share, active }: { share: number; active: boolean }) {
+function Bar({ share, active, color }: { share: number; active: boolean; color?: string }) {
   return (
     <div className="h-1.5 overflow-hidden rounded-full bg-blush" aria-hidden="true">
-      <div className={`h-full rounded-full transition-all ${active ? 'bg-wine-700' : 'bg-wine-600/70'}`} style={{ width: `${Math.max(share, 0) * 100}%` }} />
+      <div
+        className={`h-full rounded-full transition-all ${color ? '' : active ? 'bg-wine-700' : 'bg-wine-600/70'}`}
+        style={{ width: `${Math.max(share, 0) * 100}%`, ...(color ? { backgroundColor: color, opacity: active ? 1 : 0.85 } : {}) }}
+      />
     </div>
   );
 }
@@ -163,7 +170,7 @@ export default function UserRatings({ lang, perfumeId, average, ratingCounts, vo
 
   return (
     <section className="mt-14" aria-labelledby="panels-heading">
-      <h2 id="panels-heading" className="mb-5 text-sm font-bold uppercase tracking-[0.14em] text-wine-600">{p.heading}</h2>
+      <h2 id="panels-heading" className="mb-5 section-title">{p.heading}</h2>
 
       <div className="grid gap-4 md:grid-cols-2">
         <Card title={p.rate.title}>
@@ -180,9 +187,9 @@ export default function UserRatings({ lang, perfumeId, average, ratingCounts, vo
                   onClick={() => rate(score)}
                   className={`flex flex-col items-center gap-1.5 rounded-xl px-1 py-2 text-center transition enabled:hover:bg-blush disabled:cursor-default ${active ? 'bg-blush' : ''}`}
                 >
-                  <Icon className={`h-7 w-7 ${active ? 'text-wine-700' : 'text-smoke'}`} aria-hidden={true} />
+                  <span style={{ color: RATE_COLORS[score - 1] }}><Icon className="h-7 w-7" aria-hidden={true} /></span>
                   <span className={`text-[11px] leading-tight ${active ? 'font-bold text-wine-700' : 'text-ink'}`}>{p.rate.options[score - 1]}</span>
-                  <span className="w-full"><Bar share={(rates[score] ?? 0) / maxRate} active={active} /></span>
+                  <span className="w-full"><Bar share={(rates[score] ?? 0) / maxRate} active={active} color={RATE_COLORS[score - 1]} /></span>
                   <span className="text-[11px] text-smoke" dir="ltr">{compact(rates[score] ?? 0)}</span>
                 </button>
               );
@@ -207,9 +214,9 @@ export default function UserRatings({ lang, perfumeId, average, ratingCounts, vo
                   onClick={() => vote(kind, active ? null : 1)}
                   className={`flex flex-col items-center gap-1.5 rounded-xl px-1 py-2 text-center transition enabled:hover:bg-blush disabled:cursor-default ${active ? 'bg-blush' : ''}`}
                 >
-                  <Icon className={`h-7 w-7 ${active ? 'text-wine-700' : 'text-smoke'}`} aria-hidden={true} />
+                  <span style={{ color: WEAR_COLORS[key] }}><Icon className="h-7 w-7" aria-hidden={true} /></span>
                   <span className={`text-[11px] leading-tight ${active ? 'font-bold text-wine-700' : 'text-ink'}`}>{p.wear[key]}</span>
-                  <span className="w-full"><Bar share={n / max} active={active} /></span>
+                  <span className="w-full"><Bar share={n / max} active={active} color={WEAR_COLORS[key]} /></span>
                   <span className="text-[11px] text-smoke" dir="ltr">{compact(n)}</span>
                 </button>
               );

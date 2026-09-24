@@ -160,3 +160,103 @@ export async function adminDeletePoint(id: string) {
   refreshCommunityPages();
   return { success: true };
 }
+
+export async function adminDeleteComment(id: string) {
+  await checkAuth();
+  if (typeof id !== 'string' || !id) throw new Error('Invalid id');
+  const { error } = await getSupabaseAdmin().from('review_comments').delete().eq('id', id);
+  if (error) throw new Error(error.message);
+  refreshCommunityPages();
+  return { success: true };
+}
+
+// --- Members' photos: approve (copy to the public bucket), reject, or delete ---
+
+export async function adminReviewPhoto(id: string, approve: boolean) {
+  await checkAuth();
+  if (typeof id !== 'string' || !id) throw new Error('Invalid id');
+  const admin = getSupabaseAdmin();
+  const { data: photo, error } = await admin.from('perfume_photos').select('id, storage_path').eq('id', id).single();
+  if (error || !photo) throw new Error(error?.message ?? 'Photo not found');
+
+  if (approve) {
+    const file = await admin.storage.from('photo-uploads').download(photo.storage_path);
+    if (file.error) throw new Error(file.error.message);
+    const bytes = new Uint8Array(await file.data.arrayBuffer());
+    const up = await admin.storage.from('community-photos').upload(photo.storage_path, bytes, { contentType: file.data.type || 'image/jpeg', upsert: true });
+    if (up.error) throw new Error(up.error.message);
+    const publicUrl = admin.storage.from('community-photos').getPublicUrl(photo.storage_path).data.publicUrl;
+    const { error: e2 } = await admin.from('perfume_photos').update({ status: 'approved', public_url: publicUrl, reviewed_at: new Date().toISOString() }).eq('id', id);
+    if (e2) throw new Error(e2.message);
+  } else {
+    const { error: e2 } = await admin.from('perfume_photos').update({ status: 'rejected', public_url: null, reviewed_at: new Date().toISOString() }).eq('id', id);
+    if (e2) throw new Error(e2.message);
+    await admin.storage.from('community-photos').remove([photo.storage_path]);
+  }
+  await admin.storage.from('photo-uploads').remove([photo.storage_path]);
+  refreshCommunityPages();
+  revalidatePath('/');
+  revalidatePath('/en');
+  return { success: true };
+}
+
+export async function adminDeletePhoto(id: string) {
+  await checkAuth();
+  if (typeof id !== 'string' || !id) throw new Error('Invalid id');
+  const admin = getSupabaseAdmin();
+  const { data: photo } = await admin.from('perfume_photos').select('storage_path').eq('id', id).maybeSingle();
+  const { error } = await admin.from('perfume_photos').delete().eq('id', id);
+  if (error) throw new Error(error.message);
+  if (photo) {
+    await admin.storage.from('photo-uploads').remove([photo.storage_path]);
+    await admin.storage.from('community-photos').remove([photo.storage_path]);
+  }
+  refreshCommunityPages();
+  revalidatePath('/');
+  revalidatePath('/en');
+  return { success: true };
+}
+
+// --- Suggestions: approve (adds the similar scent / the perfume to the catalog) or reject ---
+// The owner may correct the spelling first; only these fields can be changed.
+
+type SuggestionEdits = { brand?: string; name?: string; gender?: string | null };
+
+export async function adminReviewSuggestion(id: string, approve: boolean, edits: SuggestionEdits = {}) {
+  await checkAuth();
+  if (typeof id !== 'string' || !id) throw new Error('Invalid id');
+  const admin = getSupabaseAdmin();
+  const { data: s, error } = await admin.from('suggestions').select('id, kind, perfume_id, brand, name, gender, status').eq('id', id).single();
+  if (error || !s) throw new Error(error?.message ?? 'Suggestion not found');
+  if (s.status !== 'pending') throw new Error('Already handled');
+
+  if (approve) {
+    const clean = (v: unknown, max: number) => (typeof v === 'string' ? v.replace(/\s+/g, ' ').trim().slice(0, max) : '');
+    const brand = clean(edits.brand, 80) || s.brand;
+    const name = clean(edits.name, 120) || s.name;
+    const gender = ['male', 'female', 'unisex'].includes(String(edits.gender ?? s.gender)) ? String(edits.gender ?? s.gender) : null;
+
+    if (s.kind === 'similar') {
+      const { data: existing } = await admin.from('dupes').select('id, brand, name').eq('original_perfume_id', s.perfume_id);
+      const already = (existing ?? []).some(d => d.brand.toLowerCase() === brand.toLowerCase() && d.name.toLowerCase() === name.toLowerCase());
+      if (!already) {
+        // Community suggestions go to the end of the list (the imported lists use 100 ... 64).
+        const { error: e2 } = await admin.from('dupes').insert({ original_perfume_id: s.perfume_id, brand, name, similarity_score: 50 });
+        if (e2) throw new Error(e2.message);
+      }
+    } else {
+      const exact = (v: string) => v.replace(/[\\%_]/g, c => `\\${c}`); // ilike without wildcards
+      const { data: existing } = await admin.from('perfumes').select('id').ilike('brand', exact(brand)).ilike('name', exact(name)).limit(1);
+      if (!existing?.length) {
+        const { error: e2 } = await admin.from('perfumes').insert({ brand, name, gender });
+        if (e2) throw new Error(e2.message);
+      }
+    }
+  }
+
+  const { error: e3 } = await admin.from('suggestions').update({ status: approve ? 'approved' : 'rejected', reviewed_at: new Date().toISOString() }).eq('id', id);
+  if (e3) throw new Error(e3.message);
+  if (approve) refreshPublicPages();
+  revalidatePath('/admin/community');
+  return { success: true };
+}
