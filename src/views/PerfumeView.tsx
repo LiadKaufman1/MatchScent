@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { entryKey, getCatalog, getPerfumePage, type ShownPerfume } from '@/lib/load-catalog';
+import { entryKey, getCatalog, getPerfumePage, isCatalogOriginal, type ShownPerfume } from '@/lib/load-catalog';
+import StoreButtons from '@/app/components/StoreButtons';
 import { ils, usd } from '@/lib/format';
 import { slugify } from '@/lib/slug';
 import { siteUrl } from '@/lib/site';
@@ -24,7 +25,7 @@ import { SiteFooter, SiteHeader } from '@/app/components/SiteChrome';
 
 export async function perfumeStaticParams() {
   const { perfumes } = await getCatalog();
-  return perfumes.map(p => ({ slug: p.slug }));
+  return perfumes.filter(isCatalogOriginal).map(p => ({ slug: p.slug }));
 }
 
 export async function perfumeMetadata(lang: Lang, slug: string): Promise<Metadata> {
@@ -32,11 +33,15 @@ export async function perfumeMetadata(lang: Lang, slug: string): Promise<Metadat
   const data = await getPerfumePage(slug);
   if (!data) return { title: t.notFoundTitle, robots: { index: false } };
 
-  const { perfume, entries } = data;
+  const { perfume, entries, inspiredBy } = data;
   const full = `${perfume.brand} ${perfume.name}`;
-  const title = fmt(t.perfumeTitle, { full });
+  const isInspired = entries.length === 0 && inspiredBy.length > 0;
+  const orig = inspiredBy.map(x => `${x.original.brand} ${x.original.name}`).slice(0, 2).join(', ');
+  const title = isInspired ? fmt(t.inspiredPage.titleOne, { full, orig }) : fmt(t.perfumeTitle, { full });
   const names = entries.slice(0, 3).map(e => `${e.brand} ${e.name}`).join(', ');
-  const description = !entries.length
+  const description = isInspired
+    ? fmt(t.inspiredPage.description, { full, orig })
+    : !entries.length
     ? fmt(t.perfumeDescNone, { full })
     : entries.length === 1
       ? fmt(t.perfumeDescOne, { full, names })
@@ -51,7 +56,7 @@ export async function perfumeMetadata(lang: Lang, slug: string): Promise<Metadat
       languages: { en: path, he: withLang('he', path), 'x-default': path },
     },
     // Pages with nothing on them yet are kept out of search results until they have content.
-    robots: entries.length ? undefined : { index: false, follow: true },
+    robots: entries.length || isInspired ? undefined : { index: false, follow: true },
     openGraph: {
       title: `${title} | MatchScent`,
       description,
@@ -75,7 +80,7 @@ function PerfumeLink({ p, lang }: { p: ShownPerfume; lang: Lang }) {
         <span className="block truncate text-base font-bold text-ink">{p.name}</span>
       </span>
       <span className="shrink-0 text-xs text-smoke group-hover:text-wine-600">
-        {p.entryCount > 0 ? fmt(t.similarBadge, { n: p.entryCount }) : t.soon}
+        {p.entryCount > 0 ? fmt(t.similarBadge, { n: p.entryCount }) : p.inspiredOf.length ? '' : t.soon}
       </span>
     </Link>
   );
@@ -86,7 +91,9 @@ export default async function PerfumeView({ lang, slug }: { lang: Lang; slug: st
   const data = await getPerfumePage(slug);
   if (!data) notFound();
 
-  const { perfume, entries, sameBrand, more, community } = data;
+  const { perfume, entries, inspiredBy, siblings, sameBrand, more, community } = data;
+  const isInspired = entries.length === 0 && inspiredBy.length > 0;
+  const orig = inspiredBy.map(x => `${x.original.brand} ${x.original.name}`).slice(0, 2).join(', ');
   const alike = await similarByNotes(perfume);
   const full = `${perfume.brand} ${perfume.name}`;
   const path = `/perfume/${perfume.slug}`;
@@ -116,11 +123,13 @@ export default async function PerfumeView({ lang, slug }: { lang: Lang; slug: st
     perfume.gender === 'male' ? t.audForMen : perfume.gender === 'female' ? t.audForWomen : t.audForAll;
   const audienceLabel =
     perfume.gender === 'male' ? t.audMale : perfume.gender === 'female' ? t.audFemale : t.audUnisex;
-  const intro = [
-    fmt(t.introBase, { name: perfume.name, brand: perfume.brand, audience }),
-    entries.length === 0 ? t.introNone : entries.length === 1 ? t.introWithOne : fmt(t.introWithMany, { n: entries.length }),
-    t.introPrices,
-  ].join(' ');
+  const intro = (isInspired
+    ? [fmt(t.inspiredPage.intro, { name: perfume.name, brand: perfume.brand, orig }), t.introPrices]
+    : [
+        fmt(t.introBase, { name: perfume.name, brand: perfume.brand, audience }),
+        entries.length === 0 ? t.introNone : entries.length === 1 ? t.introWithOne : fmt(t.introWithMany, { n: entries.length }),
+        t.introPrices,
+      ]).join(' ');
 
   return (
     <div className="site">
@@ -175,7 +184,7 @@ export default async function PerfumeView({ lang, slug }: { lang: Lang; slug: st
 
             <p className="mt-5 max-w-xl leading-relaxed text-smoke">{intro}</p>
 
-            {usd(perfume.price_usd) && (
+            {!isInspired && usd(perfume.price_usd) && (
               <p className="mt-4 text-sm">
                 <span className="text-[11px] font-medium uppercase tracking-[0.16em] text-smoke">{t.originalFrom}</span>{' '}
                 <span className="font-bold text-ink" dir="ltr">
@@ -189,14 +198,42 @@ export default async function PerfumeView({ lang, slug }: { lang: Lang; slug: st
               <AccordBars accords={perfume.accords} lang={lang} title={t.facts.accords} />
             )}
             <ShelfButtons lang={lang} perfumeId={perfume.id} own={community.shelf.own} want={community.shelf.want} />
+            <div className="max-w-md">
+              <StoreButtons brand={perfume.brand} name={perfume.name} lang={lang} />
+            </div>
           </div>
         </header>
+
+        {inspiredBy.length > 0 && (
+          <section className="mt-10" aria-labelledby="inspired-by-heading">
+            <h2 id="inspired-by-heading" className="mb-5 section-title">{isInspired ? t.inspiredPage.heading : t.inspiredPage.headingReminds}</h2>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {inspiredBy.map(({ original, rank, of }) => (
+                <Link
+                  key={original.id}
+                  href={withLang(lang, `/perfume/${original.slug}`)}
+                  className="group flex items-center gap-4 rounded-2xl border border-wine-600/30 bg-white p-4 transition hover:border-wine-600 hover:shadow-[0_10px_30px_-20px_rgba(126,31,55,0.6)]"
+                >
+                  <span className="relative h-24 w-[4.5rem] shrink-0 overflow-hidden rounded-xl border border-line bg-white">
+                    <Photo url={original.image_url} alt={`${original.brand} ${original.name}`} seed={original.brand + original.name} sizes="72px" />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block text-[11px] font-bold uppercase tracking-[0.16em] text-wine-600">{original.brand}</span>
+                    <span className="block text-lg font-extrabold leading-tight text-ink group-hover:text-wine-700">{original.name}</span>
+                    {rank ? <span className="mt-1 block text-xs text-smoke">{fmt(t.inspiredPage.rank, { rank, of, name: original.name })}</span> : null}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
 
         <SectionNav
           label={t.perfumeHead.sections}
           items={[
+            ...(inspiredBy.length ? [{ id: 'inspired-by-heading', label: t.inspiredPage.heading }] : []),
             ...(noteGroups(perfume.note_pyramid).length ? [{ id: 'notes-heading', label: t.perfumeHead.navNotes }] : []),
-            { id: 'inspired-heading', label: t.perfumeHead.navInspired },
+            ...(entries.length || !isInspired ? [{ id: 'inspired-heading', label: t.perfumeHead.navInspired }] : []),
             { id: 'photos-heading', label: t.perfumeHead.navPhotos },
             { id: 'panels-heading', label: t.perfumeHead.navRatings },
             { id: 'reviews-heading', label: t.perfumeHead.navReviews },
@@ -205,6 +242,7 @@ export default async function PerfumeView({ lang, slug }: { lang: Lang; slug: st
 
         <NotePyramid pyramid={perfume.note_pyramid} lang={lang} perfumeId={perfume.id} noteVotes={community.noteVotes} />
 
+        {!isInspired && (
         <section className="mt-14" aria-labelledby="inspired-heading">
           <h2 id="inspired-heading" className="mb-5 section-title">
             {fmt(t.inspiredHeading, { name: perfume.name })}
@@ -222,6 +260,37 @@ export default async function PerfumeView({ lang, slug }: { lang: Lang; slug: st
             <SuggestForm lang={lang} kind="similar" perfumeId={perfume.id} compact />
           </div>
         </section>
+        )}
+
+        {siblings.length > 0 && (
+          <section className="mt-14" aria-labelledby="siblings-heading">
+            <h2 id="siblings-heading" className="mb-5 section-title">{fmt(t.inspiredPage.siblings, { name: inspiredBy[0]?.original.name ?? '' })}</h2>
+            <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {siblings.map(s => {
+                const inner = (
+                  <>
+                    <span className="relative h-20 w-16 shrink-0 overflow-hidden rounded-xl border border-line bg-white">
+                      <Photo url={s.image_url} alt={`${s.brand} ${s.name}`} seed={s.brand + s.name} sizes="64px" />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block text-[11px] font-bold uppercase tracking-[0.16em] text-wine-600">{s.brand}</span>
+                      <span className="block truncate font-bold text-ink">{s.name}</span>
+                    </span>
+                  </>
+                );
+                return (
+                  <li key={s.id}>
+                    {s.perfumeSlug ? (
+                      <Link href={withLang(lang, `/perfume/${s.perfumeSlug}`)} prefetch={false} className="flex items-center gap-3 rounded-xl border border-line bg-white p-3 transition hover:border-wine-600/50">{inner}</Link>
+                    ) : (
+                      <div className="flex items-center gap-3 rounded-xl border border-line bg-white p-3">{inner}</div>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        )}
 
         <PhotoGallery lang={lang} perfumeId={perfume.id} photos={community.photos} alt={full} />
 

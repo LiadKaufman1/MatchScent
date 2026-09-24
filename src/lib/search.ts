@@ -1,15 +1,14 @@
-import { getCatalog, type ShownPerfume } from './load-catalog';
+import { getCatalog, isCatalogOriginal, type ShownEntry, type ShownPerfume } from './load-catalog';
 import { noteGroups } from './notes';
 import { NOTES_HE } from './notes-he';
 import { slugify } from './slug';
-import type { Dupe } from './supabase';
 
 // One search box for the whole site: original perfumes, "inspired by" fragrances, brands and notes.
 // Hebrew works too for notes ("וניל" finds vanilla).
 
 export type SearchResults = {
   perfumes: ShownPerfume[];
-  inspired: { entry: Dupe; original: ShownPerfume }[];
+  inspired: { entry: ShownEntry; original: ShownPerfume }[];
   brands: { name: string; slug: string; count: number }[];
   notes: { name: string; slug: string; count: number }[];
 };
@@ -33,30 +32,40 @@ export async function searchSite(query: string): Promise<SearchResults> {
   const { perfumes, dupes } = await getCatalog();
   const byId = new Map(perfumes.map(p => [p.id, p]));
 
-  const found: SearchResults = { ...empty, perfumes: perfumes.filter(p => matches(`${p.brand} ${p.name}`, words)).slice(0, LIMIT) };
+  const found: SearchResults = {
+    ...empty,
+    perfumes: perfumes.filter(p => isCatalogOriginal(p) && matches(`${p.brand} ${p.name}`, words)).slice(0, LIMIT),
+  };
 
   const seen = new Set<string>();
   for (const d of dupes) {
     if (found.inspired.length >= LIMIT) break;
     const original = byId.get(d.original_perfume_id);
-    const key = slugify(`${d.brand} ${d.name}`);
+    const key = d.perfumeSlug ?? slugify(`${d.brand} ${d.name}`);
     if (!original || seen.has(key) || !matches(`${d.brand} ${d.name}`, words)) continue;
     seen.add(key);
     found.inspired.push({ entry: d, original });
   }
 
   const brands = new Map<string, { name: string; slug: string; count: number }>();
-  for (const b of [...perfumes.map(p => p.brand), ...dupes.map(d => d.brand)]) {
-    const slug = slugify(b);
-    if (!slug || !matches(b, words)) continue;
-    const entry = brands.get(slug) ?? { name: b, slug, count: 0 };
+  const counted = new Set<string>();
+  for (const x of [...perfumes, ...dupes]) {
+    const slug = slugify(x.brand);
+    const one = slugify(`${x.brand} ${x.name}`);
+    if (!slug || counted.has(one) || !matches(x.brand, words)) continue;
+    counted.add(one);
+    const entry = brands.get(slug) ?? { name: x.brand, slug, count: 0 };
     entry.count++;
     brands.set(slug, entry);
   }
   found.brands = [...brands.values()].sort((a, b) => b.count - a.count).slice(0, LIMIT);
 
   const notes = new Map<string, { name: string; slug: string; count: number }>();
+  const noted = new Set<string>();
   for (const item of [...perfumes, ...dupes]) {
+    const one = slugify(`${item.brand} ${item.name}`);
+    if (noted.has(one)) continue;
+    noted.add(one);
     for (const g of noteGroups(item.note_pyramid)) for (const n of g.notes) {
       const he = NOTES_HE[n.toLowerCase()] ?? '';
       if (!matches(`${n} ${he}`, words)) continue;
@@ -81,7 +90,7 @@ export async function similarByNotes(perfume: ShownPerfume, limit = 6): Promise<
   const mine = features(perfume);
   if (mine.size < 3) return [];
   return perfumes
-    .filter(p => p.id !== perfume.id)
+    .filter(p => p.id !== perfume.id && isCatalogOriginal(p))
     .map(p => {
       const other = features(p);
       const shared = [...other].filter(f => mine.has(f)).length;

@@ -34,8 +34,9 @@ export const isShowable = (d: Dupe) =>
 
 // - hides similar-scent entries with blocked wording or an image that cannot load
 // - shows a perfume that exists twice (same brand + name) only once, merging its entries
-export function prepareCatalog(perfumes: Perfume[], dupes: Dupe[]) {
+export function prepareCatalog(allPerfumes: Perfume[], dupes: Dupe[]) {
   const showable = dupes.filter(isShowable);
+  const perfumes = allPerfumes.filter(p => !BLOCKED_WORDS.test(`${p.brand} ${p.name}`));
 
   const countById = new Map<string, number>();
   for (const d of showable) {

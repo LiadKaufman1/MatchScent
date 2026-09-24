@@ -80,6 +80,8 @@ export type Dupe = {
   purchase_link_amazon: string
   notes: string
   note_pyramid?: NotePyramid | null
+  // The perfume row of this fragrance (its own page); added by the v5 migration.
+  inspired_perfume_id?: string | null
   live_prices_il?: LivePrice[]
   live_prices_amazon?: LivePrice[]
 }
