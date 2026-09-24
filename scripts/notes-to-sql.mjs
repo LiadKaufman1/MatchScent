@@ -23,7 +23,7 @@ const details = read('details-collected.json', {});   // Fragrantica number -> {
 const ids = read('fragrantica-image-ids.json', {});   // slug -> Fragrantica number
 const targets = read('fragrantica-image-targets.json', []); // { slug, brand, name, kind }
 
-const HEADING_KEY = { 'top notes': 'top', 'middle notes': 'heart', 'heart notes': 'heart', 'base notes': 'base', notes: 'notes' };
+const HEADING_KEY = { top: 'top', heart: 'heart', base: 'base', 'top notes': 'top', 'middle notes': 'heart', 'heart notes': 'heart', 'base notes': 'base', notes: 'notes' };
 const sqlText = s => `'${s.replace(/'/g, "''")}'`;
 const sqlArray = list => `ARRAY[${list.map(sqlText).join(', ')}]::text[]`;
 const clean = s => s.replace(/\s+/g, ' ').trim();
