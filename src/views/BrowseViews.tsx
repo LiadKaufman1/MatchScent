@@ -48,7 +48,11 @@ function InspiredList({ items, lang }: { items: InspiredHit[]; lang: Lang }) {
           </span>
           <span className="min-w-0">
             <span className="block text-[11px] font-bold uppercase tracking-[0.16em] text-wine-600">{entry.brand}</span>
-            <span className="block text-base font-bold text-ink">{entry.name}</span>
+            <span className="block text-base font-bold text-ink">
+              {entry.perfumeSlug ? (
+                <Link href={withLang(lang, `/perfume/${entry.perfumeSlug}`)} prefetch={false} className="hover:text-wine-700">{entry.name}</Link>
+              ) : entry.name}
+            </span>
             <span className="mt-1 block text-xs text-smoke">
               {t.browse.inspiredBy}{' '}
               {originals.map((o, i) => (

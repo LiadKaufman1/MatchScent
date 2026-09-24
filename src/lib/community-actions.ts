@@ -1,6 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { after } from 'next/server';
 import { getSupabaseServer } from './supabase-server';
 import { randomUUID } from 'node:crypto';
 import { getSupabaseAdmin } from './supabase-admin';
@@ -22,6 +23,10 @@ const refreshPerfumePages = () => {
   revalidatePath('/top');
   revalidatePath('/en/top');
 };
+
+// Refreshing the pages is done AFTER the answer went back to the browser: otherwise every vote
+// waits for the whole perfume page to be rebuilt first (several seconds), and the buttons feel stuck.
+const refreshSoon = () => after(() => refreshPerfumePages());
 
 type Result = { success: true } | { success: false; error: string };
 
@@ -62,7 +67,7 @@ export async function submitRating(perfumeId: string, score: number, details: Ra
     .upsert({ perfume_id: perfumeId, user_id: user.id, score, ...extra }, { onConflict: 'perfume_id,user_id' });
   if (error) return { success: false, error: error.message };
 
-  refreshPerfumePages();
+  refreshSoon();
   return { success: true };
 }
 
@@ -71,7 +76,7 @@ export async function removeRating(perfumeId: string): Promise<Result> {
   if (!user) return { success: false, error: 'not logged in' };
   const { error } = await supabase.from('ratings').delete().eq('perfume_id', perfumeId).eq('user_id', user.id);
   if (error) return { success: false, error: error.message };
-  refreshPerfumePages();
+  refreshSoon();
   return { success: true };
 }
 
@@ -88,7 +93,7 @@ export async function submitReview(perfumeId: string, body: string): Promise<Res
     .upsert({ perfume_id: perfumeId, user_id: user.id, body: trimmed }, { onConflict: 'perfume_id,user_id' });
   if (error) return { success: false, error: error.message };
 
-  refreshPerfumePages();
+  refreshSoon();
   return { success: true };
 }
 
@@ -110,7 +115,7 @@ export async function castVote(perfumeId: string, kind: string, value: number | 
     : await supabase.from('perfume_votes').upsert({ perfume_id: perfumeId, user_id: user.id, kind, value }, { onConflict: 'perfume_id,user_id,kind' });
   if (error) return { success: false, error: error.message };
 
-  refreshPerfumePages();
+  refreshSoon();
   return { success: true };
 }
 
@@ -141,7 +146,7 @@ export async function addPoint(perfumeId: string, kind: 'pro' | 'con', body: str
     .single();
   if (error) return { success: false, error: error.message };
 
-  refreshPerfumePages();
+  refreshSoon();
   return { success: true, id: data.id as string };
 }
 
@@ -150,7 +155,7 @@ export async function deletePoint(pointId: string): Promise<Result> {
   if (!user) return { success: false, error: 'not logged in' };
   const { error } = await supabase.from('perfume_points').delete().eq('id', pointId).eq('user_id', user.id);
   if (error) return { success: false, error: error.message };
-  refreshPerfumePages();
+  refreshSoon();
   return { success: true };
 }
 
@@ -166,7 +171,7 @@ export async function votePoint(pointId: string, vote: -1 | 0 | 1): Promise<Resu
     : await supabase.from('point_votes').upsert({ point_id: pointId, user_id: user.id, vote }, { onConflict: 'point_id,user_id' });
   if (error) return { success: false, error: error.message };
 
-  refreshPerfumePages();
+  refreshSoon();
   return { success: true };
 }
 
@@ -180,7 +185,7 @@ export async function markReviewHelpful(reviewId: string, on: boolean): Promise<
     : await supabase.from('review_votes').delete().eq('review_id', reviewId).eq('user_id', user.id);
   if (error) return { success: false, error: error.message };
 
-  refreshPerfumePages();
+  refreshSoon();
   return { success: true };
 }
 
@@ -199,7 +204,7 @@ export async function voteEntry(perfumeId: string, entryKey: string, vote: -1 | 
         .upsert({ perfume_id: perfumeId, entry_key: entryKey, user_id: user.id, vote }, { onConflict: 'perfume_id,entry_key,user_id' });
   if (error) return { success: false, error: error.message };
 
-  refreshPerfumePages();
+  refreshSoon();
   return { success: true };
 }
 
@@ -215,7 +220,7 @@ export async function setShelf(perfumeId: string, status: 'own' | 'had' | 'want'
     : await supabase.from('collections').upsert({ perfume_id: perfumeId, user_id: user.id, status }, { onConflict: 'user_id,perfume_id' });
   if (error) return { success: false, error: error.message };
 
-  refreshPerfumePages();
+  refreshSoon();
   return { success: true };
 }
 
@@ -239,7 +244,7 @@ export async function addComment(reviewId: string, body: string): Promise<Result
     .single();
   if (error) return { success: false, error: error.message };
 
-  refreshPerfumePages();
+  refreshSoon();
   return { success: true, id: data.id as string };
 }
 
@@ -249,7 +254,7 @@ export async function deleteComment(commentId: string): Promise<Result> {
   if (!user) return { success: false, error: 'not logged in' };
   const { error } = await supabase.from('review_comments').delete().eq('id', commentId).eq('user_id', user.id);
   if (error) return { success: false, error: error.message };
-  refreshPerfumePages();
+  refreshSoon();
   return { success: true };
 }
 
@@ -272,7 +277,7 @@ export async function toggleNoteVote(perfumeId: string, note: string, on: boolea
     : await supabase.from('note_votes').delete().eq('perfume_id', perfumeId).eq('user_id', user.id).eq('note', key);
   if (error) return { success: false, error: error.message };
 
-  refreshPerfumePages();
+  refreshSoon();
   return { success: true };
 }
 
@@ -340,7 +345,7 @@ export async function deleteMyPhoto(photoId: string): Promise<Result> {
     admin.storage.from('photo-uploads').remove([photo.storage_path]),
     admin.storage.from('community-photos').remove([photo.storage_path]),
   ]);
-  refreshPerfumePages();
+  refreshSoon();
   return { success: true };
 }
 

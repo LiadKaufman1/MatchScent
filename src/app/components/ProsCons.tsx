@@ -6,6 +6,7 @@ import { AlertTriangle, Check, ThumbsDown, ThumbsUp, Trash2 } from 'lucide-react
 import { getSupabaseBrowser } from '@/lib/supabase-browser';
 import { addPoint, deletePoint, votePoint } from '@/lib/community-actions';
 import { useViewer } from '@/lib/use-viewer';
+import { useLatestSender } from '@/lib/use-latest-sender';
 import { getDict, withLang, type Lang } from '@/lib/i18n';
 import type { PointRow } from '@/lib/community-types';
 
@@ -20,6 +21,7 @@ export default function ProsCons({ lang, perfumeId, points: initial }: { lang: L
   const [drafts, setDrafts] = useState<{ pro: string; con: string }>({ pro: '', con: '' });
   const [message, setMessage] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const send = useLatestSender();
 
   useEffect(() => {
     if (!userId || initial.length === 0) return;
@@ -46,7 +48,7 @@ export default function ProsCons({ lang, perfumeId, points: initial }: { lang: L
       down: p.down + (next === -1 ? 1 : 0) - (before === -1 ? 1 : 0),
     })));
     setMine(m => ({ ...m, [point.id]: next }));
-    startTransition(async () => { await votePoint(point.id, next as -1 | 0 | 1); });
+    send(point.id, next as -1 | 0 | 1, v => votePoint(point.id, v));
   };
 
   const add = (kind: 'pro' | 'con') => {
@@ -89,7 +91,7 @@ export default function ProsCons({ lang, perfumeId, points: initial }: { lang: L
                   <div className="flex shrink-0 gap-1.5">
                     <button
                       type="button"
-                      disabled={!userId || pending}
+                      disabled={!userId}
                       aria-pressed={v === 1}
                       aria-label={`+1: ${p.body}`}
                       onClick={() => vote(p, 1)}
@@ -100,7 +102,7 @@ export default function ProsCons({ lang, perfumeId, points: initial }: { lang: L
                     </button>
                     <button
                       type="button"
-                      disabled={!userId || pending}
+                      disabled={!userId}
                       aria-pressed={v === -1}
                       aria-label={`-1: ${p.body}`}
                       onClick={() => vote(p, -1)}

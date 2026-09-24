@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import type { NotePyramid as Pyramid } from '@/lib/supabase';
 import { noteGroups, noteLabel } from '@/lib/notes';
@@ -9,6 +9,7 @@ import { scentColor } from '@/lib/scent-colors';
 import { getSupabaseBrowser } from '@/lib/supabase-browser';
 import { toggleNoteVote } from '@/lib/community-actions';
 import { useViewer } from '@/lib/use-viewer';
+import { useLatestSender } from '@/lib/use-latest-sender';
 import { fmt, getDict, withLang, type Lang } from '@/lib/i18n';
 
 // The scent pyramid of one fragrance: top notes (first minutes), heart notes (the body),
@@ -26,7 +27,7 @@ export default function NotePyramid({ pyramid, lang, perfumeId, noteVotes = {} }
   const [voting, setVoting] = useState(false);
   const [counts, setCounts] = useState(noteVotes);
   const [mine, setMine] = useState<Record<string, boolean>>({});
-  const [pending, startTransition] = useTransition();
+  const send = useLatestSender();
 
   useEffect(() => {
     if (!userId) return;
@@ -51,7 +52,7 @@ export default function NotePyramid({ pyramid, lang, perfumeId, noteVotes = {} }
     const on = !(userId && mine[key]);
     setMine(m => ({ ...m, [key]: on }));
     setCounts(c => ({ ...c, [key]: Math.max(0, (c[key] ?? 0) + (on ? 1 : -1)) }));
-    startTransition(async () => { await toggleNoteVote(perfumeId, note, on); });
+    send(key, on, v => toggleNoteVote(perfumeId, note, v));
   };
 
   return (
@@ -89,7 +90,6 @@ export default function NotePyramid({ pyramid, lang, perfumeId, noteVotes = {} }
                     {voting ? (
                       <button
                         type="button"
-                        disabled={pending}
                         aria-pressed={!!mine[key]}
                         onClick={() => toggle(n)}
                         title={title}

@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getSupabaseBrowser } from '@/lib/supabase-browser';
 import { setShelf } from '@/lib/community-actions';
 import { useViewer } from '@/lib/use-viewer';
+import { useLatestSender } from '@/lib/use-latest-sender';
 import { fmt, getDict, withLang, type Lang } from '@/lib/i18n';
 
 type Status = 'own' | 'had' | 'want';
@@ -16,7 +17,7 @@ export default function ShelfButtons({ lang, perfumeId, own, want }: { lang: Lan
   const { ready, userId } = useViewer();
   const [savedStatus, setMine] = useState<Status | null>(null);
   const [counts, setCounts] = useState({ own, want });
-  const [pending, startTransition] = useTransition();
+  const send = useLatestSender();
 
   useEffect(() => {
     if (!userId) return;
@@ -42,7 +43,7 @@ export default function ShelfButtons({ lang, perfumeId, own, want }: { lang: Lan
       want: c.want + (next === 'want' ? 1 : 0) - (mine === 'want' ? 1 : 0),
     }));
     setMine(next);
-    startTransition(async () => { await setShelf(perfumeId, next); });
+    send('shelf', next, v => setShelf(perfumeId, v));
   };
 
   const options: [Status, string][] = [['own', t.community.shelfOwn], ['had', t.community.shelfHad], ['want', t.community.shelfWant]];
@@ -54,7 +55,7 @@ export default function ShelfButtons({ lang, perfumeId, own, want }: { lang: Lan
           <button
             key={status}
             type="button"
-            disabled={pending || !userId}
+            disabled={!userId}
             aria-pressed={mine === status}
             onClick={() => choose(status)}
             className={`rounded-full border px-4 py-1.5 text-sm font-bold transition disabled:cursor-default ${

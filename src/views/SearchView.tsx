@@ -66,7 +66,11 @@ export default async function SearchView({ lang, query }: { lang: Lang; query: s
                       </span>
                       <span className="min-w-0">
                         <span className="block text-[11px] font-bold uppercase tracking-[0.16em] text-wine-600">{entry.brand}</span>
-                        <span className="block font-bold text-ink">{entry.name}</span>
+                        {entry.perfumeSlug ? (
+                          <Link href={withLang(lang, `/perfume/${entry.perfumeSlug}`)} prefetch={false} className="block font-bold text-ink hover:text-wine-700">{entry.name}</Link>
+                        ) : (
+                          <span className="block font-bold text-ink">{entry.name}</span>
+                        )}
                         <span className="mt-1 block text-xs text-smoke">
                           {s.inspiredBy}{' '}
                           <Link href={withLang(lang, `/perfume/${original.slug}`)} prefetch={false} className="font-medium text-ink hover:text-wine-600 hover:underline">

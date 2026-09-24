@@ -1,10 +1,9 @@
 import Link from 'next/link';
-import type { Dupe } from '@/lib/supabase';
 import { slugify } from '@/lib/slug';
 import { usd } from '@/lib/format';
 import { getDict, withLang, type Lang } from '@/lib/i18n';
 import { noteGroups, noteLabel } from '@/lib/notes';
-import { entryKey, type EntryVoteCounts } from '@/lib/load-catalog';
+import { entryKey, type EntryVoteCounts, type ShownEntry } from '@/lib/load-catalog';
 import Photo from './Photo';
 import StoreButtons from './StoreButtons';
 import EntryVotes from './EntryVotes';
@@ -12,7 +11,7 @@ import EntryVotes from './EntryVotes';
 // One "inspired by" fragrance: its picture, main notes, the community's vote on how
 // close it is to the original, and the price-comparison button.
 export default function EntryCard({ entry, lang, perfumeId, votes, rank }: {
-  entry: Dupe;
+  entry: ShownEntry;
   rank?: number;
   lang: Lang;
   perfumeId: string;
@@ -30,7 +29,11 @@ export default function EntryCard({ entry, lang, perfumeId, votes, rank }: {
           ) : null}
         </div>
         <div className="min-w-0 flex-1">
-          <h3 className="text-lg font-bold leading-tight text-ink">{entry.name}</h3>
+          <h3 className="text-lg font-bold leading-tight text-ink">
+            {entry.perfumeSlug ? (
+              <Link href={withLang(lang, `/perfume/${entry.perfumeSlug}`)} prefetch={false} className="transition hover:text-wine-700">{entry.name}</Link>
+            ) : entry.name}
+          </h3>
           <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-wine-600">
             <Link href={withLang(lang, `/brand/${slugify(entry.brand)}`)} prefetch={false} className="transition hover:text-wine-700">{entry.brand}</Link>
           </p>

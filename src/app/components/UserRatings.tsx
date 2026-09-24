@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useTransition, type ComponentType } from 'react';
+import { useEffect, useState, type ComponentType } from 'react';
 import Link from 'next/link';
 import {
   Angry, Frown, Heart, Leaf, Meh, Moon, Smile, Snowflake, Sun, TreeDeciduous, Umbrella,
@@ -8,6 +8,7 @@ import {
 import { getSupabaseBrowser } from '@/lib/supabase-browser';
 import { castVote, removeRating, submitRating, type RatingDetails } from '@/lib/community-actions';
 import { useViewer } from '@/lib/use-viewer';
+import { useLatestSender } from '@/lib/use-latest-sender';
 import { fmt, getDict, withLang, type Lang } from '@/lib/i18n';
 import {
   ASPECTS, CHOICE_KINDS, WEAR_KEYS,
@@ -92,7 +93,7 @@ export default function UserRatings({ lang, perfumeId, average, ratingCounts, vo
   const t = getDict(lang);
   const p = t.community.panels;
   const { ready, userId } = useViewer();
-  const [pending, startTransition] = useTransition();
+  const send = useLatestSender();
 
   const [myScore, setMyScore] = useState<number | null>(null);
   const [myDetails, setMyDetails] = useState<RatingDetails>({});
@@ -122,25 +123,27 @@ export default function UserRatings({ lang, perfumeId, average, ratingCounts, vo
 
   const mineScore = userId ? myScore : null;
   const mineVotes = userId ? myVotes : {};
-  const locked = !userId || pending;
+  const locked = !userId;
 
-  const say = (ok: boolean) => setMessage(ok ? t.community.thanks : t.auth.errorGeneric);
+  // The screen changes at once; the save happens in the background (see useLatestSender).
+  const fail = () => setMessage(t.auth.errorGeneric);
+  const saveRating = (score: number | null, details: RatingDetails) => {
+    setMessage(t.community.thanks);
+    send('rating', { score, details }, v => (v.score === null ? removeRating(perfumeId) : submitRating(perfumeId, v.score, v.details)), fail);
+  };
 
   const rate = (score: number) => {
     const next = mineScore === score ? null : score;
     setRates(r => ({ ...r, ...(mineScore ? { [mineScore]: Math.max(0, (r[mineScore] ?? 0) - 1) } : {}), ...(next ? { [next]: (r[next] ?? 0) + 1 } : {}) }));
     setMyScore(next);
-    startTransition(async () => {
-      const result = next === null ? await removeRating(perfumeId) : await submitRating(perfumeId, next, myDetails);
-      say(result.success);
-    });
+    saveRating(next, myDetails);
   };
 
   const setDetail = (aspect: Aspect, stars: number) => {
     if (mineScore === null) return;
     const details = { ...myDetails, [aspect]: stars };
     setMyDetails(details);
-    startTransition(async () => say((await submitRating(perfumeId, mineScore, details)).success));
+    saveRating(mineScore, details);
   };
 
   const vote = (kind: VoteKind, value: number | null) => {
@@ -156,7 +159,8 @@ export default function UserRatings({ lang, perfumeId, average, ratingCounts, vo
       if (value === null) delete next[kind]; else next[kind] = value;
       return next;
     });
-    startTransition(async () => say((await castVote(perfumeId, kind, value)).success));
+    setMessage(t.community.thanks);
+    send(`vote:${kind}`, value, v => castVote(perfumeId, kind, v), fail);
   };
 
   const totalVotes = [1, 2, 3, 4, 5].reduce((n, s) => n + (rates[s] ?? 0), 0);
@@ -272,7 +276,6 @@ export default function UserRatings({ lang, perfumeId, average, ratingCounts, vo
                           type="button"
                           role="radio"
                           aria-checked={myDetails[a] === n}
-                          disabled={pending}
                           onClick={() => setDetail(a, n)}
                           className={`h-7 w-7 rounded-full border text-xs font-bold transition ${
                             (myDetails[a] ?? 0) >= n ? 'border-wine-600 bg-wine-600 text-white' : 'border-line bg-white text-smoke hover:border-wine-600/60'

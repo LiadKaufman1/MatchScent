@@ -1,15 +1,15 @@
-import { getCatalog, entryKey, type ShownPerfume } from './load-catalog';
+import { getCatalog, entryKey, isCatalogOriginal, type ShownEntry, type ShownPerfume } from './load-catalog';
 import { slugify } from './slug';
-import type { Dupe, NotePyramid } from './supabase';
+import type { NotePyramid } from './supabase';
 import { noteGroups } from './notes';
 
 // "Browse" pages: everything of one brand, and every fragrance that has one note.
 
-export type InspiredHit = { entry: Dupe; originals: ShownPerfume[] };
+export type InspiredHit = { entry: ShownEntry; originals: ShownPerfume[] };
 export type NoteHit = { perfume: ShownPerfume; group: 'top' | 'heart' | 'base' | 'notes' };
 
 // The same "inspired by" fragrance can appear under several originals: show it once, with all of them.
-function groupInspired(entries: Dupe[], byId: Map<string, ShownPerfume>): InspiredHit[] {
+function groupInspired(entries: ShownEntry[], byId: Map<string, ShownPerfume>): InspiredHit[] {
   const groups = new Map<string, InspiredHit>();
   for (const entry of entries) {
     const key = entryKey(entry.brand, entry.name);
@@ -28,7 +28,8 @@ export async function getBrandSlugs(): Promise<string[]> {
 
 export async function getBrandPage(slug: string) {
   const { perfumes, dupes } = await getCatalog();
-  const own = perfumes.filter(p => slugify(p.brand) === slug);
+  // Main perfumes of the house; its inspired fragrances are listed with their originals instead.
+  const own = perfumes.filter(p => slugify(p.brand) === slug && isCatalogOriginal(p));
   const inspiredEntries = dupes.filter(d => slugify(d.brand) === slug);
   const brand = own[0]?.brand ?? inspiredEntries[0]?.brand;
   if (!brand) return null;
@@ -56,7 +57,7 @@ export async function getNotePage(slug: string) {
     return null;
   };
   const hits: NoteHit[] = [];
-  for (const perfume of perfumes) {
+  for (const perfume of perfumes.filter(isCatalogOriginal)) {
     const group = hasNote(perfume);
     if (group) hits.push({ perfume, group });
   }

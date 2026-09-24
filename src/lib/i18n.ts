@@ -197,7 +197,45 @@ export type Dict = {
     notFound: string;
     empty: string;
   };
-  nav: { top: string; suggest: string; search: string };
+  nav: { top: string; suggest: string; search: string; inspired: string; brands: string };
+  inspiredPage: {
+    titleOne: string;
+    description: string;
+    intro: string;
+    heading: string;
+    headingReminds: string;
+    rank: string;
+    siblings: string;
+  };
+  inspiredIndex: {
+    metaTitle: string;
+    metaDescription: string;
+    heading: string;
+    intro: string;
+    placeholder: string;
+    allBrands: string;
+    filter: string;
+    count: string;
+    none: string;
+    prev: string;
+    next: string;
+    page: string;
+    inspiredBy: string;
+  };
+  brandsIndex: {
+    metaTitle: string;
+    metaDescription: string;
+    heading: string;
+    intro: string;
+    onSite: string;
+    total: string;
+    others: string;
+    count: string;
+    byLetter: string;
+    letterTitle: string;
+    letterDescription: string;
+    otherLetter: string;
+  };
   search: {
     metaTitle: string;
     heading: string;
@@ -527,7 +565,45 @@ const en: Dict = {
     notFound: 'Nothing was found here.',
     empty: 'Nothing here yet.',
   },
-  nav: { top: 'Top rated', suggest: 'Suggest a perfume', search: 'Search' },
+  nav: { top: 'Top rated', suggest: 'Suggest a perfume', search: 'Search', inspired: 'Inspired fragrances', brands: 'Houses' },
+  inspiredPage: {
+    titleOne: '{full} - inspired by {orig}',
+    description: '{full} is a fragrance inspired by {orig}. Notes, ratings, reviews and where to buy it.',
+    intro: '{name} by {brand} is a fragrance inspired by {orig}.',
+    heading: 'Inspired by',
+    headingReminds: 'Also reminds people of',
+    rank: 'Number {rank} of {of} in the list of {name}',
+    siblings: 'More fragrances inspired by {name}',
+  },
+  inspiredIndex: {
+    metaTitle: 'Inspired fragrances - every alternative and its original',
+    metaDescription: 'Every fragrance inspired by a famous perfume, side by side with the perfume it is inspired by.',
+    heading: 'Inspired fragrances',
+    intro: 'Every fragrance that is inspired by a famous perfume, next to the perfume it is inspired by.',
+    placeholder: 'Search by name or brand...',
+    allBrands: 'All brands',
+    filter: 'Show',
+    count: '{n} fragrances',
+    none: 'Nothing found.',
+    prev: 'Previous',
+    next: 'Next',
+    page: 'Page {n} of {total}',
+    inspiredBy: 'Inspired by',
+  },
+  brandsIndex: {
+    metaTitle: 'Perfume houses A-Z',
+    metaDescription: 'All the perfume houses, A to Z - with the perfumes and similar scents we have for each.',
+    heading: 'Perfume houses',
+    intro: 'All the perfume houses, A to Z. Houses with perfumes on the site are links.',
+    onSite: 'Houses with perfumes on the site',
+    total: 'All houses',
+    byLetter: 'Every perfume house, by letter',
+    letterTitle: 'Perfume houses: {l}',
+    letterDescription: 'Every perfume house starting with {l}.',
+    otherLetter: 'Other',
+    others: 'More houses (no perfumes on the site yet)',
+    count: '{n} houses',
+  },
   search: {
     metaTitle: 'Search',
     heading: 'Search the site',
@@ -857,7 +933,45 @@ const he: Dict = {
     notFound: 'לא נמצא כלום כאן.',
     empty: 'אין כאן עדיין כלום.',
   },
-  nav: { top: 'המובילים', suggest: 'הציעו בושם', search: 'חיפוש' },
+  nav: { top: 'המובילים', suggest: 'הציעו בושם', search: 'חיפוש', inspired: 'בשמים בהשראת', brands: 'בתי בישום' },
+  inspiredPage: {
+    titleOne: '{full} - בהשראת {orig}',
+    description: '{full} הוא בושם בהשראת {orig}. תווים, דירוגים, ביקורות, ואיפה לקנות.',
+    intro: '{name} של {brand} הוא בושם בהשראת {orig}.',
+    heading: 'בהשראת',
+    headingReminds: 'מזכיר גם את',
+    rank: 'מקום {rank} מתוך {of} ברשימה של {name}',
+    siblings: 'עוד בשמים בהשראת {name}',
+  },
+  inspiredIndex: {
+    metaTitle: 'בשמים בהשראת - כל החלופות והבושם המקורי שלהן',
+    metaDescription: 'כל הבשמים בהשראת בשמים מפורסמים, כל אחד לצד הבושם שהוא בהשראתו.',
+    heading: 'בשמים בהשראת',
+    intro: 'כל הבשמים בהשראת בשמים מפורסמים, כל אחד לצד הבושם שהוא בהשראתו.',
+    placeholder: 'חיפוש לפי שם או מותג...',
+    allBrands: 'כל המותגים',
+    filter: 'הצגה',
+    count: '{n} בשמים',
+    none: 'לא נמצא דבר.',
+    prev: 'הקודם',
+    next: 'הבא',
+    page: 'עמוד {n} מתוך {total}',
+    inspiredBy: 'בהשראת',
+  },
+  brandsIndex: {
+    metaTitle: 'בתי בישום מא׳ עד ת׳',
+    metaDescription: 'כל בתי הבישום, מא׳ עד ת׳, עם הבשמים והבשמים הדומים שיש לנו לכל אחד.',
+    heading: 'בתי בישום',
+    intro: 'כל בתי הבישום, לפי סדר האלף-בית. בתי בישום שיש להם בשמים באתר מסומנים כקישור.',
+    onSite: 'בתי בישום עם בשמים באתר',
+    total: 'כל בתי הבישום',
+    byLetter: 'כל בתי הבישום בעולם, לפי אות',
+    letterTitle: 'בתי בישום: {l}',
+    letterDescription: 'כל בתי הבישום שמתחילים ב-{l}.',
+    otherLetter: 'אחר',
+    others: 'עוד בתי בישום (עדיין אין להם בשמים באתר)',
+    count: '{n} בתי בישום',
+  },
   search: {
     metaTitle: 'חיפוש',
     heading: 'חיפוש באתר',
