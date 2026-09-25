@@ -53,6 +53,16 @@ export default async function HomeView({ lang }: { lang: Lang }) {
               ))}
               <a href="#catalog" className="rounded-full px-3 py-1 font-bold text-wine-600 underline underline-offset-4">{t.hero.browse}</a>
             </p>
+
+            {/* What the site is for: find the perfume, compare store prices, buy where it is cheapest. */}
+            <ol className="mx-auto mt-10 grid max-w-2xl gap-3 text-start sm:grid-cols-3">
+              {t.hero.steps.map((label, i) => (
+                <li key={label} className="flex items-center gap-3 rounded-2xl border border-line bg-white/80 px-4 py-2.5 sm:py-3">
+                  <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-wine-600 text-sm font-extrabold text-white" dir="ltr">{i + 1}</span>
+                  <span className="text-sm font-bold leading-snug text-ink">{label}</span>
+                </li>
+              ))}
+            </ol>
           </div>
         </section>
 

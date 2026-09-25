@@ -58,8 +58,6 @@ export type Dict = {
   from: string;
 
   whereToBuy: string;
-  compareCta: string;
-  compareHint: string;
   shopFrom: string;
   countries: CountryStrings;
   countriesIn: CountryStrings;
@@ -264,7 +262,33 @@ export type Dict = {
     navRatings: string;
     navReviews: string;
   };
-  hero: { searchLabel: string; popular: string; browse: string };
+  hero: { searchLabel: string; popular: string; browse: string; steps: [string, string, string] };
+  prices: {
+    cta: string;
+    ctaHint: string;
+    title: string;
+    loading: string;
+    loadingHint: string;
+    cheapest: string;
+    toStore: string;
+    sizeLabel: string;
+    sizeMl: string;
+    unknownSize: string;
+    unknownSizeHint: string;
+    tester: string;
+    testersTitle: string;
+    offers: string;
+    none: string;
+    unavailable: string;
+    tryStores: string;
+    disclaimer: string;
+    updated: string;
+    close: string;
+    goOpening: string;
+    goFail: string;
+    goBack: string;
+    goHint: string;
+  };
   footerNav: { explore: string; community: string; about: string };
   homeCommunity: {
     latestReviews: string;
@@ -369,15 +393,15 @@ const en: Dict = {
   switchLabel: 'החלפה לעברית (Switch to Hebrew)',
   dir: 'ltr',
 
-  metaTitle: 'MatchScent | Discover Fragrances Inspired by Iconic Perfumes',
-  metaDescription: 'Explore iconic perfumes and the fragrances inspired by them, with links to stores where you can buy.',
-  perfumeTitle: 'Fragrances Inspired by {full}',
-  perfumeDescOne: 'Discover a fragrance inspired by {full}: {names}. Compare prices and find where to buy.',
-  perfumeDescMany: 'Discover {n} fragrances inspired by {full}, including {names}. Compare prices and find where to buy.',
-  perfumeDescNone: 'We are curating fragrances inspired by {full}. Check back soon.',
+  metaTitle: 'MatchScent | Where to buy perfume cheapest in Israel',
+  metaDescription: 'Compare perfume prices across stores in Israel and find where it is cheapest, plus notes, ratings and fragrances inspired by famous perfumes.',
+  perfumeTitle: '{full}: Compare Prices and Similar Scents',
+  perfumeDescOne: 'Compare prices of {full} across stores and discover a fragrance inspired by it: {names}.',
+  perfumeDescMany: 'Compare prices of {full} across stores and discover {n} fragrances inspired by it, including {names}.',
+  perfumeDescNone: 'Compare prices of {full} across stores and see its notes and ratings.',
 
-  brandTag: 'The fragrance guide',
-  heroSub: "Explore fragrances inspired by the world's most iconic perfumes.",
+  brandTag: 'Perfume price comparison',
+  heroSub: 'Where is it cheapest to buy your perfume? Compare prices across stores in Israel, plus notes, ratings and inspired alternatives.',
   searchLabel: 'Search perfumes or brands',
   searchPlaceholder: 'Filter by perfume or brand...',
   filterLabel: 'Filter by audience',
@@ -415,8 +439,6 @@ const en: Dict = {
   from: 'From',
 
   whereToBuy: 'Where to buy',
-  compareCta: 'Compare prices across stores {in}',
-  compareHint: 'Every store that sells it, with prices',
   shopFrom: 'Shop from',
   countries: { IL: 'Israel', US: 'United States', GB: 'United Kingdom', WORLD: 'Rest of the world' },
   countriesIn: { IL: 'in Israel', US: 'in the US', GB: 'in the UK', WORLD: 'near you' },
@@ -632,7 +654,33 @@ const en: Dict = {
     navRatings: 'Ratings',
     navReviews: 'Reviews',
   },
-  hero: { searchLabel: 'Search a perfume, a brand or a note', popular: 'Popular:', browse: 'All perfumes' },
+  hero: { searchLabel: 'Search a perfume, a brand or a note', popular: 'Popular:', browse: 'All perfumes', steps: ['Find your perfume', 'Compare store prices', 'Buy where it is cheapest'] },
+  prices: {
+    cta: 'Compare prices {in}',
+    ctaHint: 'Where is it cheapest to buy?',
+    title: 'Where it is cheapest {in}',
+    loading: 'Checking prices in stores {in}...',
+    loadingHint: 'This takes a few seconds',
+    cheapest: 'Cheapest',
+    toStore: 'To the store',
+    sizeLabel: 'Size',
+    sizeMl: '{n} ml',
+    unknownSize: 'Size not stated',
+    unknownSizeHint: 'The listing does not say the size. Check on the store\'s site.',
+    tester: 'Tester',
+    testersTitle: 'Testers (bottle without its box)',
+    offers: '{n} offers',
+    none: 'We found no prices for this perfume in stores {in} right now.',
+    unavailable: 'We could not load prices right now.',
+    tryStores: 'You can search for it directly in the stores:',
+    disclaimer: 'Prices are refreshed every few hours and may change. Shipping and taxes are not always included, so check the store\'s site before you buy.',
+    updated: 'Updated {when}',
+    close: 'Close',
+    goOpening: 'Opening {store}...',
+    goFail: 'We could not open the store.',
+    goBack: 'Back to the site',
+    goHint: 'If the store does not open within a few seconds, try again.',
+  },
   footerNav: { explore: 'Explore', community: 'Community', about: 'About' },
   homeCommunity: {
     latestReviews: 'Latest reviews',
@@ -737,15 +785,15 @@ const he: Dict = {
   switchLabel: 'Switch to English (החלפה לאנגלית)',
   dir: 'rtl',
 
-  metaTitle: 'MatchScent | גלו בשמים בהשראת הבשמים האיקוניים',
-  metaDescription: 'גלו בשמים איקוניים ובשמים בהשראתם, עם קישורים לחנויות שבהן אפשר לקנות.',
-  perfumeTitle: 'בשמים בהשראת {full}',
-  perfumeDescOne: 'גלו בושם בהשראת {full}: {names}. השוו מחירים ומצאו איפה לקנות.',
-  perfumeDescMany: 'גלו {n} בשמים בהשראת {full}, ובהם {names}. השוו מחירים ומצאו איפה לקנות.',
-  perfumeDescNone: 'אנחנו מרכזים בשמים בהשראת {full}. חזרו בקרוב.',
+  metaTitle: 'MatchScent | איפה הכי זול לקנות בושם בישראל',
+  metaDescription: 'השוואת מחירי בשמים בין חנויות בישראל: איפה הכי זול לקנות, ובנוסף תווים, דירוגים ובשמים בהשראת הבשמים המפורסמים.',
+  perfumeTitle: '{full}: השוואת מחירים ובשמים בהשראתו',
+  perfumeDescOne: 'השוו מחירים של {full} בין חנויות בישראל וגלו בושם בהשראתו: {names}.',
+  perfumeDescMany: 'השוו מחירים של {full} בין חנויות בישראל וגלו {n} בשמים בהשראתו, ובהם {names}.',
+  perfumeDescNone: 'השוו מחירים של {full} בין חנויות בישראל, וראו תווים ודירוגים.',
 
-  brandTag: 'מדריך הבשמים',
-  heroSub: 'גלו בשמים בהשראת הבשמים האיקוניים בעולם.',
+  brandTag: 'השוואת מחירי בשמים',
+  heroSub: 'איפה הכי זול לקנות את הבושם שלכם? השוואת מחירים בין חנויות בישראל, ובנוסף תווים, דירוגים ובשמים בהשראתו.',
   searchLabel: 'חיפוש בושם או מותג',
   searchPlaceholder: 'סננו לפי שם בושם או מותג...',
   filterLabel: 'סינון לפי קהל יעד',
@@ -783,8 +831,6 @@ const he: Dict = {
   from: 'החל מ-',
 
   whereToBuy: 'איפה לקנות',
-  compareCta: 'השוואת מחירים בין חנויות {in}',
-  compareHint: 'כל החנויות שמוכרות אותו, עם מחירים',
   shopFrom: 'קונים מ',
   countries: { IL: 'ישראל', US: 'ארצות הברית', GB: 'בריטניה', WORLD: 'שאר העולם' },
   countriesIn: { IL: 'בישראל', US: 'בארה״ב', GB: 'בבריטניה', WORLD: 'באזור שלכם' },
@@ -1000,7 +1046,33 @@ const he: Dict = {
     navRatings: 'דירוגים',
     navReviews: 'ביקורות',
   },
-  hero: { searchLabel: 'חפשו בושם, מותג או תו', popular: 'פופולרי:', browse: 'כל הבשמים' },
+  hero: { searchLabel: 'חפשו בושם, מותג או תו', popular: 'פופולרי:', browse: 'כל הבשמים', steps: ['מצאו את הבושם שלכם', 'השוו מחירים בין חנויות', 'קנו איפה שהכי זול'] },
+  prices: {
+    cta: 'השוואת מחירים {in}',
+    ctaHint: 'איפה הכי זול לקנות אותו?',
+    title: 'איפה הכי זול {in}',
+    loading: 'בודקים מחירים בחנויות {in}...',
+    loadingHint: 'זה לוקח כמה שניות',
+    cheapest: 'הכי זול',
+    toStore: 'לחנות',
+    sizeLabel: 'גודל',
+    sizeMl: '{n} מ״ל',
+    unknownSize: 'גודל לא צוין',
+    unknownSizeHint: 'המודעה לא מציינת גודל. כדאי לבדוק באתר החנות.',
+    tester: 'טסטר',
+    testersTitle: 'טסטרים (בקבוק ללא אריזה)',
+    offers: '{n} הצעות',
+    none: 'לא מצאנו כרגע מחירים לבושם הזה בחנויות {in}.',
+    unavailable: 'לא הצלחנו לטעון מחירים כרגע.',
+    tryStores: 'אפשר לחפש אותו ישירות בחנויות:',
+    disclaimer: 'המחירים מתעדכנים כל כמה שעות ועשויים להשתנות. משלוח ומיסים לא תמיד נכללים, ולכן כדאי לבדוק באתר החנות לפני הרכישה.',
+    updated: 'עודכן {when}',
+    close: 'סגירה',
+    goOpening: 'פותחים את {store}...',
+    goFail: 'לא הצלחנו לפתוח את החנות.',
+    goBack: 'חזרה לאתר',
+    goHint: 'אם החנות לא נפתחת תוך כמה שניות, נסו שוב.',
+  },
   footerNav: { explore: 'לגלות', community: 'קהילה', about: 'על האתר' },
   homeCommunity: {
     latestReviews: 'ביקורות אחרונות',
