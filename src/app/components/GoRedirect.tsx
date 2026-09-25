@@ -18,7 +18,7 @@ export default function GoRedirect({ lang }: { lang: Lang }) {
   useEffect(() => {
     if (!k || !c || !h) return;
     let live = true;
-    fetch(`/api/prices/go?${new URLSearchParams({ k, c, h })}`)
+    fetch(`/api/prices/go?${new URLSearchParams({ k, c, h, l: lang })}`)
       .then(r => r.json() as Promise<{ url: string | null }>)
       .then(d => {
         if (!live) return;
@@ -27,7 +27,7 @@ export default function GoRedirect({ lang }: { lang: Lang }) {
       })
       .catch(() => { if (live) setFailed(true); });
     return () => { live = false; };
-  }, [k, c, h]);
+  }, [k, c, h, lang]);
 
   return (
     <div className="mx-auto max-w-sm text-center" role="status" aria-live="polite">
