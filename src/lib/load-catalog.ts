@@ -5,6 +5,7 @@ import { mockPerfumes, mockDupes } from './mockData';
 import { slugify } from './slug';
 
 import { entryKey, getPerfumeCommunity } from './load-community';
+import { versionWordsOf } from './price-offers';
 export { entryKey } from './load-community';
 export type { ReviewWithAuthor, EntryVoteCounts, PerfumeCommunity } from './community-types';
 
@@ -118,18 +119,10 @@ export async function findByEntryKey(key: string): Promise<{ brand: string; name
   if (!found) return null;
 
   // Other versions of the same perfume that we list ("Stronger With You" -> "... Intensely", "... Absolutely"): the
-  // words their names add. A store listing with one of those words is another perfume.
-  const words = (name: string) => slugify(name).split('-').filter(Boolean);
-  const own = new Set(words(found.name));
+  // words their names add after ours. A store listing with one of those words is another perfume.
   const brand = slugify(found.brand);
-  const variantWords = new Set<string>();
-  for (const other of [...perfumes, ...dupes]) {
-    if (slugify(other.brand) !== brand) continue;
-    const theirs = words(other.name);
-    if (theirs.length <= own.size || ![...own].every(w => theirs.includes(w))) continue;
-    for (const w of theirs) if (!own.has(w)) variantWords.add(w);
-  }
-  return { brand: found.brand, name: found.name, gender: p?.gender ?? null, variantWords: [...variantWords] };
+  const others = [...perfumes, ...dupes].filter(o => slugify(o.brand) === brand).map(o => o.name);
+  return { brand: found.brand, name: found.name, gender: p?.gender ?? null, variantWords: versionWordsOf(found.name, others) };
 }
 
 const hash = (s: string) => {

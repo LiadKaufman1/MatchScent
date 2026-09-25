@@ -5,20 +5,24 @@
 // files: the Israeli lookup merges the plain search and the one with the Hebrew word for perfume. Saved product pages
 // (immersive-<search name>-<row>.json) are opened too, like the server does for listings sold by several stores.
 import fs from 'node:fs';
-import { classifyResults, expandStores, finalizeOffers } from '../src/lib/price-offers.ts';
+import { classifyResults, expandStores, finalizeOffers, versionWordsOf } from '../src/lib/price-offers.ts';
 
 const DIR = 'data-import/serpapi-samples';
 const why = process.argv.includes('--why');
 const BLOCKED = /\b(dupes?|clones?|knock-?offs?|replicas?|fakes?|counterfeit)\b/i;
+// The names in our own catalogue that contain "Stronger With You" (the 2026-09-25 catalogue: after the import of every
+// Giorgio Armani perfume it also holds "Emporio Armani Stronger With You" - a line label, not another version).
+const ARMANI_NAMES = ['Stronger With You', 'Emporio Armani Stronger With You', 'Emporio Armani Stronger With You Parfum', 'Emporio Armani Stronger With You Absolutely',
+  'Emporio Armani Stronger With You Powerfully', 'Emporio Armani Stronger With You Intensely', 'Emporio Armani Stronger With You Oud', 'Emporio Armani Stronger With You Limited Edition'];
 const cases = [
   [['search-dior-sauvage-elixir.json'], { brand: 'Dior', name: 'Sauvage Elixir', gender: 'male' }],
   [['search-creed-aventus.json'], { brand: 'Creed', name: 'Aventus', gender: 'male' }],
   [['search-maison-francis-kurkdjian-baccarat-rouge-540.json'], { brand: 'Maison Francis Kurkdjian', name: 'Baccarat Rouge 540', gender: 'unisex' }],
   [['search-chanel-coco-mademoiselle.json'], { brand: 'Chanel', name: 'Coco Mademoiselle', gender: 'female' }],
   [['search-afnan-turathi-blue.json', 'search-afnan-turathi-blue-hebrew-variant.json'], { brand: 'Afnan', name: 'Turathi Blue', gender: null }],
-  [['search-giorgio-armani-stronger-with-you.json'], { brand: 'Giorgio Armani', name: 'Stronger With You', gender: 'male', variantWords: ['intensely'] }],
+  [['search-giorgio-armani-stronger-with-you.json'], { brand: 'Giorgio Armani', name: 'Stronger With You', gender: 'male', variantWords: versionWordsOf('Stronger With You', ARMANI_NAMES) }],
   // stores write "Emporio Armani" for this line: searched under that name (see storeBrand in src/lib/prices.ts)
-  [['search-emporio-armani-stronger-with-you.json'], { brand: 'Giorgio Armani', name: 'Stronger With You', gender: 'male', variantWords: ['intensely'] }],
+  [['search-emporio-armani-stronger-with-you.json'], { brand: 'Giorgio Armani', name: 'Stronger With You', gender: 'male', variantWords: versionWordsOf('Stronger With You', ARMANI_NAMES) }],
   [['search-giorgio-armani-acqua-di-gio-profumo.json'], { brand: 'Giorgio Armani', name: 'Acqua di Giò Profumo', gender: 'male' }],
 ];
 const read = f => JSON.parse(fs.readFileSync(`${DIR}/${f}`, 'utf8'));
@@ -62,6 +66,16 @@ const synthetic = [
   [{ brand: 'Dior', name: 'Sauvage', gender: 'male' }, 'Dior Sauvage Eau de Parfum 100ml', true],
   [{ brand: 'Creed', name: 'Aventus', gender: 'male' }, 'Creed Aventus 100ml EDP Sealed', true],
 ];
+console.log('\n=== version words from the catalogue');
+for (const [own, others, expected] of [
+  ['Stronger With You', ARMANI_NAMES, 'absolutely,edition,intensely,limited,oud,powerfully'],
+  ['Sauvage', ['Sauvage', 'Sauvage Elixir', 'Eau Sauvage', 'Sauvage Eau de Parfum', 'Sauvage Eau de Toilette', 'Sauvage Parfum'], 'elixir'],
+  ['Aventus', ['Aventus', 'Aventus Cologne', 'Aventus for Her'], 'cologne,her'],
+]) {
+  const got = versionWordsOf(own, others).sort().join(',');
+  console.log(`${got === expected ? 'ok  ' : 'FAIL'} ${own}: ${got}`);
+}
+
 console.log('\n=== single rules');
 for (const [wanted, title, keep, source] of synthetic) {
   const got = classifyResults([{ title, source: source ?? 'ACE', price: '₪250.00', extracted_price: 250 }], wanted, { country: 'IL', isBlocked: t => BLOCKED.test(t) }).length > 0;

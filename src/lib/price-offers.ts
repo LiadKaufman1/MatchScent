@@ -219,6 +219,26 @@ function versionConflict(text: string, wantedVersions: string[], brandKey: strin
   });
 }
 
+// The words that make another perfume of the same house a different VERSION of this one ("Stronger With You" ->
+// "Intensely", "Absolutely"): what the other name adds AFTER ours. Words before ours ("Emporio Armani Stronger With You")
+// are a line label, not a version, and words that only describe the bottle ("Eau de Toilette") never count - either
+// would throw out every store title (this happened on 2026-09-25 when the catalogue gained "Emporio Armani Stronger
+// With You" next to "Stronger With You": no Israeli store was found).
+export function versionWordsOf(ownName: string, otherNames: string[]): string[] {
+  const own = tokens(ownName);
+  const out = new Set<string>();
+  if (!own.length) return [];
+  for (const other of otherNames) {
+    const theirs = tokens(other);
+    for (let i = 0; i + own.length <= theirs.length; i++) {
+      if (!own.every((w, k) => theirs[i + k] === w)) continue;
+      for (const w of theirs.slice(i + own.length)) if (!own.includes(w) && !GENERIC_WORDS.has(w)) out.add(w);
+      break;
+    }
+  }
+  return [...out];
+}
+
 function describeWanted(wanted: Wanted) {
   const nameTokens = tokens(wanted.name).filter(t => !NAME_STOP.has(t) && t.length > 0);
   const brandTokens = tokens(wanted.brand).filter(t => !BRAND_NOISE.has(t));
@@ -234,7 +254,7 @@ function describeWanted(wanted: Wanted) {
     gender: (wanted.gender ?? '').toLowerCase(),
     brandKey,
     known: new Set([...nameTokens, ...brandTokens, ...brandWords]),
-    variantWords: new Set((wanted.variantWords ?? []).filter(w => !nameTokens.includes(w))),
+    variantWords: new Set((wanted.variantWords ?? []).filter(w => !nameTokens.includes(w) && !GENERIC_WORDS.has(w))),
   };
 }
 
