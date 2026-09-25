@@ -16,6 +16,26 @@ export function getSupabase(): SupabaseClient {
   return client
 }
 
+// The catalogue (perfumes + similar scents) is read by every page render, and it holds thousands of rows: reading it
+// afresh for each of ~3,000 pages of a build or for every visit moved gigabytes out of the database. This client
+// lets Next keep each answer for 5 minutes and share it between all renders (the tag "catalog" is refreshed at once
+// after an admin edit). Only for reads that may be a few minutes old; votes and reviews use getSupabase().
+let catalogClient: SupabaseClient | null = null
+
+export function getCatalogSupabase(): SupabaseClient {
+  if (!catalogClient) {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    if (!url || !anonKey) {
+      throw new Error('NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY are not set')
+    }
+    catalogClient = createClient(url, anonKey, {
+      global: { fetch: (input, init) => fetch(input, { ...init, next: { revalidate: 300, tags: ['catalog'] } }) },
+    })
+  }
+  return catalogClient
+}
+
 // Top / heart / base notes (English names). A fragrance without that split uses only "notes".
 export type NotePyramid = { top?: string[]; heart?: string[]; base?: string[]; notes?: string[] }
 
