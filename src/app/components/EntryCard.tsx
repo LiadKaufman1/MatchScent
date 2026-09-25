@@ -10,28 +10,30 @@ import EntryVotes from './EntryVotes';
 
 // One "inspired by" fragrance: its picture, main notes, the community's vote on how
 // close it is to the original, and the price-comparison button.
-export default function EntryCard({ entry, lang, perfumeId, votes, rank }: {
+export default function EntryCard({ entry, lang, perfumeId, votes }: {
   entry: ShownEntry;
-  rank?: number;
   lang: Lang;
   perfumeId: string;
   votes?: EntryVoteCounts;
 }) {
   const t = getDict(lang);
   const mainNotes = noteGroups(entry.note_pyramid).flatMap(g => g.notes).slice(0, 6).map(n => noteLabel(n, lang));
+  // The fragrance's own page (notes, ratings, reviews) - the picture and the name both lead there.
+  const page = entry.perfumeSlug ? withLang(lang, `/perfume/${entry.perfumeSlug}`) : null;
+  const photo = <Photo url={entry.image_url} alt={`${entry.brand} ${entry.name}`} seed={entry.brand + entry.name} sizes="112px" />;
   return (
     <article className="flex flex-col rounded-2xl border border-line bg-white p-4 shadow-[0_1px_2px_rgba(28,21,24,0.04)]">
       <div className="flex gap-4">
         <div className="relative h-36 w-28 shrink-0 overflow-hidden rounded-xl border border-line">
-          <Photo url={entry.image_url} alt={`${entry.brand} ${entry.name}`} seed={entry.brand + entry.name} sizes="112px" />
-          {rank ? (
-            <span className="absolute start-1.5 top-1.5 flex h-6 min-w-6 items-center justify-center rounded-full bg-wine-600 px-1.5 text-xs font-extrabold text-white shadow" dir="ltr">{rank}</span>
-          ) : null}
+          {page ? (
+            // the name next to it is the link for keyboards and screen readers
+            <Link href={page} prefetch={false} tabIndex={-1} aria-hidden="true" className="block h-full w-full transition hover:opacity-90">{photo}</Link>
+          ) : photo}
         </div>
         <div className="min-w-0 flex-1">
           <h3 className="text-lg font-bold leading-tight text-ink">
-            {entry.perfumeSlug ? (
-              <Link href={withLang(lang, `/perfume/${entry.perfumeSlug}`)} prefetch={false} className="transition hover:text-wine-700">{entry.name}</Link>
+            {page ? (
+              <Link href={page} prefetch={false} className="underline decoration-transparent decoration-2 underline-offset-4 transition hover:text-wine-700 hover:decoration-wine-600/50">{entry.name}</Link>
             ) : entry.name}
           </h3>
           <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-wine-600">
