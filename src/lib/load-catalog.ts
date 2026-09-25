@@ -102,12 +102,26 @@ async function loadCatalog(): Promise<{ perfumes: ShownPerfume[]; dupes: ShownEn
 export const getCatalog = cache(loadCatalog);
 
 // The perfume (or similar-scent entry) whose address key is this one - what the price lookup searches for.
-export async function findByEntryKey(key: string): Promise<{ brand: string; name: string; gender: string | null } | null> {
+export async function findByEntryKey(key: string): Promise<{ brand: string; name: string; gender: string | null; variantWords: string[] } | null> {
   const { perfumes, dupes } = await getCatalog();
   const p = perfumes.find(x => entryKey(x.brand, x.name) === key);
-  if (p) return { brand: p.brand, name: p.name, gender: p.gender ?? null };
-  const d = dupes.find(x => entryKey(x.brand, x.name) === key);
-  return d ? { brand: d.brand, name: d.name, gender: null } : null;
+  const d = p ? undefined : dupes.find(x => entryKey(x.brand, x.name) === key);
+  const found = p ?? d;
+  if (!found) return null;
+
+  // Other versions of the same perfume that we list ("Stronger With You" -> "... Intensely", "... Absolutely"): the
+  // words their names add. A store listing with one of those words is another perfume.
+  const words = (name: string) => slugify(name).split('-').filter(Boolean);
+  const own = new Set(words(found.name));
+  const brand = slugify(found.brand);
+  const variantWords = new Set<string>();
+  for (const other of [...perfumes, ...dupes]) {
+    if (slugify(other.brand) !== brand) continue;
+    const theirs = words(other.name);
+    if (theirs.length <= own.size || ![...own].every(w => theirs.includes(w))) continue;
+    for (const w of theirs) if (!own.has(w)) variantWords.add(w);
+  }
+  return { brand: found.brand, name: found.name, gender: p?.gender ?? null, variantWords: [...variantWords] };
 }
 
 const hash = (s: string) => {

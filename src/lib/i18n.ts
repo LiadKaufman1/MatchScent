@@ -279,13 +279,11 @@ export type Dict = {
     per100: string;
     approx: string;
     approxHint: string;
-    alsoSearch: string;
     tester: string;
     testersTitle: string;
     offers: string;
     none: string;
     unavailable: string;
-    tryStores: string;
     disclaimer: string;
     updated: string;
     close: string;
@@ -676,13 +674,11 @@ const en: Dict = {
     per100: '{price} per 100 ml',
     approx: 'Check the model',
     approxHint: 'The listing\'s title is shorter than the perfume\'s name. Check the model on the store\'s site.',
-    alsoSearch: 'Search directly in the stores:',
     tester: 'Tester',
     testersTitle: 'Testers (bottle without its box)',
     offers: '{n} offers',
-    none: 'We found no prices for this perfume in stores {in} right now.',
-    unavailable: 'We could not load prices right now.',
-    tryStores: 'You can search for it directly in the stores:',
+    none: 'We could not find this perfume available to buy in stores {in} right now.',
+    unavailable: 'We could not load prices right now. Please try again in a few minutes.',
     disclaimer: 'Prices are refreshed every few hours and may change. Shipping and taxes are not always included, so check the store\'s site before you buy.',
     updated: 'Updated {when}',
     close: 'Close',
@@ -1073,13 +1069,11 @@ const he: Dict = {
     per100: '{price} ל-100 מ״ל',
     approx: 'לוודא דגם',
     approxHint: 'כותרת המודעה קצרה משם הבושם. כדאי לוודא את הדגם באתר החנות.',
-    alsoSearch: 'חיפוש ישיר בחנויות:',
     tester: 'טסטר',
     testersTitle: 'טסטרים (בקבוק ללא אריזה)',
     offers: '{n} הצעות',
-    none: 'לא מצאנו כרגע מחירים לבושם הזה בחנויות {in}.',
-    unavailable: 'לא הצלחנו לטעון מחירים כרגע.',
-    tryStores: 'אפשר לחפש אותו ישירות בחנויות:',
+    none: 'לא מצאנו את הבושם הזה זמין לרכישה בחנויות {in} כרגע.',
+    unavailable: 'לא הצלחנו לטעון מחירים כרגע. נסו שוב בעוד כמה דקות.',
     disclaimer: 'המחירים מתעדכנים כל כמה שעות ועשויים להשתנות. משלוח ומיסים לא תמיד נכללים, ולכן כדאי לבדוק באתר החנות לפני הרכישה.',
     updated: 'עודכן {when}',
     close: 'סגירה',

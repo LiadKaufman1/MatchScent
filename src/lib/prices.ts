@@ -73,7 +73,7 @@ async function searchOnce(q: string, country: CountryCode): Promise<{ results: R
 
 async function search(wanted: Wanted, country: CountryCode): Promise<Search | null> {
   const q = `${wanted.brand} ${wanted.name}`.replace(/\s+/g, ' ').trim();
-  const queries = country === 'IL' ? [q, `${q} בושם`] : [q];
+  const queries = country === 'IL' && !LIGHT ? [q, `${q} בושם`] : [q];
   return remember(`s|${country}|${q.toLowerCase()}`, HOURS, async () => {
     const parts = await Promise.all(queries.map(x => searchOnce(x, country)));
     const done = parts.filter((p): p is NonNullable<typeof p> => p !== null);
@@ -89,7 +89,9 @@ async function search(wanted: Wanted, country: CountryCode): Promise<Search | nu
 // Google shows one store per row, even when a listing is sold by several (the one shown changes from search to
 // search). The product page of such a listing names every store, each with its own address: that is how KSP,
 // Super-Pharm and the others are all found. Up to EXPAND_PRODUCTS listings are opened that way (Israeli first).
-const EXPAND_PRODUCTS = 2;
+// PRICE_LOOKUP_MODE=light halves the cost (one search, one product page) while the search plan is small.
+const LIGHT = process.env.PRICE_LOOKUP_MODE === 'light';
+const EXPAND_PRODUCTS = LIGHT ? 1 : 2;
 
 async function storesOf(token: string): Promise<RawStore[]> {
   return remember(`p|${handleOf(token)}`, HOURS, async () => {
