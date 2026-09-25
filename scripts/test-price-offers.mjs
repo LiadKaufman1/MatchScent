@@ -17,6 +17,8 @@ const cases = [
   [['search-chanel-coco-mademoiselle.json'], { brand: 'Chanel', name: 'Coco Mademoiselle', gender: 'female' }],
   [['search-afnan-turathi-blue.json', 'search-afnan-turathi-blue-hebrew-variant.json'], { brand: 'Afnan', name: 'Turathi Blue', gender: null }],
   [['search-giorgio-armani-stronger-with-you.json'], { brand: 'Giorgio Armani', name: 'Stronger With You', gender: 'male', variantWords: ['intensely'] }],
+  // stores write "Emporio Armani" for this line: searched under that name (see storeBrand in src/lib/prices.ts)
+  [['search-emporio-armani-stronger-with-you.json'], { brand: 'Giorgio Armani', name: 'Stronger With You', gender: 'male', variantWords: ['intensely'] }],
   [['search-giorgio-armani-acqua-di-gio-profumo.json'], { brand: 'Giorgio Armani', name: 'Acqua di Giò Profumo', gender: 'male' }],
 ];
 const read = f => JSON.parse(fs.readFileSync(`${DIR}/${f}`, 'utf8'));
