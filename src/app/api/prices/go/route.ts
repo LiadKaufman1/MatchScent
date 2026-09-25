@@ -17,5 +17,9 @@ export async function GET(request: NextRequest) {
   if (!wanted) return Response.json({ url: null }, { status: 404 });
 
   const url = await resolveStorePage(wanted, normalizeCountry(params.get('c')), handle);
-  return Response.json({ url }, { headers: { 'Cache-Control': url ? 'public, s-maxage=86400' : 'no-store' } });
+  return Response.json({ url }, {
+    headers: url
+      ? { 'Cache-Control': 'public, max-age=3600', 'Vercel-CDN-Cache-Control': 's-maxage=86400' }
+      : { 'Cache-Control': 'no-store' },
+  });
 }
