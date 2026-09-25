@@ -542,7 +542,7 @@ export const ACCORDS_HE: Record<string, string> = {
   'yellow floral': 'פרחי צהוב',
   'floral': 'פרחי',
   'fruity': 'פירותי',
-  'musky': 'מושקי',
+  'musky': 'מאסקי',
   'earthy': 'אדמתי',
   'leather': 'עור',
   'smoky': 'מעושן',
