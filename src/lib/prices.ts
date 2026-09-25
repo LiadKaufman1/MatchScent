@@ -60,6 +60,17 @@ async function serp(params: Record<string, string>, hours: number): Promise<{ st
   }
 }
 
+// The words stores put in front of the perfume's name. Fragrantica files some lines under another house than the stores
+// use: "Emporio Armani Stronger With You" is Giorgio Armani there, and searching "Giorgio Armani Stronger With You"
+// found almost no Israeli store (KSP, which sells it, was missing; 2026-09-25) while "Emporio Armani Stronger With You"
+// finds KSP, Super-Pharm, Shufersal and more. Add a line here when a perfume is known to be sold under another house.
+const EMPORIO_ARMANI_LINES = /\b(stronger with you|because it'?s you|in love with you|emporio|diamonds|remix|city glam)\b/i;
+export function searchName(wanted: Wanted): string {
+  const brand = /^giorgio armani$/i.test(wanted.brand.trim()) && EMPORIO_ARMANI_LINES.test(wanted.name) ? 'Emporio Armani' : wanted.brand;
+  const q = wanted.name.toLowerCase().includes(brand.toLowerCase()) ? wanted.name : `${brand} ${wanted.name}`;
+  return q.replace(/\s+/g, ' ').trim();
+}
+
 // One search. null = it failed (a search that found nothing is a real answer, an empty list).
 async function searchOnce(q: string, country: CountryCode): Promise<{ results: RawResult[]; at: number } | null> {
   const m = MARKET[country];
@@ -73,7 +84,7 @@ async function searchOnce(q: string, country: CountryCode): Promise<{ results: R
 }
 
 async function search(wanted: Wanted, country: CountryCode): Promise<Search | null> {
-  const q = `${wanted.brand} ${wanted.name}`.replace(/\s+/g, ' ').trim();
+  const q = searchName(wanted);
   const queries = country === 'IL' && !LIGHT ? [q, `${q} בושם`] : [q];
   return remember(`s|${country}|${q.toLowerCase()}`, HOURS, async () => {
     const parts = await Promise.all(queries.map(x => searchOnce(x, country)));
