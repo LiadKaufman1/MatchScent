@@ -1,14 +1,13 @@
-import Link from 'next/link';
 import type { ShownPerfume } from '@/lib/load-catalog';
 import { withLang, type Lang } from '@/lib/i18n';
 import Photo from './Photo';
+import HoverLink from '@/app/components/HoverLink';
 
 // A small perfume tile for browse pages: picture, brand, name.
 export default function PerfumeCard({ perfume, lang, note }: { perfume: ShownPerfume; lang: Lang; note?: string }) {
   return (
-    <Link
+    <HoverLink
       href={withLang(lang, `/perfume/${perfume.slug}`)}
-      prefetch={false}
       className="group flex items-center gap-3 rounded-xl border border-line bg-white p-3 transition hover:border-wine-600/50"
     >
       <span className="relative h-20 w-16 shrink-0 overflow-hidden rounded-xl border border-line bg-white">
@@ -19,6 +18,6 @@ export default function PerfumeCard({ perfume, lang, note }: { perfume: ShownPer
         <span className="block truncate text-base font-bold text-ink">{perfume.name}</span>
         {note && <span className="block text-xs text-smoke">{note}</span>}
       </span>
-    </Link>
+    </HoverLink>
   );
 }

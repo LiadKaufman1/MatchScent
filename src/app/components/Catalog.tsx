@@ -1,12 +1,12 @@
 'use client';
 
 import { useDeferredValue, useMemo, useState } from 'react';
-import Link from 'next/link';
 import { Search, ArrowUpRight } from 'lucide-react';
 import type { ShownPerfume } from '@/lib/load-catalog';
 import { ils, usd } from '@/lib/format';
 import { fmt, getDict, withLang, type Lang } from '@/lib/i18n';
 import Photo from './Photo';
+import HoverLink from '@/app/components/HoverLink';
 
 export default function Catalog({ perfumes, lang }: { perfumes: ShownPerfume[]; lang: Lang }) {
   const t = getDict(lang);
@@ -81,10 +81,9 @@ export default function Catalog({ perfumes, lang }: { perfumes: ShownPerfume[]; 
         ) : (
           <div className="grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3 lg:grid-cols-4 lg:gap-6">
             {visible.map((p, i) => (
-              <Link
+              <HoverLink
                 key={p.id}
                 href={withLang(lang, `/perfume/${p.slug}`)}
-                prefetch={false}
                 className={`site-card group flex flex-col overflow-hidden rounded-2xl text-start ${i < 12 ? 'rise' : ''}`}
                 style={i < 12 ? { animationDelay: `${i * 45}ms` } : undefined}
               >
@@ -111,7 +110,7 @@ export default function Catalog({ perfumes, lang }: { perfumes: ShownPerfume[]; 
                     <ArrowUpRight className="h-4 w-4 shrink-0 text-wine-600 transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5 rtl:-scale-x-100 rtl:group-hover:-translate-x-0.5" aria-hidden="true" />
                   </div>
                 </div>
-              </Link>
+              </HoverLink>
             ))}
           </div>
         )}
