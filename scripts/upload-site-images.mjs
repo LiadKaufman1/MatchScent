@@ -34,17 +34,22 @@ async function run() {
   const check = await fetch(`${base}/storage/v1/bucket/${BUCKET}`, { headers: { apikey: key, Authorization: `Bearer ${key}` } });
   if (!check.ok) { console.error(`The bucket "${BUCKET}" does not exist yet (HTTP ${check.status}). Run db-migrations/2026-09-perfume-images-bucket.sql first.`); process.exitCode = 1; return; }
 
-  let ok = 0, failed = 0;
-  for (const f of files) {
-    const body = fs.readFileSync(path.join(DIR, f));
-    const r = await fetch(`${base}/storage/v1/object/${BUCKET}/${encodeURIComponent(f)}`, {
-      method: 'POST',
-      headers: { apikey: key, Authorization: `Bearer ${key}`, 'Content-Type': 'image/jpeg', 'x-upsert': 'true', 'Cache-Control': 'max-age=31536000' },
-      body,
-    });
-    if (r.ok) { ok++; if (ok % 25 === 0) console.log(`  ${ok}/${files.length} ...`); }
-    else { failed++; console.log(`  FAILED ${f}: HTTP ${r.status} ${(await r.text()).slice(0, 120)}`); }
-  }
+  // Six uploads at a time (much faster than one by one; the picture files are small).
+  let ok = 0, failed = 0, next = 0;
+  const worker = async () => {
+    while (next < files.length) {
+      const f = files[next++];
+      const body = fs.readFileSync(path.join(DIR, f));
+      const r = await fetch(`${base}/storage/v1/object/${BUCKET}/${encodeURIComponent(f)}`, {
+        method: 'POST',
+        headers: { apikey: key, Authorization: `Bearer ${key}`, 'Content-Type': 'image/jpeg', 'x-upsert': 'true', 'Cache-Control': 'max-age=31536000' },
+        body,
+      });
+      if (r.ok) { ok++; if (ok % 100 === 0) console.log(`  ${ok}/${files.length} ...`); }
+      else { failed++; console.log(`  FAILED ${f}: HTTP ${r.status} ${(await r.text()).slice(0, 120)}`); }
+    }
+  };
+  await Promise.all(Array.from({ length: 6 }, worker));
   console.log(`\nDone. ${ok} uploaded, ${failed} failed.`);
   if (failed) process.exitCode = 2;
 }
