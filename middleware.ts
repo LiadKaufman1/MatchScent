@@ -28,8 +28,10 @@ export async function middleware(request: NextRequest) {
     },
   });
 
-  // Reading the user is what actually triggers a refresh of an expiring session.
-  await supabase.auth.getUser();
+  // Reading the session refreshes it when it is about to expire, and does not call Supabase on every
+  // request (getUser() did: a round trip to the auth server before each page, prefetch included).
+  // The value is not used for any decision here - the database's row-level security decides who may do what.
+  await supabase.auth.getSession();
 
   return response;
 }

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { entryKey, getCatalog, getPerfumePage, isCatalogOriginal, type ShownPerfume } from '@/lib/load-catalog';
+import { entryKey, getCatalog, getPerfumePage, type ShownPerfume } from '@/lib/load-catalog';
 import StoreButtons from '@/app/components/StoreButtons';
 import { ils, usd } from '@/lib/format';
 import { slugify } from '@/lib/slug';
@@ -22,10 +22,13 @@ import AccordBars from '@/app/components/AccordBars';
 import SectionNav from '@/app/components/SectionNav';
 import { Star } from 'lucide-react';
 import { SiteFooter, SiteHeader } from '@/app/components/SiteChrome';
+import HoverLink from '@/app/components/HoverLink';
 
 export async function perfumeStaticParams() {
   const { perfumes } = await getCatalog();
-  return perfumes.filter(isCatalogOriginal).map(p => ({ slug: p.slug }));
+  // Every perfume page is built ahead of time (the ~900 inspired fragrances too): a page that had to be
+  // rendered on its first visit took 2-3 seconds to open.
+  return perfumes.map(p => ({ slug: p.slug }));
 }
 
 export async function perfumeMetadata(lang: Lang, slug: string): Promise<Metadata> {
@@ -70,9 +73,8 @@ export async function perfumeMetadata(lang: Lang, slug: string): Promise<Metadat
 function PerfumeLink({ p, lang }: { p: ShownPerfume; lang: Lang }) {
   const t = getDict(lang);
   return (
-    <Link
+    <HoverLink
       href={withLang(lang, `/perfume/${p.slug}`)}
-      prefetch={false}
       className="group flex items-center justify-between gap-3 rounded-xl border border-line bg-white px-4 py-3 transition hover:border-wine-600/50"
     >
       <span className="min-w-0">
@@ -82,7 +84,7 @@ function PerfumeLink({ p, lang }: { p: ShownPerfume; lang: Lang }) {
       <span className="shrink-0 text-xs text-smoke group-hover:text-wine-600">
         {p.entryCount > 0 ? fmt(t.similarBadge, { n: p.entryCount }) : p.inspiredOf.length ? '' : t.soon}
       </span>
-    </Link>
+    </HoverLink>
   );
 }
 
@@ -281,7 +283,7 @@ export default async function PerfumeView({ lang, slug }: { lang: Lang; slug: st
                 return (
                   <li key={s.id}>
                     {s.perfumeSlug ? (
-                      <Link href={withLang(lang, `/perfume/${s.perfumeSlug}`)} prefetch={false} className="flex items-center gap-3 rounded-xl border border-line bg-white p-3 transition hover:border-wine-600/50">{inner}</Link>
+                      <HoverLink href={withLang(lang, `/perfume/${s.perfumeSlug}`)} className="flex items-center gap-3 rounded-xl border border-line bg-white p-3 transition hover:border-wine-600/50">{inner}</HoverLink>
                     ) : (
                       <div className="flex items-center gap-3 rounded-xl border border-line bg-white p-3">{inner}</div>
                     )}

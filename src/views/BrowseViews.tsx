@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getBrandPage, getBrandSlugs, getNotePage, getNoteSlugs, type InspiredHit } from '@/lib/load-browse';
 import { fmt, getDict, withLang, type Lang } from '@/lib/i18n';
@@ -8,6 +7,7 @@ import { scentColor } from '@/lib/scent-colors';
 import Photo from '@/app/components/Photo';
 import PerfumeCard from '@/app/components/PerfumeCard';
 import { SiteFooter, SiteHeader } from '@/app/components/SiteChrome';
+import HoverLink from '@/app/components/HoverLink';
 
 export const brandStaticParams = async () => (await getBrandSlugs()).map(slug => ({ slug }));
 // Notes that only one or two fragrances have would be thin pages: they are built when first visited, not ahead of time.
@@ -50,7 +50,7 @@ function InspiredList({ items, lang }: { items: InspiredHit[]; lang: Lang }) {
             <span className="block text-[11px] font-bold uppercase tracking-[0.16em] text-wine-600">{entry.brand}</span>
             <span className="block text-base font-bold text-ink">
               {entry.perfumeSlug ? (
-                <Link href={withLang(lang, `/perfume/${entry.perfumeSlug}`)} prefetch={false} className="hover:text-wine-700">{entry.name}</Link>
+                <HoverLink href={withLang(lang, `/perfume/${entry.perfumeSlug}`)} className="hover:text-wine-700">{entry.name}</HoverLink>
               ) : entry.name}
             </span>
             <span className="mt-1 block text-xs text-smoke">
@@ -58,9 +58,9 @@ function InspiredList({ items, lang }: { items: InspiredHit[]; lang: Lang }) {
               {originals.map((o, i) => (
                 <span key={o.id}>
                   {i > 0 && ', '}
-                  <Link href={withLang(lang, `/perfume/${o.slug}`)} prefetch={false} className="font-medium text-ink underline-offset-2 hover:text-wine-600 hover:underline">
+                  <HoverLink href={withLang(lang, `/perfume/${o.slug}`)} className="font-medium text-ink underline-offset-2 hover:text-wine-600 hover:underline">
                     {o.brand} {o.name}
-                  </Link>
+                  </HoverLink>
                 </span>
               ))}
             </span>

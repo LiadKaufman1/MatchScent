@@ -27,13 +27,13 @@ export default function EntryCard({ entry, lang, perfumeId, votes }: {
         <div className="relative h-36 w-28 shrink-0 overflow-hidden rounded-xl border border-line">
           {page ? (
             // the name next to it is the link for keyboards and screen readers
-            <Link href={page} prefetch={false} tabIndex={-1} aria-hidden="true" className="block h-full w-full transition hover:opacity-90">{photo}</Link>
+            <Link href={page} tabIndex={-1} aria-hidden="true" className="block h-full w-full transition hover:opacity-90">{photo}</Link>
           ) : photo}
         </div>
         <div className="min-w-0 flex-1">
           <h3 className="text-lg font-bold leading-tight text-ink">
             {page ? (
-              <Link href={page} prefetch={false} className="underline decoration-transparent decoration-2 underline-offset-4 transition hover:text-wine-700 hover:decoration-wine-600/50">{entry.name}</Link>
+              <Link href={page} className="underline decoration-transparent decoration-2 underline-offset-4 transition hover:text-wine-700 hover:decoration-wine-600/50">{entry.name}</Link>
             ) : entry.name}
           </h3>
           <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-wine-600">

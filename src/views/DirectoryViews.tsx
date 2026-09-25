@@ -5,6 +5,7 @@ import { searchInspired, getHouses, houseLetter, type HouseEntry, type InspiredI
 import { fmt, getDict, withLang, type Lang } from '@/lib/i18n';
 import Photo from '@/app/components/Photo';
 import { SiteFooter, SiteHeader } from '@/app/components/SiteChrome';
+import HoverLink from '@/app/components/HoverLink';
 
 const PER_PAGE = 36;
 
@@ -36,7 +37,7 @@ function Pair({ item, lang }: { item: InspiredItem; lang: Lang }) {
           <Photo url={e.image_url} alt={`${e.brand} ${e.name}`} seed={e.brand + e.name} sizes="72px" />
         </span>
         {e.perfumeSlug ? (
-          <Link href={withLang(lang, `/perfume/${e.perfumeSlug}`)} prefetch={false} className="min-w-0 hover:text-wine-700">{name}</Link>
+          <HoverLink href={withLang(lang, `/perfume/${e.perfumeSlug}`)} className="min-w-0 hover:text-wine-700">{name}</HoverLink>
         ) : (
           <span className="min-w-0">{name}</span>
         )}
@@ -49,7 +50,7 @@ function Pair({ item, lang }: { item: InspiredItem; lang: Lang }) {
         <ul className="min-w-0 space-y-2">
           {item.originals.slice(0, 2).map(o => (
             <li key={o.id}>
-              <Link href={withLang(lang, `/perfume/${o.slug}`)} prefetch={false} className="flex items-center gap-2.5 hover:text-wine-700">
+              <HoverLink href={withLang(lang, `/perfume/${o.slug}`)} className="flex items-center gap-2.5 hover:text-wine-700">
                 <span className="relative h-14 w-11 shrink-0 overflow-hidden rounded-lg border border-line bg-white">
                   <Photo url={o.image_url} alt={`${o.brand} ${o.name}`} seed={o.brand + o.name} sizes="44px" />
                 </span>
@@ -57,7 +58,7 @@ function Pair({ item, lang }: { item: InspiredItem; lang: Lang }) {
                   <span className="block text-[10px] font-bold uppercase tracking-[0.14em] text-smoke">{o.brand}</span>
                   <span className="block text-sm font-bold leading-snug text-ink">{o.name}</span>
                 </span>
-              </Link>
+              </HoverLink>
             </li>
           ))}
           {item.originals.length > 2 && <li className="text-xs text-smoke">+{item.originals.length - 2}</li>}

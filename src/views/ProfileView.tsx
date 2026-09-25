@@ -6,6 +6,7 @@ import { getSupabase } from '@/lib/supabase';
 import { fmt, getDict, withLang, type Lang } from '@/lib/i18n';
 import { SiteFooter, SiteHeader } from '@/app/components/SiteChrome';
 import ProfileEditor from '@/app/components/ProfileEditor';
+import HoverLink from '@/app/components/HoverLink';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -80,10 +81,10 @@ export default async function ProfileView({ lang, id }: { lang: Lang; id: string
   const rateLabels = t.community.panels.rate.options; // index 0 = hate ... 4 = love
 
   const chip = (p: NonNullable<ReturnType<typeof byId.get>>, extra?: string) => (
-    <Link href={withLang(lang, `/perfume/${p.slug}`)} prefetch={false} className="block rounded-full border border-line bg-white px-3.5 py-1.5 text-sm font-medium text-ink transition hover:border-wine-600/60">
+    <HoverLink href={withLang(lang, `/perfume/${p.slug}`)} className="block rounded-full border border-line bg-white px-3.5 py-1.5 text-sm font-medium text-ink transition hover:border-wine-600/60">
       {p.brand} {p.name}
       {extra && <span className="ms-2 text-xs font-bold text-wine-600">{extra}</span>}
-    </Link>
+    </HoverLink>
   );
 
   return (
@@ -154,9 +155,9 @@ export default async function ProfileView({ lang, id }: { lang: Lang; id: string
                     const alt = p ? `${p.brand} ${p.name}` : '';
                     return (
                       <li key={ph.id}>
-                        <Link href={p ? withLang(lang, `/perfume/${p.slug}`) : ph.url} prefetch={false} className="relative block aspect-square overflow-hidden rounded-2xl border border-line" title={alt}>
+                        <HoverLink href={p ? withLang(lang, `/perfume/${p.slug}`) : ph.url} className="relative block aspect-square overflow-hidden rounded-2xl border border-line" title={alt}>
                           <Image src={ph.url} alt={alt} fill sizes="(min-width: 640px) 180px, 30vw" className="object-cover" />
-                        </Link>
+                        </HoverLink>
                       </li>
                     );
                   })}
@@ -175,9 +176,9 @@ export default async function ProfileView({ lang, id }: { lang: Lang; id: string
                     return (
                       <article key={r.id} className="rounded-2xl border border-line bg-white p-4">
                         {p && (
-                          <Link href={withLang(lang, `/perfume/${p.slug}`)} prefetch={false} className="text-sm font-bold text-ink transition hover:text-wine-600">
+                          <HoverLink href={withLang(lang, `/perfume/${p.slug}`)} className="text-sm font-bold text-ink transition hover:text-wine-600">
                             {p.brand} {p.name}
-                          </Link>
+                          </HoverLink>
                         )}
                         <p className="mt-1.5 whitespace-pre-line leading-relaxed text-smoke">{r.body}</p>
                       </article>

@@ -7,6 +7,7 @@ import { fmt, getDict, withLang, type Lang } from '@/lib/i18n';
 import Photo from '@/app/components/Photo';
 import PerfumeCard from '@/app/components/PerfumeCard';
 import { SiteFooter, SiteHeader } from '@/app/components/SiteChrome';
+import HoverLink from '@/app/components/HoverLink';
 
 const heading = 'mb-4 section-title';
 
@@ -67,15 +68,15 @@ export default async function SearchView({ lang, query }: { lang: Lang; query: s
                       <span className="min-w-0">
                         <span className="block text-[11px] font-bold uppercase tracking-[0.16em] text-wine-600">{entry.brand}</span>
                         {entry.perfumeSlug ? (
-                          <Link href={withLang(lang, `/perfume/${entry.perfumeSlug}`)} prefetch={false} className="block font-bold text-ink hover:text-wine-700">{entry.name}</Link>
+                          <HoverLink href={withLang(lang, `/perfume/${entry.perfumeSlug}`)} className="block font-bold text-ink hover:text-wine-700">{entry.name}</HoverLink>
                         ) : (
                           <span className="block font-bold text-ink">{entry.name}</span>
                         )}
                         <span className="mt-1 block text-xs text-smoke">
                           {s.inspiredBy}{' '}
-                          <Link href={withLang(lang, `/perfume/${original.slug}`)} prefetch={false} className="font-medium text-ink hover:text-wine-600 hover:underline">
+                          <HoverLink href={withLang(lang, `/perfume/${original.slug}`)} className="font-medium text-ink hover:text-wine-600 hover:underline">
                             {original.brand} {original.name}
-                          </Link>
+                          </HoverLink>
                         </span>
                       </span>
                     </li>

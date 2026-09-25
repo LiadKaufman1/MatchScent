@@ -4,6 +4,7 @@ import { ArrowUpRight, Lightbulb } from 'lucide-react';
 import { getOverview, type RankedPerfume } from '@/lib/load-home';
 import { fmt, getDict, withLang, type Lang } from '@/lib/i18n';
 import PerfumeCard from './PerfumeCard';
+import HoverLink from '@/app/components/HoverLink';
 
 const heading = 'mb-4 section-title';
 
@@ -36,9 +37,9 @@ export default async function CommunityHighlights({ lang }: { lang: Lang }) {
                   <Link href={withLang(lang, `/u/${r.user_id}`)} prefetch={false} className="font-bold text-ink hover:text-wine-600">{r.author}</Link>{' '}
                   <span className="text-smoke">
                     {fmt(h.reviewOf, { name: '' })}
-                    <Link href={withLang(lang, `/perfume/${r.perfume.slug}`)} prefetch={false} className="font-bold text-wine-600 hover:text-wine-700">
+                    <HoverLink href={withLang(lang, `/perfume/${r.perfume.slug}`)} className="font-bold text-wine-600 hover:text-wine-700">
                       {r.perfume.brand} {r.perfume.name}
-                    </Link>
+                    </HoverLink>
                   </span>
                 </p>
                 <p className="mt-2 line-clamp-4 leading-relaxed text-smoke">{r.body}</p>
@@ -61,9 +62,9 @@ export default async function CommunityHighlights({ lang }: { lang: Lang }) {
           <ul className="grid grid-cols-3 gap-3 sm:grid-cols-6">
             {o.latestPhotos.slice(0, 6).map(ph => (
               <li key={ph.id}>
-                <Link href={withLang(lang, `/perfume/${ph.perfume.slug}`)} prefetch={false} className="relative block aspect-square overflow-hidden rounded-2xl border border-line">
+                <HoverLink href={withLang(lang, `/perfume/${ph.perfume.slug}`)} className="relative block aspect-square overflow-hidden rounded-2xl border border-line">
                   <Image src={ph.url} alt={`${ph.perfume.brand} ${ph.perfume.name}`} fill sizes="(min-width: 640px) 180px, 30vw" className="object-cover" />
-                </Link>
+                </HoverLink>
               </li>
             ))}
           </ul>
