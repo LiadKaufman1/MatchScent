@@ -246,7 +246,7 @@ export default async function PerfumeView({ lang, slug }: { lang: Lang; slug: st
           ]}
         />
 
-        <NotePyramid pyramid={perfume.note_pyramid} lang={lang} perfumeId={perfume.id} noteVotes={community.noteVotes} />
+        <NotePyramid pyramid={perfume.note_pyramid} lang={lang} noteVotes={community.noteVotes} />
 
         {!isInspired && (
         <section className="mt-14" aria-labelledby="inspired-heading">

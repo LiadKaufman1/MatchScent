@@ -7,7 +7,6 @@ import { randomUUID } from 'node:crypto';
 import { getSupabaseAdmin } from './supabase-admin';
 import { getSupabase } from './supabase';
 import { hasBlockedWord } from './catalog';
-import { noteGroups } from './notes';
 import { CHOICE_SIZES, isVoteKind, type ChoiceKind } from './community-types';
 
 // After something community-made changes, refresh every perfume page (both languages) so the
@@ -254,29 +253,6 @@ export async function deleteComment(commentId: string): Promise<Result> {
   if (!user) return { success: false, error: 'not logged in' };
   const { error } = await supabase.from('review_comments').delete().eq('id', commentId).eq('user_id', user.id);
   if (error) return { success: false, error: error.message };
-  refreshSoon();
-  return { success: true };
-}
-
-// --- "I smell this note" -------------------------------------------------------------------
-
-export async function toggleNoteVote(perfumeId: string, note: string, on: boolean): Promise<Result> {
-  const key = note.trim().toLowerCase();
-  if (!UUID.test(perfumeId) || !key || key.length > 80) return { success: false, error: 'invalid note' };
-
-  // Only notes that are really in this perfume's pyramid can be voted on.
-  const { data: perfume } = await getSupabase().from('perfumes').select('note_pyramid').eq('id', perfumeId).maybeSingle();
-  const known = noteGroups(perfume?.note_pyramid).some(g => g.notes.some(n => n.trim().toLowerCase() === key));
-  if (!known) return { success: false, error: 'unknown note' };
-
-  const { supabase, user } = await currentUser();
-  if (!user) return { success: false, error: 'not logged in' };
-
-  const { error } = on
-    ? await supabase.from('note_votes').upsert({ perfume_id: perfumeId, user_id: user.id, note: key }, { onConflict: 'perfume_id,user_id,note' })
-    : await supabase.from('note_votes').delete().eq('perfume_id', perfumeId).eq('user_id', user.id).eq('note', key);
-  if (error) return { success: false, error: error.message };
-
   refreshSoon();
   return { success: true };
 }

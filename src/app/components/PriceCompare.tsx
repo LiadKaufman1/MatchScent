@@ -5,6 +5,7 @@ import { ArrowUpRight, Search, Store, X } from 'lucide-react';
 import { useCountry } from '@/lib/use-country';
 import type { CountryCode } from '@/lib/stores';
 import { fmt, getDict, withLang, type Lang } from '@/lib/i18n';
+import ReportLink from './ReportLink';
 import type { PriceOffer, PriceReport } from '@/lib/price-types';
 
 // "Where is it cheapest to buy?": a button that opens a panel on our own site with the store prices for this
@@ -186,6 +187,9 @@ export default function PriceCompare({ perfumeKey, brand, name, lang, variant = 
                   <p className="rounded-2xl bg-blush px-4 py-3 text-sm font-medium text-ink">
                     {mine && !mine.ok && mine.reason === 'none' ? fmt(t.prices.none, { in: inCountry }) : t.prices.unavailable}
                   </p>
+                  {mine && !mine.ok && mine.reason === 'none' && (
+                    <ReportLink lang={lang} className="mt-3 inline-block text-sm font-bold text-wine-700 underline underline-offset-4">{t.report.panelLink}</ReportLink>
+                  )}
                 </div>
               )}
 
@@ -236,6 +240,7 @@ export default function PriceCompare({ perfumeKey, brand, name, lang, variant = 
                   <span className="font-bold">{ago(view.at, lang, t.prices.updated)}. </span>
                   {t.prices.disclaimer}
                 </p>
+                <ReportLink lang={lang} className="mt-1.5 inline-block text-xs font-bold text-wine-700 underline underline-offset-4">{t.report.panelLink}</ReportLink>
               </footer>
             )}
           </div>

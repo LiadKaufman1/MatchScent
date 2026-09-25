@@ -1,8 +1,8 @@
-// A small "not too many requests" guard for the price lookups, kept in the server's memory. It is best effort
+// A small "not too many requests" guard for the price lookups and the problem reports, kept in the server's memory. It is best effort
 // (each server instance counts on its own); the shared answer cache is what really protects the search quota.
 const hits = new Map<string, number[]>();
 
-export function tooManyRequests(request: Request, bucket: string, limit: number, windowMs = 60_000): boolean {
+export function tooManyRequests(request: { headers: { get(name: string): string | null } }, bucket: string, limit: number, windowMs = 60_000): boolean {
   const ip = (request.headers.get('x-forwarded-for') ?? '').split(',')[0].trim() || 'unknown';
   const key = `${bucket}|${ip}`;
   const now = Date.now();

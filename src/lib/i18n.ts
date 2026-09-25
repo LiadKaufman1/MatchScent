@@ -332,11 +332,44 @@ export type Dict = {
     remove: string;
   };
   noteVotes: {
-    vote: string;
-    done: string;
-    hint: string;
     count: string;
-    login: string;
+  };
+  about: {
+    navLabel: string;
+    title: string;
+    description: string;
+    intro: string;
+    whatTitle: string;
+    what: { title: string; text: string }[];
+    whoTitle: string;
+    who: string[];
+    honestTitle: string;
+    honest: string[];
+    helpTitle: string;
+    help: string;
+    reportCta: string;
+    emailLabel: string;
+  };
+  report: {
+    navLabel: string;
+    title: string;
+    description: string;
+    intro: string;
+    messageLabel: string;
+    messagePlaceholder: string;
+    contactLabel: string;
+    contactPlaceholder: string;
+    pageLabel: string;
+    submit: string;
+    sending: string;
+    doneTitle: string;
+    done: string;
+    back: string;
+    tooShort: string;
+    tooMany: string;
+    failed: string;
+    privacy: string;
+    panelLink: string;
   };
   photos: {
     heading: string;
@@ -728,11 +761,55 @@ const en: Dict = {
     remove: 'Delete',
   },
   noteVotes: {
-    vote: 'Vote for notes',
-    done: 'Done voting',
-    hint: 'Tap the notes you really smell in it.',
     count: '{n} members smell it',
-    login: 'Log in to vote for notes',
+  },
+  about: {
+    navLabel: 'About us',
+    title: 'About MatchScent',
+    description: 'MatchScent helps you find where a perfume is cheapest to buy in Israel and discover scents similar to the famous, expensive ones. Meet the site and the person behind it.',
+    intro: 'MatchScent started from a simple idea: buying a perfume in Israel should be easy, and it should not cost more than it has to. Here you can see where every perfume is cheapest in Israeli stores, and discover scents that smell like the famous, expensive ones.',
+    whatTitle: 'What you will find here',
+    what: [
+      { title: 'Price comparison in Israel', text: 'For every perfume you can see which Israeli stores sell it, what each bottle size costs, and go straight to the store.' },
+      { title: 'Similar scents', text: 'Every famous perfume shows scents that smell like it, often at a much lower price, as fragrance lovers around the world have voted.' },
+      { title: 'A community', text: 'Sign up to rate perfumes, write reviews, mark what is on your shelf and what you want, and suggest perfumes that are missing.' },
+    ],
+    whoTitle: 'Who is behind the site',
+    who: [
+      'I am Liad. I built MatchScent because I wanted one place, in Hebrew, that simply says where it is worth buying each perfume in Israel, without opening dozens of tabs and comparing by hand.',
+      'The site is at the start of its journey: perfumes, pictures and details are added every day, and your feedback shapes what comes next.',
+    ],
+    honestTitle: 'Good to know',
+    honest: [
+      'Prices are checked in the stores automatically, so small differences between what you see here and the store page are possible. Always check the final price in the store before you buy.',
+      'In the future some links to stores may earn the site a commission. If that happens we will say so openly.',
+      'Product pictures belong to their owners. If a picture of yours appears here and you would like it removed, write to us and we will take it down.',
+    ],
+    helpTitle: 'Help us get better',
+    help: 'Found a wrong price, a missing perfume or something that does not work? We would be glad to hear it.',
+    reportCta: 'Report a problem',
+    emailLabel: 'Or write to',
+  },
+  report: {
+    navLabel: 'Report a problem',
+    title: 'Report a problem',
+    description: 'Found a wrong price, a broken link, a missing perfume or any other problem on MatchScent? Tell us and we will look into it.',
+    intro: 'Found a wrong price, a broken link, a missing perfume or any other problem? Tell us and we will look into it.',
+    messageLabel: 'What happened?',
+    messagePlaceholder: 'For example: the price at a store is different, the link does not open, the perfume is missing...',
+    contactLabel: 'How can we reach you? (optional)',
+    contactPlaceholder: 'Email or phone',
+    pageLabel: 'The page you came from',
+    submit: 'Send',
+    sending: 'Sending...',
+    doneTitle: 'Thank you! We got your report.',
+    done: 'We read every report and fix what we can.',
+    back: 'Back to the site',
+    tooShort: 'Please write a few words about the problem.',
+    tooMany: 'You sent several reports in a row. Please try again in a few minutes.',
+    failed: 'We could not send the report right now. Please try again in a few minutes.',
+    privacy: 'Your details are used only to handle this report.',
+    panelLink: 'Wrong or missing price? Tell us',
   },
   photos: {
     heading: 'Members\' photos',
@@ -1124,11 +1201,55 @@ const he: Dict = {
     remove: 'מחיקה',
   },
   noteVotes: {
-    vote: 'הצביעו על התווים',
-    done: 'סיום הצבעה',
-    hint: 'לחצו על התווים שאתם באמת מריחים בבושם.',
     count: '{n} חברים מריחים אותו',
-    login: 'התחברו כדי להצביע על תווים',
+  },
+  about: {
+    navLabel: 'אודות',
+    title: 'אודות MatchScent',
+    description: 'MatchScent עוזר למצוא איפה הכי זול לקנות בושם בישראל ולגלות ניחוחות דומים לבשמים המפורסמים והיקרים. הכירו את האתר ואת מי שעומד מאחוריו.',
+    intro: 'MatchScent התחיל מרעיון פשוט: לקנות בושם בישראל צריך להיות קל, ולא לעלות יותר ממה שצריך. באתר תראו איפה הכי זול לקנות כל בושם בחנויות בישראל, ותגלו ניחוחות שמריחים כמו הבשמים המפורסמים והיקרים.',
+    whatTitle: 'מה תמצאו כאן',
+    what: [
+      { title: 'השוואת מחירים בישראל', text: 'לכל בושם אפשר לראות באילו חנויות ישראליות הוא נמכר, כמה עולה כל גודל בקבוק, ולעבור ישר לחנות.' },
+      { title: 'ניחוחות דומים', text: 'לכל בושם מפורסם מוצגים ניחוחות שמריחים כמוהו, לרוב במחיר נמוך בהרבה, כפי שאוהבי בישום בעולם הצביעו.' },
+      { title: 'קהילה', text: 'אפשר להירשם, לדרג בשמים, לכתוב חוות דעת, לסמן מה יש לכם על המדף ומה אתם רוצים, ולהציע בשמים שחסרים באתר.' },
+    ],
+    whoTitle: 'מי עומד מאחורי האתר',
+    who: [
+      'שמי ליעד. בניתי את MatchScent כי רציתי מקום אחד בעברית שאומר בפשטות איפה כדאי לקנות כל בושם בארץ, בלי לפתוח עשרות חלונות ולהשוות ידנית.',
+      'האתר עדיין בתחילת דרכו: בכל יום נוספים בו בשמים, תמונות ופרטים, והמשוב שלכם קובע מה יבוא אחר כך.',
+    ],
+    honestTitle: 'טוב לדעת',
+    honest: [
+      'המחירים נבדקים בחנויות באופן אוטומטי, ולכן ייתכנו הבדלים קטנים בין מה שמוצג כאן לבין מה שכתוב באתר החנות. תמיד כדאי לבדוק את המחיר הסופי בחנות לפני הקנייה.',
+      'בעתיד חלק מהקישורים לחנויות עשויים להניב לאתר עמלה. אם זה יקרה, נציין זאת בגלוי.',
+      'תמונות המוצרים שייכות לבעליהן. אם תמונה שלכם מופיעה כאן ואתם מבקשים להסיר אותה, כתבו לנו ונסיר.',
+    ],
+    helpTitle: 'עזרו לנו להשתפר',
+    help: 'מצאתם מחיר שגוי, בושם חסר או משהו שלא עובד? נשמח לשמוע.',
+    reportCta: 'דווחו על תקלה',
+    emailLabel: 'או כתבו לנו',
+  },
+  report: {
+    navLabel: 'דיווח על תקלה',
+    title: 'דיווח על תקלה',
+    description: 'מצאתם מחיר שגוי, קישור שלא עובד, בושם שחסר או כל בעיה אחרת ב-MatchScent? ספרו לנו ונטפל בזה.',
+    intro: 'מצאתם מחיר שגוי, קישור שלא עובד, בושם שחסר או כל בעיה אחרת? ספרו לנו ונטפל בזה.',
+    messageLabel: 'מה קרה?',
+    messagePlaceholder: 'למשל: המחיר באחת החנויות שונה, הקישור לא נפתח, הבושם חסר...',
+    contactLabel: 'איך אפשר לחזור אליכם? (לא חובה)',
+    contactPlaceholder: 'אימייל או טלפון',
+    pageLabel: 'העמוד שממנו הגעתם',
+    submit: 'שליחה',
+    sending: 'שולח...',
+    doneTitle: 'תודה! קיבלנו את הדיווח.',
+    done: 'אנחנו קוראים כל דיווח ומתקנים את מה שאפשר.',
+    back: 'חזרה לאתר',
+    tooShort: 'כתבו לנו כמה מילים על הבעיה.',
+    tooMany: 'שלחתם כמה דיווחים ברצף. נסו שוב בעוד כמה דקות.',
+    failed: 'לא הצלחנו לשלוח את הדיווח כרגע. נסו שוב בעוד כמה דקות.',
+    privacy: 'הפרטים שלכם ישמשו רק לטיפול בדיווח הזה.',
+    panelLink: 'מחיר שגוי או חסר? ספרו לנו',
   },
   photos: {
     heading: 'תמונות של החברים',

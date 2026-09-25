@@ -32,6 +32,7 @@ export default function AdminDashboard({ perfumes, dupes }: { perfumes: Perfume[
         </div>
         <a href="/admin/community" className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 rounded-xl hover:bg-slate-200 transition-colors">Community moderation</a>
         <a href="/admin/clicks" className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 rounded-xl hover:bg-slate-200 transition-colors">Clicks to stores</a>
+        <a href="/admin/reports" className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 rounded-xl hover:bg-slate-200 transition-colors">Problem reports</a>
         <button 
           onClick={async () => { await logoutAdmin(); window.location.reload(); }}
           className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-xl hover:bg-red-100 transition-colors"
