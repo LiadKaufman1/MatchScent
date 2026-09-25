@@ -166,8 +166,13 @@ export default async function PerfumeView({ lang, slug }: { lang: Lang; slug: st
           </div>
 
           <div className="col-span-2 min-w-0 md:col-span-1 md:col-start-2">
+            {/* The main action of the site: where is it cheapest to buy it. */}
+            <div className="max-w-md">
+              <StoreButtons brand={perfume.brand} name={perfume.name} lang={lang} variant="hero" />
+            </div>
+
             {/* The community's verdict at a glance (like the score next to the name on Parfumo). */}
-            <a href="#panels-heading" className="inline-flex items-center gap-3 rounded-2xl border border-line bg-white px-4 py-2.5 transition hover:border-wine-600/50">
+            <a href="#panels-heading" className="mt-5 inline-flex items-center gap-3 rounded-2xl border border-line bg-white px-4 py-2.5 transition hover:border-wine-600/50">
               <Star className="h-6 w-6 fill-wine-600 text-wine-600" aria-hidden="true" />
               {community.count > 0 ? (
                 <span className="flex items-baseline gap-2">
@@ -200,9 +205,6 @@ export default async function PerfumeView({ lang, slug }: { lang: Lang; slug: st
               <AccordBars accords={perfume.accords} lang={lang} title={t.facts.accords} />
             )}
             <ShelfButtons lang={lang} perfumeId={perfume.id} own={community.shelf.own} want={community.shelf.want} />
-            <div className="max-w-md">
-              <StoreButtons brand={perfume.brand} name={perfume.name} lang={lang} />
-            </div>
           </div>
         </header>
 

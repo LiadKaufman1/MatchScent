@@ -101,6 +101,15 @@ async function loadCatalog(): Promise<{ perfumes: ShownPerfume[]; dupes: ShownEn
 // Within one page render, read the database only once.
 export const getCatalog = cache(loadCatalog);
 
+// The perfume (or similar-scent entry) whose address key is this one - what the price lookup searches for.
+export async function findByEntryKey(key: string): Promise<{ brand: string; name: string; gender: string | null } | null> {
+  const { perfumes, dupes } = await getCatalog();
+  const p = perfumes.find(x => entryKey(x.brand, x.name) === key);
+  if (p) return { brand: p.brand, name: p.name, gender: p.gender ?? null };
+  const d = dupes.find(x => entryKey(x.brand, x.name) === key);
+  return d ? { brand: d.brand, name: d.name, gender: null } : null;
+}
+
 const hash = (s: string) => {
   let h = 0;
   for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
