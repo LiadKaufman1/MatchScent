@@ -15,7 +15,7 @@ if (!key) throw new Error('SERPAPI_KEY is missing in .env.local');
 
 const DIR = 'data-import/serpapi-samples';
 fs.mkdirSync(DIR, { recursive: true });
-const slug = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+const slug = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-+|-+$/g, '');
 const host = x => { try { const y = new URL(x); return y.hostname + y.pathname.slice(0, 60); } catch { return String(x).slice(0, 60); } };
 const [, , mode = 'account', arg1, arg2] = process.argv;
 

@@ -16,10 +16,14 @@ type Loaded = { country: CountryCode; report: PriceReport };
 const SYMBOL: Record<string, string> = { ILS: '₪', USD: '$', GBP: '£', EUR: '€' };
 const money = (n: number, currency: string) => `${SYMBOL[currency] ?? ''}${Math.round(n).toLocaleString('en-US')}`;
 
+// "just now", "1 hour ago", "yesterday" ... (written out, so the Hebrew plurals read right)
 function ago(iso: string, lang: Lang, updated: string): string {
   const hours = Math.max(0, (Date.now() - new Date(iso).getTime()) / 3600_000);
-  const rtf = new Intl.RelativeTimeFormat(lang === 'he' ? 'he' : 'en', { numeric: 'auto' });
-  const when = hours < 1 ? rtf.format(0, 'hour') : hours < 36 ? rtf.format(-Math.round(hours), 'hour') : rtf.format(-Math.round(hours / 24), 'day');
+  const h = Math.round(hours);
+  const d = Math.round(hours / 24);
+  const when = lang === 'he'
+    ? hours < 1 ? 'זה עתה' : h === 1 ? 'לפני שעה' : h === 2 ? 'לפני שעתיים' : hours < 24 ? `לפני ${h} שעות` : d <= 1 ? 'אתמול' : `לפני ${d} ימים`
+    : hours < 1 ? 'just now' : h === 1 ? '1 hour ago' : hours < 24 ? `${h} hours ago` : d <= 1 ? 'yesterday' : `${d} days ago`;
   return fmt(updated, { when });
 }
 
@@ -36,7 +40,7 @@ export default function PriceCompare({ perfumeKey, brand, name, lang, variant = 
   const [open, setOpen] = useState(false);
   const [loaded, setLoaded] = useState<Loaded | null>(null);
   const [failed, setFailed] = useState<CountryCode | null>(null);
-  const [size, setSize] = useState<number | null>(null);
+  const [size, setSize] = useState<number | 'all'>('all');
   const requested = useRef<Set<string>>(new Set());
 
   const load = useCallback((c: CountryCode) => {
@@ -71,10 +75,12 @@ export default function PriceCompare({ perfumeKey, brand, name, lang, variant = 
     const counts = new Map<number, number>();
     for (const o of regular) if (o.sizeMl) counts.set(o.sizeMl, (counts.get(o.sizeMl) ?? 0) + 1);
     const sizes = [...counts.keys()].sort((a, b) => a - b);
-    const usual = [...counts.entries()].sort((a, b) => b[1] - a[1] || b[0] - a[0])[0]?.[0] ?? null;
-    const chosen = size && counts.has(size) ? size : usual;
-    const main = chosen ? regular.filter(o => o.sizeMl === chosen) : regular.filter(o => o.sizeMl === null);
-    const unknown = chosen ? regular.filter(o => o.sizeMl === null) : [];
+    // "All" shows every bottle that states its size, cheapest first (each row says its size); a size chip narrows it
+    // to one size so prices can be compared like for like. Listings without a size are always kept apart.
+    const chosen = size !== 'all' && counts.has(size) ? size : null;
+    const known = regular.filter(o => o.sizeMl !== null && (chosen === null || o.sizeMl === chosen));
+    const main = known.length ? known : regular.filter(o => o.sizeMl === null);
+    const unknown = known.length ? regular.filter(o => o.sizeMl === null) : [];
     return { sizes, chosen, main, unknown, testers, at: mine.fetchedAt };
   }, [mine, size]);
 
@@ -84,12 +90,12 @@ export default function PriceCompare({ perfumeKey, brand, name, lang, variant = 
 
   const inCountry = t.countriesIn[country];
   const stores = COUNTRIES[country].stores;
-  const go = (o: PriceOffer) => o.go
+  const go = (o: PriceOffer) => o.url ?? (o.go
     ? `${withLang(lang, '/go')}?${new URLSearchParams({ k: perfumeKey, c: country, h: o.go, n: o.store.slice(0, 60) })}`
-    : null;
+    : null);
   const start = () => load(country);
 
-  const row = (o: PriceOffer, best?: number, first = false) => {
+  const row = (o: PriceOffer, first = false) => {
     const href = go(o);
     return (
       <li key={`${o.store}|${o.price}|${o.sizeMl}|${o.tester}`} className={`flex items-center gap-3 rounded-2xl border p-3.5 ${first ? 'border-wine-600/60 bg-blush/60' : 'border-line bg-white'}`}>
@@ -99,12 +105,14 @@ export default function PriceCompare({ perfumeKey, brand, name, lang, variant = 
             <span className="font-bold text-ink">{o.store}</span>
             {first && <span className="rounded-full bg-wine-600 px-2 py-0.5 text-[11px] font-bold text-white">{t.prices.cheapest}</span>}
             {o.tester && <span className="rounded-full border border-line px-2 py-0.5 text-[11px] font-bold text-smoke">{t.prices.tester}</span>}
+            {o.approx && <span title={t.prices.approxHint} className="rounded-full border border-line px-2 py-0.5 text-[11px] font-bold text-smoke">{t.prices.approx}</span>}
+            {o.sizeMl && <span className="rounded-full bg-blush px-2 py-0.5 text-[11px] font-bold text-wine-700">{fmt(t.prices.sizeMl, { n: o.sizeMl })}</span>}
           </span>
           <span className="mt-0.5 block truncate text-start text-xs text-smoke" dir="auto" title={o.title}>{o.title}</span>
         </span>
         <span className="shrink-0 text-end">
           <span className="block text-lg font-extrabold leading-tight text-ink" dir="ltr">{money(o.price, o.currency)}</span>
-          {best !== undefined && !first && o.price - best >= 1 && <span className="block text-xs font-medium text-smoke" dir="ltr">+{money(o.price - best, o.currency)}</span>}
+          {o.sizeMl && o.sizeMl !== 100 && <span className="block text-xs font-medium text-smoke">{fmt(t.prices.per100, { price: money((o.price / o.sizeMl) * 100, o.currency) })}</span>}
         </span>
         {href && (
           <a
@@ -200,22 +208,22 @@ export default function PriceCompare({ perfumeKey, brand, name, lang, variant = 
                   {view.sizes.length > 1 && (
                     <div className="mb-4 flex flex-wrap items-center gap-2" role="group" aria-label={t.prices.sizeLabel}>
                       <span className="text-sm font-bold text-smoke">{t.prices.sizeLabel}</span>
-                      {view.sizes.map(s => (
+                      {(['all', ...view.sizes] as const).map(s => (
                         <button
                           key={s}
                           type="button"
-                          aria-pressed={s === view.chosen}
+                          aria-pressed={(s === 'all' ? null : s) === view.chosen}
                           onClick={() => setSize(s)}
-                          className={`rounded-full border px-3.5 py-1.5 text-sm font-bold transition ${s === view.chosen ? 'border-wine-600 bg-wine-600 text-white' : 'border-line bg-white text-ink hover:border-wine-600/60'}`}
+                          className={`rounded-full border px-3.5 py-1.5 text-sm font-bold transition ${(s === 'all' ? null : s) === view.chosen ? 'border-wine-600 bg-wine-600 text-white' : 'border-line bg-white text-ink hover:border-wine-600/60'}`}
                         >
-                          {fmt(t.prices.sizeMl, { n: s })}
+                          {s === 'all' ? t.prices.allSizes : fmt(t.prices.sizeMl, { n: s })}
                         </button>
                       ))}
                     </div>
                   )}
                   {view.main.length > 0 && (
                     <ul className="space-y-2.5">
-                      {view.main.map((o, i) => row(o, view.main[0].price, i === 0))}
+                      {view.main.map((o, i) => row(o, i === 0))}
                     </ul>
                   )}
                   {view.unknown.length > 0 && (
@@ -231,6 +239,10 @@ export default function PriceCompare({ perfumeKey, brand, name, lang, variant = 
                       <ul className="mt-3 space-y-2.5">{view.testers.map(o => row(o))}</ul>
                     </details>
                   )}
+                  <div className="mt-5 border-t border-dashed border-line pt-4">
+                    <p className="text-sm font-bold text-smoke">{t.prices.alsoSearch}</p>
+                    {storeButtons}
+                  </div>
                 </div>
               )}
             </div>

@@ -11,7 +11,12 @@ export type RawResult = {
   price?: string;
   extracted_price?: number;
   immersive_product_page_token?: string;
+  multiple_sources?: boolean;   // Google groups several stores under this listing (only one is shown in the row)
+  product_id?: string;
 };
+
+// One store of a product page (the lookup that lists every store selling a listing).
+export type RawStore = { name?: string; title?: string; link?: string; price?: string; extracted_price?: number };
 
 export type Wanted = { brand: string; name: string; gender?: string | null };
 
@@ -22,7 +27,13 @@ export type CleanOffer = {
   currency: string;
   sizeMl: number | null;
   tester: boolean;
+  approx: boolean;        // the title is shorter than the perfume's name (one word missing): worth double-checking
   token: string | null;   // Google's handle for the listing, used later to open the store's own page (never sent to the browser)
+  url: string | null;     // the store's own page, when we already know it
+  multi: boolean;         // the listing groups several stores (a product page lists them all)
+  rank: number;           // its place in the search results (Google puts the best matches first)
+  productId: string | null;
+  expandOnly: boolean;    // its own store is not one we show (abroad), but it lists other stores: only used to look them up
 };
 
 const fold = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
@@ -78,7 +89,68 @@ const VERSIONS: [string, RegExp][] = [
   ['noir', word('noir|נואר')],
 ];
 
+const COLORS = new Set(['blue', 'brown', 'red', 'black', 'white', 'green', 'gold', 'silver', 'pink', 'purple', 'orange', 'grey', 'gray', 'yellow', 'navy']);
+
 const ISRAELI_SOURCE = /[\u0590-\u05ff]|\.co\.il|\.il\b|^(ksp|ace|nose|mist|storypharm|story ?pharm|super-?pharm|shufersal|terminal ?x|zap|gomobile|libero|koker|wema|perfume ?il|skyperfumes|callperfume|cell ?tec|everywear|cosmetixe|icon ?pharm|vrona|loven|beyond skin|cosmetic club|life ?pharm|your-?pharm|mtbeauty|blendo|miolor|lola ?ray|parfum ?x|shoesonline|novo ?pharm|oud house|golden ?rose|my perfume|tamara|mashbir)/i;
+
+// The store's own address without the search service's tracking marks (srsltid, utm_source=google ...): the visitor
+// lands on the store's page as if they had typed its address. null when it is not a web address.
+export function cleanStoreUrl(link: string | undefined | null): string | null {
+  try {
+    const u = new URL(link ?? '');
+    if (u.protocol !== 'https:' && u.protocol !== 'http:') return null;
+    for (const key of [...u.searchParams.keys()]) if (/^(utm_|gad_|srsltid$|gclid$|gbraid$|wbraid$)/i.test(key)) u.searchParams.delete(key);
+    return u.toString();
+  } catch {
+    return null;
+  }
+}
+
+// A store is Israeli when its name is (Hebrew / known), or its own web address ends in .il or is a known Israeli shop.
+const ISRAELI_HOST = /(^|\.)(co\.il|org\.il|net\.il|il)$|^(www\.)?(terminalx|goldenrose|skyperfumes|perfumeil)\./i;
+export function isIsraeliStore(name: string, link?: string | null): boolean {
+  if (ISRAELI_SOURCE.test(name)) return true;
+  try { return !!link && ISRAELI_HOST.test(new URL(link).hostname); } catch { return false; }
+}
+
+// Israeli stores often write the name in Hebrew letters only ("קוקו שאנל מדמוזל" for "Chanel Coco Mademoiselle").
+// sound() reduces a word to a rough consonant skeleton that is the same for the Latin and the Hebrew spelling
+// (similar sounds merged, vowels dropped), so "mademoiselle" and "מדמוזאל" both become "mdmSl".
+const HEBREW_SOUND: Record<string, string> = {
+  'ב': 'b', 'ג': 'g', 'ד': 'd', 'ז': 'S', 'ט': 't', 'כ': 'k', 'ך': 'k', 'ל': 'l', 'מ': 'm', 'ם': 'm', 'נ': 'n', 'ן': 'n',
+  'ס': 'S', 'פ': 'p', 'ף': 'p', 'צ': 'S', 'ץ': 'S', 'ק': 'k', 'ר': 'r', 'ש': 'S', 'ת': 't', 'ח': 'h',
+};
+const LATIN_SOUND: Record<string, string> = {
+  b: 'b', c: 'k', d: 'd', f: 'p', g: 'g', j: 'S', k: 'k', l: 'l', m: 'm', n: 'n', p: 'p', q: 'k', r: 'r', s: 'S', t: 't', v: 'b', w: 'b', z: 'S', x: 'kS',
+};
+function sound(word: string): string {
+  let raw = '';
+  if (/[\u0590-\u05ff]/.test(word)) {
+    for (const ch of word) raw += HEBREW_SOUND[ch] ?? '';
+  } else {
+    const w = word
+      .replace(/(.)\1+/g, '$1') // "mademoiselle" -> "mademoisele"
+      .replace(/ph/g, 'f').replace(/ch|sh/g, 'S').replace(/th/g, 't').replace(/qu/g, 'k').replace(/ck/g, 'k')
+      .replace(/c(?=[eiy])/g, 'S').replace(/tion/g, 'Sn');
+    for (const ch of w) raw += ch === 'S' ? 'S' : (LATIN_SOUND[ch] ?? '');
+  }
+  return raw.replace(/h/g, '');
+}
+const editDistance = (a: string, b: string) => {
+  const row = Array.from({ length: b.length + 1 }, (_, i) => i);
+  for (let i = 1; i <= a.length; i++) {
+    let prev = row[0];
+    row[0] = i;
+    for (let j = 1; j <= b.length; j++) {
+      const keep = row[j];
+      row[j] = Math.min(row[j] + 1, row[j - 1] + 1, prev + (a[i - 1] === b[j - 1] ? 0 : 1));
+      prev = keep;
+    }
+  }
+  return row[b.length];
+};
+// Two sounds are "the same word" when they are equal, or (for longer words) differ by one letter.
+const soundsAlike = (a: string, b: string) => a.length >= 2 && b.length >= 2 && (a === b || (Math.max(a.length, b.length) >= 4 && editDistance(a, b) <= 1));
 
 export function parseSizeMl(title: string): { ml: number | null; multi: boolean } {
   const t = plain(title);
@@ -101,41 +173,72 @@ const median = (xs: number[]) => {
   return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
 };
 
-// isBlocked: the site's list of words visitors must never see (dupe, clone ...); a listing that uses one is dropped.
-export function cleanOffers(results: RawResult[], wanted: Wanted, opts: { country: string; isBlocked?: (text: string) => boolean }): CleanOffer[] {
+type Options = { country: string; isBlocked?: (text: string) => boolean; onDrop?: (r: RawResult, why: string) => void };
+
+// The words of a title that belong to no perfume name: sizes, concentrations, "for men" ... A shortened title is only
+// trusted when it contains nothing else that could be the name of another perfume.
+const GENERIC_WORDS = new Set(['edp', 'edt', 'eau', 'de', 'parfum', 'toilette', 'for', 'men', 'man', 'women', 'woman', 'pour', 'homme', 'femme', 'ml', 'oz', 'fl', 'spray', 'tester', 'new', 'e', 'd', 'p', 't', 'and', 'the', 'by']);
+
+function describeWanted(wanted: Wanted) {
   const nameTokens = tokens(wanted.name).filter(t => !NAME_STOP.has(t) && t.length > 0);
-  if (!nameTokens.length) return [];
   const brandTokens = tokens(wanted.brand).filter(t => !BRAND_NOISE.has(t));
   const brandKey = tokens(wanted.brand).join('');
   const brandWords = new Set([...brandTokens, ...(BRAND_ALIASES[brandKey] ?? [])]);
-  // A short, common-looking name ("Explorer") must come with the brand; a distinctive one ("Aventus") may not.
-  const needBrand = nameTokens.join('').length < 6;
-  const wantedVersions = VERSIONS.filter(([, re]) => re.test(plain(wanted.name))).map(([k]) => k);
-  const gender = (wanted.gender ?? '').toLowerCase();
+  return {
+    nameTokens,
+    brandTokens,
+    brandWords,
+    // A short, common-looking name ("Explorer") must come with the brand; a distinctive one ("Aventus") may not.
+    needBrand: nameTokens.join('').length < 6,
+    wantedVersions: VERSIONS.filter(([, re]) => re.test(plain(wanted.name))).map(([k]) => k),
+    gender: (wanted.gender ?? '').toLowerCase(),
+    known: new Set([...nameTokens, ...brandTokens, ...brandWords]),
+  };
+}
 
+// isBlocked: the site's list of words visitors must never see (dupe, clone ...); a listing that uses one is dropped.
+// onDrop (optional) is told why each listing was thrown out - used by the offline test to spot over-strict rules.
+export function classifyResults(results: RawResult[], wanted: Wanted, opts: Options): CleanOffer[] {
+  const { nameTokens, brandWords, needBrand, wantedVersions, gender, known } = describeWanted(wanted);
+  if (!nameTokens.length) return [];
   const out: CleanOffer[] = [];
-  for (const r of results) {
+  for (const [rank, r] of results.entries()) {
     const title = (r.title ?? '').replace(/\s+/g, ' ').trim();
     const price = r.extracted_price;
     const currency = currencyOf(r.price);
-    if (!title || !r.source || typeof price !== 'number' || !(price > 0) || !currency) continue;
-    if (opts.isBlocked?.(title) || NOT_A_BOTTLE.test(plain(title))) continue;
+    const drop = (why: string) => opts.onDrop?.(r, why);
+    if (!title || !r.source || typeof price !== 'number' || !(price > 0) || !currency) { drop('no price'); continue; }
+    if (opts.isBlocked?.(title)) { drop('blocked word'); continue; }
+    if (NOT_A_BOTTLE.test(plain(title))) { drop('not a bottle'); continue; }
 
     const words = new Set(tokens(title));
-    if (!nameTokens.every(t => words.has(t))) continue;
-    if (needBrand && ![...brandWords].some(b => words.has(b))) continue;
+    const hebrew = [...words].filter(w => /[\u0590-\u05ff]/.test(w)).map(sound);
+    const has = (t: string) => words.has(t) || (/^[a-z]+$/.test(t) && hebrew.some(h => soundsAlike(sound(t), h)));
+    const missing = nameTokens.filter(t => !has(t));
+    let approx = false;
+    if (missing.length) {
+      // A store may leave out the colour of a version ("Afnan ... Turathi" for "Turathi Blue"). That is accepted when the
+      // brand is there, the title names no other colour and no other model name (any other Latin word), and the
+      // listing is marked "check the model".
+      const otherColour = [...words].some(w => COLORS.has(w) && !nameTokens.includes(w));
+      const otherWord = [...words].some(w => /^[a-z]+$/.test(w) && w.length > 1 && !known.has(w) && !GENERIC_WORDS.has(w));
+      const brandThere = [...brandWords].some(has);
+      if (nameTokens.length < 2 || !missing.every(t => COLORS.has(t)) || !brandThere || otherColour || otherWord) { drop('name'); continue; }
+      approx = true;
+    }
+    if (needBrand && ![...brandWords].some(has)) { drop('brand'); continue; }
 
     const text = plain(title);
-    if (VERSIONS.some(([k, re]) => re.test(text) !== wantedVersions.includes(k))) continue;
+    if (VERSIONS.some(([k, re]) => re.test(text) !== wantedVersions.includes(k))) { drop('other version'); continue; }
     const men = FOR_MEN.test(text), women = FOR_WOMEN.test(text);
-    if (gender === 'male' && women && !men) continue;
-    if (gender === 'female' && men && !women) continue;
+    if ((gender === 'male' && women && !men) || (gender === 'female' && men && !women)) { drop('other gender'); continue; }
 
     const { ml, multi } = parseSizeMl(title);
-    if (multi || (ml !== null && (ml < 20 || ml > 500))) continue;
+    if (multi || (ml !== null && (ml < 20 || ml > 500))) { drop('size'); continue; }
     // In Israel only stores that sell in Israel: the search also lists shops abroad, whose prices leave out
     // shipping and import tax.
-    if (opts.country === 'IL' && !ISRAELI_SOURCE.test(r.source)) continue;
+    const abroad = opts.country === 'IL' && !isIsraeliStore(r.source);
+    if (abroad && !r.multiple_sources) { drop('not an Israeli store'); continue; }
 
     out.push({
       store: r.source.trim(),
@@ -144,21 +247,70 @@ export function cleanOffers(results: RawResult[], wanted: Wanted, opts: { countr
       currency,
       sizeMl: ml,
       tester: TESTER.test(text),
+      approx,
       token: r.immersive_product_page_token ?? null,
+      url: null,
+      multi: !!r.multiple_sources,
+      rank,
+      productId: r.product_id ?? null,
+      expandOnly: abroad,
     });
   }
+  return out;
+}
+
+// The stores of a product page (the lookup that lists everyone selling one listing). Google grouped these under the
+// listing that passed the checks, but a group can hold different versions, so each store's own title is checked for a
+// different colour, version or gender; a title that does not repeat the name is kept and marked "check the model".
+// Each store comes with its own address, which also tells whether it is an Israeli store.
+export function expandStores(stores: RawStore[], parent: CleanOffer, wanted: Wanted, opts: Options): CleanOffer[] {
+  const { nameTokens, wantedVersions, gender } = describeWanted(wanted);
+  const wantsColour = nameTokens.some(t => COLORS.has(t));
+  const out: CleanOffer[] = [];
+  for (const st of stores) {
+    const name = (st.name ?? '').trim();
+    const price = st.extracted_price;
+    const currency = currencyOf(st.price);
+    const title = (st.title ?? parent.title).replace(/\s+/g, ' ').trim();
+    if (!name || !st.link || typeof price !== 'number' || !(price > 0) || !currency) continue;
+    if (opts.isBlocked?.(title) || NOT_A_BOTTLE.test(plain(title))) continue;
+    if (opts.country === 'IL' && !isIsraeliStore(name, st.link)) continue;
+    const text = plain(title);
+    const words = new Set(tokens(title));
+    const hebrew = [...words].filter(w => /[\u0590-\u05ff]/.test(w)).map(sound);
+    const has = (t: string) => words.has(t) || (/^[a-z]+$/.test(t) && hebrew.some(h => soundsAlike(sound(t), h)));
+    if (wantsColour && [...words].some(w => COLORS.has(w) && !nameTokens.includes(w))) continue;
+    if (VERSIONS.some(([k, re]) => re.test(text) !== wantedVersions.includes(k))) continue;
+    const men = FOR_MEN.test(text), women = FOR_WOMEN.test(text);
+    if ((gender === 'male' && women && !men) || (gender === 'female' && men && !women)) continue;
+    const own = parseSizeMl(title);
+    const size = own.ml ?? parseSizeMl(parent.title).ml;
+    if (own.multi || (size !== null && (size < 20 || size > 500))) continue;
+    const url = cleanStoreUrl(st.link);
+    if (!url) continue;
+    out.push({ store: name, title, price, currency, sizeMl: size, tester: TESTER.test(text), approx: nameTokens.some(t => !has(t)), token: null, url, multi: false, rank: parent.rank, productId: parent.productId, expandOnly: false });
+  }
+  return out;
+}
+
+// One listing per store, size and kind (the cheapest; a listing with the store's own address wins when its price is
+// about the same); the same store at the same price twice is one listing (the one that states its size wins).
+// Then drop prices that are far below the rest of the same size, and sort by price.
+export function finalizeOffers(all: CleanOffer[]): CleanOffer[] {
+  const out = all.filter(o => !o.expandOnly);
 
   // One listing per store, size and kind (the cheapest); the same store at the same price twice is one listing
   // (the one that states its size wins). Then drop prices that are far below the rest of the same size.
   const best = new Map<string, CleanOffer>();
   for (const o of out) {
-    const k = `${o.store}|${o.sizeMl ?? ''}|${o.tester}`;
+    const k = `${o.store.toLowerCase()}|${o.sizeMl ?? ''}|${o.tester}`;
     const known = best.get(k);
-    if (!known || o.price < known.price) best.set(k, o);
+    if (!known || o.price < known.price * (known.url && !o.url ? 0.98 : 1)) best.set(k, o);
+    else if (!known.url && o.url && o.price <= known.price * 1.02) best.set(k, o);
   }
   const samePrice = new Map<string, CleanOffer>();
   for (const o of best.values()) {
-    const k = `${o.store}|${o.price}|${o.tester}`;
+    const k = `${o.store.toLowerCase()}|${o.price}|${o.tester}`;
     const known = samePrice.get(k);
     if (!known || (known.sizeMl === null && o.sizeMl !== null)) samePrice.set(k, o);
   }
@@ -172,3 +324,6 @@ export function cleanOffers(results: RawResult[], wanted: Wanted, opts: { countr
     })
     .sort((a, b) => a.price - b.price);
 }
+
+// Everything in one step (the offline test uses this; the server also expands product pages in between).
+export const cleanOffers = (results: RawResult[], wanted: Wanted, opts: Options) => finalizeOffers(classifyResults(results, wanted, opts));

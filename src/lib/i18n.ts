@@ -275,6 +275,11 @@ export type Dict = {
     sizeMl: string;
     unknownSize: string;
     unknownSizeHint: string;
+    allSizes: string;
+    per100: string;
+    approx: string;
+    approxHint: string;
+    alsoSearch: string;
     tester: string;
     testersTitle: string;
     offers: string;
@@ -667,6 +672,11 @@ const en: Dict = {
     sizeMl: '{n} ml',
     unknownSize: 'Size not stated',
     unknownSizeHint: 'The listing does not say the size. Check on the store\'s site.',
+    allSizes: 'All',
+    per100: '{price} per 100 ml',
+    approx: 'Check the model',
+    approxHint: 'The listing\'s title is shorter than the perfume\'s name. Check the model on the store\'s site.',
+    alsoSearch: 'Search directly in the stores:',
     tester: 'Tester',
     testersTitle: 'Testers (bottle without its box)',
     offers: '{n} offers',
@@ -1059,6 +1069,11 @@ const he: Dict = {
     sizeMl: '{n} מ״ל',
     unknownSize: 'גודל לא צוין',
     unknownSizeHint: 'המודעה לא מציינת גודל. כדאי לבדוק באתר החנות.',
+    allSizes: 'הכל',
+    per100: '{price} ל-100 מ״ל',
+    approx: 'לוודא דגם',
+    approxHint: 'כותרת המודעה קצרה משם הבושם. כדאי לוודא את הדגם באתר החנות.',
+    alsoSearch: 'חיפוש ישיר בחנויות:',
     tester: 'טסטר',
     testersTitle: 'טסטרים (בקבוק ללא אריזה)',
     offers: '{n} הצעות',
