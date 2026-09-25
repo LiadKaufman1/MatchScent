@@ -1,5 +1,5 @@
 import { cache } from 'react';
-import { getSupabase, type Perfume, type Dupe } from './supabase';
+import { getCatalogSupabase, type Perfume, type Dupe } from './supabase';
 import { prepareCatalog } from './catalog';
 import { mockPerfumes, mockDupes } from './mockData';
 import { slugify } from './slug';
@@ -18,9 +18,17 @@ export type ShownEntry = Dupe & { perfumeSlug?: string };
 // something (those have their own page and the "inspired" index instead).
 export const isCatalogOriginal = (p: ShownPerfume) => p.entryCount > 0 || p.inspiredOf.length === 0;
 
+// The perfumes the home page shows: the ones that have similar scents. Thousands of perfumes are listed only by name
+// (found by search and on their brand page) until they get notes, a picture and similar scents.
+export const isFeatured = (p: ShownPerfume) => p.entryCount > 0;
+
+// A page with something on it besides the name: similar scents, an original it is inspired by, or notes.
+export const hasContent = (p: ShownPerfume) =>
+  p.entryCount > 0 || p.inspiredOf.length > 0 || !!(p.note_pyramid && Object.values(p.note_pyramid).some(v => Array.isArray(v) && v.length > 0));
+
 // Supabase returns at most 1000 rows per request, so read in pages.
 async function fetchAll<T>(table: string): Promise<T[]> {
-  const supabase = getSupabase();
+  const supabase = getCatalogSupabase();
   const rows: T[] = [];
   for (let from = 0; ; from += 1000) {
     const { data, error } = await supabase
@@ -160,7 +168,10 @@ export async function getPerfumePage(slug: string) {
     .filter((d, i, all) => all.findIndex(x => x.perfumeSlug ? x.perfumeSlug === d.perfumeSlug : entryKey(x.brand, x.name) === entryKey(d.brand, d.name)) === i)
     .slice(0, 8);
 
-  const sameBrand = perfumes.filter(p => p.brand === perfume.brand && p.id !== perfume.id).slice(0, 6);
+  const sameBrand = perfumes
+    .filter(p => p.brand === perfume.brand && p.id !== perfume.id)
+    .sort((a, b) => Number(hasContent(b)) - Number(hasContent(a)) || (b.year ?? 0) - (a.year ?? 0))
+    .slice(0, 6);
 
   // A different set of "keep exploring" links on every page, so pages link to each other.
   const pool = perfumes.filter(p => p.entryCount > 0 && p.id !== perfume.id && p.brand !== perfume.brand);

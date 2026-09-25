@@ -1,4 +1,4 @@
-import { getCatalog, isCatalogOriginal } from '@/lib/load-catalog';
+import { getCatalog, isFeatured } from '@/lib/load-catalog';
 import { getDict, withLang, type Lang } from '@/lib/i18n';
 import Catalog from '@/app/components/Catalog';
 import CommunityHighlights from '@/app/components/CommunityHighlights';
@@ -70,7 +70,7 @@ export default async function HomeView({ lang }: { lang: Lang }) {
 
         <div id="catalog" className="scroll-mt-4">
           <h2 className="mb-6 px-4 text-center text-3xl font-extrabold text-ink">{t.allFragrances}</h2>
-          <Catalog perfumes={perfumes.filter(isCatalogOriginal)} lang={lang} />
+          <Catalog perfumes={perfumes.filter(isFeatured)} lang={lang} />
         </div>
       </main>
 

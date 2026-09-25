@@ -187,6 +187,7 @@ export type Dict = {
     brandCounts: string;
     brandHeading: string;
     brandPerfumes: string;
+    brandAll: string;
     brandInspired: string;
     inspiredBy: string;
     noteMeta: string;
@@ -582,6 +583,7 @@ const en: Dict = {
     brandCounts: '{perfumes} perfumes on the site · {inspired} similar scents',
     brandHeading: '{brand}',
     brandPerfumes: 'Perfumes by {brand}',
+    brandAll: 'More perfumes by {brand} ({n})',
     brandInspired: 'Fragrances by {brand} that our lists compare to famous perfumes',
     inspiredBy: 'Inspired by',
     noteMeta: 'Perfumes with {note}',
@@ -977,6 +979,7 @@ const he: Dict = {
     brandCounts: '{perfumes} בשמים באתר · {inspired} בשמים דומים',
     brandHeading: '{brand}',
     brandPerfumes: 'הבשמים של {brand}',
+    brandAll: 'עוד בשמים של {brand} ({n})',
     brandInspired: 'בשמים של {brand} שהרשימות שלנו משוות לבשמים מפורסמים',
     inspiredBy: 'בהשראת',
     noteMeta: 'בשמים עם {note}',

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { entryKey, getCatalog, getPerfumePage, isCatalogOriginal, type ShownPerfume } from '@/lib/load-catalog';
+import { entryKey, getCatalog, getPerfumePage, hasContent, isFeatured, type ShownPerfume } from '@/lib/load-catalog';
 import { buildsWholeSite } from '@/lib/site';
 import StoreButtons from '@/app/components/StoreButtons';
 import { ils, usd } from '@/lib/format';
@@ -27,9 +27,10 @@ import HoverLink from '@/app/components/HoverLink';
 
 export async function perfumeStaticParams(lang: Lang = 'he') {
   const { perfumes } = await getCatalog();
-  // The live Hebrew site builds every perfume page ahead of time (the ~900 inspired fragrances too): a page that had to be
-  // rendered on its first visit took 2-3 seconds to open. Elsewhere only the main perfumes (see buildsWholeSite).
-  return (buildsWholeSite(lang) ? perfumes : perfumes.filter(isCatalogOriginal)).map(p => ({ slug: p.slug }));
+  // The live Hebrew site builds ahead of time every perfume page that has content (similar scents, an original it is
+  // inspired by, or notes): a page that had to be rendered on its first visit took 2-3 seconds to open. Perfumes that
+  // are only a name (thousands) and everything on English / preview builds are built on the first visit.
+  return perfumes.filter(buildsWholeSite(lang) ? hasContent : isFeatured).map(p => ({ slug: p.slug }));
 }
 
 export async function perfumeMetadata(lang: Lang, slug: string): Promise<Metadata> {

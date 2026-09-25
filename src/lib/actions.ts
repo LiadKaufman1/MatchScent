@@ -1,7 +1,7 @@
 'use server';
 
 import { cookies } from 'next/headers';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import crypto from 'crypto';
 import { getSupabaseAdmin } from './supabase-admin';
 import type { Dupe } from './supabase';
@@ -48,6 +48,7 @@ const pick = (data: Record<string, unknown>, fields: readonly string[]) => {
 
 // After an admin edit, refresh the home page and every perfume page, in both languages, plus the sitemap.
 const refreshPublicPages = () => {
+  revalidateTag('catalog', { expire: 0 });
   revalidatePath('/');
   revalidatePath('/en');
   revalidatePath('/perfume/[slug]', 'page');

@@ -85,12 +85,32 @@ export async function BrandView({ lang, slug }: { lang: Lang; slug: string }) {
         <p className="mt-3 text-smoke">{fmt(t.browse.brandCounts, { perfumes: data.perfumes.length, inspired: data.inspired.length })}</p>
         <div className="wine-rule my-6 w-32" />
 
-        {data.perfumes.length > 0 && (
+        {data.perfumes.some(p => p.entryCount > 0) && (
           <section aria-labelledby="brand-perfumes">
             <h2 id="brand-perfumes" className="mb-4 section-title">{fmt(t.browse.brandPerfumes, { brand: data.brand })}</h2>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {data.perfumes.map(p => <PerfumeCard key={p.id} perfume={p} lang={lang} />)}
+              {data.perfumes.filter(p => p.entryCount > 0).map(p => <PerfumeCard key={p.id} perfume={p} lang={lang} />)}
             </div>
+          </section>
+        )}
+
+        {data.perfumes.some(p => p.entryCount === 0) && (
+          <section className="mt-12" aria-labelledby="brand-all">
+            <h2 id="brand-all" className="mb-4 section-title">{fmt(t.browse.brandAll, { brand: data.brand, n: data.perfumes.filter(p => p.entryCount === 0).length })}</h2>
+            {/* A house can have hundreds of perfumes: plain links and minimal markup keep this page light. */}
+            <ul className="columns-1 gap-x-8 sm:columns-2 lg:columns-3 [&>li]:break-inside-avoid [&>li]:border-b [&>li]:border-line/60 [&>li]:py-1.5 [&>li]:text-sm">
+              {data.perfumes
+                .filter(p => p.entryCount === 0)
+                .sort((a, b) => (b.year ?? 0) - (a.year ?? 0) || a.name.localeCompare(b.name))
+                .map(p => (
+                  <li key={p.id}>
+                    <a href={withLang(lang, `/perfume/${p.slug}`)} className="flex items-baseline justify-between gap-3 font-medium text-ink hover:text-wine-700">
+                      <span className="min-w-0 truncate">{p.name}</span>
+                      {p.year ? <span className="shrink-0 text-xs text-smoke" dir="ltr">{p.year}</span> : null}
+                    </a>
+                  </li>
+                ))}
+            </ul>
           </section>
         )}
 
