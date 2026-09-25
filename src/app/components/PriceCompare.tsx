@@ -89,9 +89,9 @@ export default function PriceCompare({ perfumeKey, brand, name, lang, variant = 
   }
 
   const inCountry = t.countriesIn[country];
-  const go = (o: PriceOffer) => o.url ?? (o.go
-    ? `${withLang(lang, '/go')}?${new URLSearchParams({ k: perfumeKey, c: country, h: o.go, n: o.store.slice(0, 60) })}`
-    : null);
+  const go = (o: PriceOffer) => o.go
+    ? `${withLang(lang, '/go')}?${new URLSearchParams({ k: perfumeKey, c: country, h: o.go, n: o.store.slice(0, 60), l: lang })}`
+    : null;
   const start = () => load(country);
 
   const row = (o: PriceOffer, first = false) => {

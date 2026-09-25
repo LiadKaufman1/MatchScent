@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { classifyResults, cleanStoreUrl, expandStores, finalizeOffers, type CleanOffer, type RawResult, type RawStore } from './price-offers';
 import { hasBlockedWord } from './catalog';
+import { tagStoreUrl } from './store-links';
 import type { CountryCode } from './stores';
 import type { PriceOffer, PriceReport } from './price-types';
 
@@ -101,10 +102,11 @@ async function storesOf(token: string): Promise<RawStore[]> {
   }, v => v !== null).then(v => v ?? []);
 }
 
-export async function getPrices(wanted: Wanted, country: CountryCode): Promise<PriceReport> {
-  if (!pricesConfigured()) return { ok: false, reason: 'unavailable' };
+// Every offer we know for this perfume, each with what opens its store: the store's own address, or (for a listing seen
+// only in the search rows) the token that lets us look the address up when someone clicks.
+async function collect(wanted: Wanted, country: CountryCode): Promise<{ offers: CleanOffer[]; at: string } | null> {
   const found = await search(wanted, country);
-  if (!found) return { ok: false, reason: 'unavailable' };
+  if (!found) return null;
   const opts = { country, isBlocked: hasBlockedWord };
 
   const listed = classifyResults(found.results, wanted, opts);
@@ -114,27 +116,43 @@ export async function getPrices(wanted: Wanted, country: CountryCode): Promise<P
     if (picked.size < EXPAND_PRODUCTS && !picked.has(key)) picked.set(key, o);
   }
   const opened = await Promise.all([...picked.values()].map(async parent => expandStores(await storesOf(parent.token as string), parent, wanted, opts)));
+  return { offers: finalizeOffers([...listed, ...opened.flat()]).slice(0, 40), at: found.at };
+}
 
-  const offers: PriceOffer[] = finalizeOffers([...listed, ...opened.flat()])
-    .slice(0, 40)
-    .map(o => ({ store: o.store, title: o.title, price: o.price, currency: o.currency, sizeMl: o.sizeMl, tester: o.tester, approx: o.approx, url: o.url, go: !o.url && o.token ? handleOf(o.token) : null }));
+// The visitor's browser never gets a store address: each row carries a short handle, and the click goes through /go.
+const handleFor = (o: CleanOffer) => (o.url ?? o.token ? handleOf((o.url ?? o.token) as string) : null);
+
+export async function getPrices(wanted: Wanted, country: CountryCode): Promise<PriceReport> {
+  if (!pricesConfigured()) return { ok: false, reason: 'unavailable' };
+  const found = await collect(wanted, country);
+  if (!found) return { ok: false, reason: 'unavailable' };
+  const offers: PriceOffer[] = found.offers.map(o => ({ store: o.store, title: o.title, price: o.price, currency: o.currency, sizeMl: o.sizeMl, tester: o.tester, approx: o.approx, go: handleFor(o) }));
   return offers.length ? { ok: true, offers, fetchedAt: found.at } : { ok: false, reason: 'none' };
 }
 
 const sameStore = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
 
-// The store's own page for one listing of the last search (found by its short handle), or null.
-export async function resolveStorePage(wanted: Wanted, country: CountryCode, handle: string): Promise<string | null> {
-  if (!pricesConfigured() || !/^[A-Za-z0-9_-]{12}$/.test(handle)) return null;
-  const found = await search(wanted, country);
-  const hit = found?.results.find(r => r.immersive_product_page_token && handleOf(r.immersive_product_page_token) === handle);
-  if (!hit?.immersive_product_page_token) return null;
-  const token = hit.immersive_product_page_token;
-  return remember(`g|${handle}`, 24, async () => {
+// The store's own page for a listing found by the token of a search row (one more lookup, kept 24 h).
+async function pageOfToken(token: string, store: string): Promise<string | null> {
+  return remember(`g|${handleOf(token)}`, 24, async () => {
     const r = await serp({ engine: 'google_immersive_product', page_token: token }, 24);
     if (!r || r.status !== 200) return null;
     const stores = ((r.data.product_results as { stores?: { name?: string; link?: string }[] } | undefined)?.stores ?? []).filter(s => s.link);
-    const pick = stores.find(s => sameStore(s.name ?? '', hit.source ?? '')) ?? stores[0];
+    const pick = stores.find(s => sameStore(s.name ?? '', store)) ?? stores[0];
     return cleanStoreUrl(pick?.link);
   }, v => v !== null);
+}
+
+export type StoreTarget = { url: string; store: string; price: number; currency: string; sizeMl: number | null };
+
+// Where a click on one row of the price panel goes (found by the row's handle): the store's own page, marked as coming
+// from us (tagStoreUrl), plus what is needed to count the click.
+export async function resolveStorePage(wanted: Wanted, country: CountryCode, handle: string): Promise<StoreTarget | null> {
+  if (!pricesConfigured() || !/^[A-Za-z0-9_-]{12}$/.test(handle)) return null;
+  const found = await collect(wanted, country);
+  const offer = found?.offers.find(o => handleFor(o) === handle);
+  if (!offer) return null;
+  const url = offer.url ?? (offer.token ? await pageOfToken(offer.token, offer.store) : null);
+  if (!url) return null;
+  return { url: tagStoreUrl(url), store: offer.store, price: offer.price, currency: offer.currency, sizeMl: offer.sizeMl };
 }

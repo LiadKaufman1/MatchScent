@@ -8,8 +8,7 @@ export type PriceOffer = {
   sizeMl: number | null;  // read from the listing's title; null when it does not say
   tester: boolean;        // a demo bottle without its box: the same juice, usually cheaper
   approx: boolean;        // the listing's title is shorter than the perfume's name: worth double-checking the model
-  url: string | null;     // the store's own page, when the lookup already found it
-  go: string | null;      // otherwise a short handle the "to the store" button sends to /go, which finds the store's own page
+  go: string | null;      // short handle the "to the store" button sends to /go, which finds the store's own page and counts the click
 };
 
 export type PriceReport =
