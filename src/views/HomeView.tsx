@@ -51,7 +51,7 @@ export default async function HomeView({ lang }: { lang: Lang }) {
                   {noteLabel(n, lang)}
                 </Link>
               ))}
-              <a href="#catalog" className="rounded-full px-3 py-1 font-bold text-wine-600 underline underline-offset-4">{t.hero.browse}</a>
+              <Link href={withLang(lang, '/perfumes')} className="rounded-full px-3 py-1 font-bold text-wine-600 underline underline-offset-4">{t.hero.browse}</Link>
             </p>
 
             {/* What the site is for: find the perfume, compare store prices, buy where it is cheapest. */}
@@ -69,8 +69,13 @@ export default async function HomeView({ lang }: { lang: Lang }) {
         <CommunityHighlights lang={lang} />
 
         <div id="catalog" className="scroll-mt-4">
-          <h2 className="mb-6 px-4 text-center text-3xl font-extrabold text-ink">{t.allFragrances}</h2>
+          <h2 className="mb-6 px-4 text-center text-3xl font-extrabold text-ink">{t.featured.heading}</h2>
           <Catalog perfumes={perfumes.filter(isFeatured)} lang={lang} />
+          <p className="mt-10 text-center">
+            <Link href={withLang(lang, '/perfumes')} className="inline-block rounded-full bg-wine-600 px-8 py-3.5 font-bold text-white transition hover:bg-wine-700">
+              {t.featured.viewAll} ({perfumes.length.toLocaleString('en-US')})
+            </Link>
+          </p>
         </div>
       </main>
 

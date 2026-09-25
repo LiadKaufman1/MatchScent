@@ -49,13 +49,7 @@ export type Dict = {
   audForMen: string;
   audForWomen: string;
   audForAll: string;
-  introBase: string;
-  introWithOne: string;
-  introWithMany: string;
-  introNone: string;
-  introPrices: string;
   curatingSimilar: string;
-  from: string;
 
   whereToBuy: string;
   shopFrom: string;
@@ -182,6 +176,37 @@ export type Dict = {
   };
   notes: { heading: string; top: string; heart: string; base: string; notes: string };
   facts: { year: string; perfumer: string; accords: string };
+  featured: { heading: string; viewAll: string };
+  allPerfumes: {
+    metaTitle: string;
+    metaDescription: string;
+    heading: string;
+    intro: string;
+    placeholder: string;
+    search: string;
+    kindLabel: string;
+    kindAll: string;
+    kindOriginals: string;
+    kindInspired: string;
+    badgeInspired: string;
+    count: string;
+    none: string;
+  };
+  describe: {
+    forMen: string;
+    forWomen: string;
+    forAll: string;
+    base: string;
+    baseFamily: string;
+    year: string;
+    perfumerOne: string;
+    perfumerMany: string;
+    top: string;
+    heart: string;
+    baseNotes: string;
+    flat: string;
+    and: string;
+  };
   browse: {
     brandMeta: string;
     brandCounts: string;
@@ -467,13 +492,7 @@ const en: Dict = {
   audForMen: 'men',
   audForWomen: 'women',
   audForAll: 'everyone',
-  introBase: '{name} by {brand} is a fragrance for {audience}.',
-  introWithOne: 'Below is 1 fragrance inspired by it, so you can find a similar scent that suits your budget.',
-  introWithMany: 'Below are {n} fragrances inspired by it, so you can find a similar scent that suits your budget.',
-  introNone: 'We are still curating fragrances inspired by it. Check back soon.',
-  introPrices: 'Prices are approximate and change, so check the store before you buy.',
   curatingSimilar: 'We are still curating similar scents for this fragrance.',
-  from: 'From',
 
   whereToBuy: 'Where to buy',
   shopFrom: 'Shop from',
@@ -611,6 +630,37 @@ const en: Dict = {
   },
   notes: { heading: 'Notes', top: 'Top notes', heart: 'Heart notes', base: 'Base notes', notes: 'Notes' },
   facts: { year: 'Launched', perfumer: 'Perfumer', accords: 'Main accords' },
+  featured: { heading: 'Featured fragrances', viewAll: 'View all fragrances' },
+  allPerfumes: {
+    metaTitle: 'All fragrances',
+    metaDescription: 'Every fragrance on MatchScent, the famous originals and the ones inspired by them, with pictures, notes and price comparison in Israel.',
+    heading: 'All fragrances',
+    intro: 'Every fragrance on the site in one place: the famous perfumes and the ones that smell like them. Search by name, filter by audience and type, and open a perfume to compare prices in Israel.',
+    placeholder: 'Search by perfume or brand',
+    search: 'Search',
+    kindLabel: 'Type',
+    kindAll: 'All',
+    kindOriginals: 'Originals',
+    kindInspired: 'Inspired',
+    badgeInspired: 'Inspired',
+    count: '{n} fragrances',
+    none: 'No fragrance matches this search.',
+  },
+  describe: {
+    forMen: 'men',
+    forWomen: 'women',
+    forAll: 'women and men',
+    base: '{name} by {brand} is a fragrance for {audience}.',
+    baseFamily: '{name} by {brand} is {a} {family} fragrance for {audience}.',
+    year: '{name} was launched in {year}.',
+    perfumerOne: 'The perfumer behind it is {names}.',
+    perfumerMany: 'The perfumers behind it are {names}.',
+    top: 'Top notes are {list}',
+    heart: 'heart notes are {list}',
+    baseNotes: 'base notes are {list}',
+    flat: 'Notes are {list}',
+    and: 'and',
+  },
   browse: {
     brandMeta: '{brand}: perfumes and similar scents',
     brandCounts: '{perfumes} perfumes on the site · {inspired} similar scents',
@@ -907,13 +957,7 @@ const he: Dict = {
   audForMen: 'גברים',
   audForWomen: 'נשים',
   audForAll: 'כולם',
-  introBase: '{name} של {brand} הוא בושם עבור {audience}.',
-  introWithOne: 'למטה מופיע בושם אחד בהשראתו, כדי שתמצאו ניחוח דומה שמתאים לתקציב שלכם.',
-  introWithMany: 'למטה מופיעים {n} בשמים בהשראתו, כדי שתמצאו ניחוח דומה שמתאים לתקציב שלכם.',
-  introNone: 'אנחנו עדיין מרכזים בשמים בהשראתו. חזרו בקרוב.',
-  introPrices: 'המחירים משוערים ומשתנים, ולכן כדאי לבדוק בחנות לפני הרכישה.',
   curatingSimilar: 'אנחנו עדיין מרכזים ניחוחות דומים לבושם הזה.',
-  from: 'החל מ-',
 
   whereToBuy: 'איפה לקנות',
   shopFrom: 'קונים מ',
@@ -1051,6 +1095,37 @@ const he: Dict = {
   },
   notes: { heading: 'תווים', top: 'תווי ראש', heart: 'תווי לב', base: 'תווי בסיס', notes: 'תווים' },
   facts: { year: 'שנת הוצאה', perfumer: 'יוצר הבושם', accords: 'אקורדים עיקריים' },
+  featured: { heading: 'הבשמים המובילים', viewAll: 'לכל הבשמים' },
+  allPerfumes: {
+    metaTitle: 'כל הבשמים',
+    metaDescription: 'כל הבשמים באתר, המקוריים המפורסמים והבשמים שבהשראתם, עם תמונות, תווים והשוואת מחירים בישראל.',
+    heading: 'כל הבשמים',
+    intro: 'כל הבשמים שבאתר במקום אחד: הבשמים המפורסמים והבשמים שמריחים כמוהם. חפשו לפי שם, סננו לפי קהל יעד וסוג, ופתחו בושם כדי להשוות מחירים בישראל.',
+    placeholder: 'חיפוש לפי בושם או מותג',
+    search: 'חיפוש',
+    kindLabel: 'סוג',
+    kindAll: 'הכול',
+    kindOriginals: 'מקוריים',
+    kindInspired: 'בהשראה',
+    badgeInspired: 'בהשראה',
+    count: '{n} בשמים',
+    none: 'לא נמצא בושם שמתאים לחיפוש הזה.',
+  },
+  describe: {
+    forMen: 'לגברים',
+    forWomen: 'לנשים',
+    forAll: 'לגברים ולנשים',
+    base: '{name} של {brand} הוא בושם {audience}.',
+    baseFamily: '{name} של {brand} הוא בושם {family} {audience}.',
+    year: '{name} הושק ב-{year}.',
+    perfumerOne: 'הבושם נוצר על ידי {names}.',
+    perfumerMany: 'הבושם נוצר על ידי {names}.',
+    top: 'תווי הראש הם {list}',
+    heart: 'תווי הלב הם {list}',
+    baseNotes: 'תווי הבסיס הם {list}',
+    flat: 'התווים הם {list}',
+    and: 'ו',
+  },
   browse: {
     brandMeta: '{brand}: בשמים ובשמים דומים',
     brandCounts: '{perfumes} בשמים באתר · {inspired} בשמים דומים',

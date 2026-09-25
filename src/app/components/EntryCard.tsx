@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { slugify } from '@/lib/slug';
-import { usd } from '@/lib/format';
-import { getDict, withLang, type Lang } from '@/lib/i18n';
+import { withLang, type Lang } from '@/lib/i18n';
 import { noteGroups, noteLabel } from '@/lib/notes';
 import { entryKey, type EntryVoteCounts, type ShownEntry } from '@/lib/load-catalog';
 import Photo from './Photo';
@@ -16,7 +15,6 @@ export default function EntryCard({ entry, lang, perfumeId, votes }: {
   perfumeId: string;
   votes?: EntryVoteCounts;
 }) {
-  const t = getDict(lang);
   const mainNotes = noteGroups(entry.note_pyramid).flatMap(g => g.notes).slice(0, 6).map(n => noteLabel(n, lang));
   // The fragrance's own page (notes, ratings, reviews) - the picture and the name both lead there.
   const page = entry.perfumeSlug ? withLang(lang, `/perfume/${entry.perfumeSlug}`) : null;
@@ -41,11 +39,6 @@ export default function EntryCard({ entry, lang, perfumeId, votes }: {
           </p>
           {mainNotes.length > 0 && <p className="mt-2 text-sm text-smoke">{mainNotes.join(' · ')}</p>}
           {entry.notes && <p className="mt-2 line-clamp-3 text-sm text-smoke">{entry.notes}</p>}
-          {usd(entry.price_usd) && (
-            <p className="mt-2 text-sm text-smoke">
-              {t.from} <span className="font-bold text-ink">{usd(entry.price_usd)}</span>
-            </p>
-          )}
         </div>
       </div>
       <EntryVotes lang={lang} perfumeId={perfumeId} entryKey={entryKey(entry.brand, entry.name)} up={votes?.up ?? 0} down={votes?.down ?? 0} />

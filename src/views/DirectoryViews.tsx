@@ -20,39 +20,46 @@ export function inspiredIndexMetadata(lang: Lang, filtered: boolean): Metadata {
   };
 }
 
-// One pair: the inspired fragrance, then the perfume(s) it is inspired by.
-function Pair({ item, lang }: { item: InspiredItem; lang: Lang }) {
+// One card: the inspired fragrance with a big picture (like the perfume cards), and under it the perfume(s) it is inspired by.
+function Pair({ item, lang, index }: { item: InspiredItem; lang: Lang; index: number }) {
   const t = getDict(lang);
   const e = item.entry;
+  const href = e.perfumeSlug ? withLang(lang, `/perfume/${e.perfumeSlug}`) : null;
+  const picture = (
+    <div className="relative aspect-[4/5] overflow-hidden">
+      <Photo url={e.image_url} alt={`${e.brand} ${e.name}`} seed={e.brand + e.name} sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw" />
+    </div>
+  );
   const name = (
     <>
       <span className="block text-[11px] font-bold uppercase tracking-[0.16em] text-wine-600">{e.brand}</span>
-      <span className="block font-extrabold leading-tight text-ink">{e.name}</span>
+      <h3 className="mt-1.5 text-lg font-bold leading-tight text-ink sm:text-xl">{e.name}</h3>
     </>
   );
   return (
-    <li className="flex flex-col gap-3 rounded-2xl border border-line bg-white p-4 sm:flex-row sm:items-center">
-      <div className="flex min-w-0 flex-1 items-center gap-3">
-        <span className="relative h-24 w-[4.5rem] shrink-0 overflow-hidden rounded-xl border border-line bg-white">
-          <Photo url={e.image_url} alt={`${e.brand} ${e.name}`} seed={e.brand + e.name} sizes="72px" />
-        </span>
-        {e.perfumeSlug ? (
-          <HoverLink href={withLang(lang, `/perfume/${e.perfumeSlug}`)} className="min-w-0 hover:text-wine-700">{name}</HoverLink>
-        ) : (
-          <span className="min-w-0">{name}</span>
-        )}
-      </div>
-      <div className="flex min-w-0 flex-1 items-center gap-3 border-t border-dashed border-line pt-3 sm:border-s sm:border-t-0 sm:ps-4 sm:pt-0">
-        <span className="shrink-0 text-center text-[10px] font-bold uppercase tracking-[0.14em] text-smoke">
+    <li className={`site-card flex flex-col overflow-hidden rounded-2xl ${index < 12 ? 'rise' : ''}`} style={index < 12 ? { animationDelay: `${index * 45}ms` } : undefined}>
+      {href ? (
+        <HoverLink href={href} className="group flex flex-1 flex-col hover:text-wine-700">
+          {picture}
+          <span className="block p-3.5 pb-3 text-start sm:p-5 sm:pb-4">{name}</span>
+        </HoverLink>
+      ) : (
+        <div className="flex flex-1 flex-col">
+          {picture}
+          <div className="p-3.5 pb-3 sm:p-5 sm:pb-4">{name}</div>
+        </div>
+      )}
+      <div className="border-t border-dashed border-line bg-[#FCFAF9] p-3.5 sm:px-5">
+        <p className="mb-2 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-smoke">
+          <ArrowLeft className="h-3.5 w-3.5 text-wine-600 ltr:rotate-180" aria-hidden="true" />
           {t.inspiredIndex.inspiredBy}
-          <ArrowLeft className="mx-auto mt-1 h-4 w-4 text-wine-600 ltr:rotate-180" aria-hidden="true" />
-        </span>
-        <ul className="min-w-0 space-y-2">
+        </p>
+        <ul className="space-y-2">
           {item.originals.slice(0, 2).map(o => (
             <li key={o.id}>
-              <HoverLink href={withLang(lang, `/perfume/${o.slug}`)} className="flex items-center gap-2.5 hover:text-wine-700">
-                <span className="relative h-14 w-11 shrink-0 overflow-hidden rounded-lg border border-line bg-white">
-                  <Photo url={o.image_url} alt={`${o.brand} ${o.name}`} seed={o.brand + o.name} sizes="44px" />
+              <HoverLink href={withLang(lang, `/perfume/${o.slug}`)} className="flex items-center gap-3 hover:text-wine-700">
+                <span className="relative h-[4.5rem] w-14 shrink-0 overflow-hidden rounded-lg border border-line bg-white">
+                  <Photo url={o.image_url} alt={`${o.brand} ${o.name}`} seed={o.brand + o.name} sizes="56px" />
                 </span>
                 <span className="min-w-0">
                   <span className="block text-[10px] font-bold uppercase tracking-[0.14em] text-smoke">{o.brand}</span>
@@ -87,7 +94,7 @@ export async function InspiredIndexView({ lang, q, brand, page }: { lang: Lang; 
   return (
     <div className="site">
       <SiteHeader lang={lang} path="/inspired" />
-      <main className="mx-auto max-w-6xl px-4 pb-12 pt-10 sm:px-6">
+      <main className="mx-auto max-w-7xl px-4 pb-12 pt-10 sm:px-6">
         <h1 className="text-4xl font-extrabold text-ink sm:text-5xl">{x.heading}</h1>
         <p className="mt-3 max-w-2xl text-smoke">{x.intro}</p>
         <div className="wine-rule my-6 w-32" />
@@ -110,8 +117,8 @@ export async function InspiredIndexView({ lang, q, brand, page }: { lang: Lang; 
         {shown.length === 0 ? (
           <p className="mt-6 rounded-2xl border border-line bg-white p-8 text-center text-smoke">{x.none}</p>
         ) : (
-          <ul className="mt-4 grid gap-3 lg:grid-cols-2">
-            {shown.map(item => <Pair key={item.key} item={item} lang={lang} />)}
+          <ul className="mt-5 grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3 lg:grid-cols-4 lg:gap-6">
+            {shown.map((item, i) => <Pair key={item.key} item={item} lang={lang} index={i} />)}
           </ul>
         )}
 
