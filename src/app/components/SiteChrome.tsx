@@ -3,6 +3,7 @@ import { Search } from 'lucide-react';
 import { getDict, otherLang, withLang, type Lang } from '@/lib/i18n';
 import CountrySelect from './CountrySelect';
 import AuthStatus from './AuthStatus';
+import ReportLink from './ReportLink';
 
 export function Wordmark({ className = '' }: { className?: string }) {
   return (
@@ -102,6 +103,8 @@ export function SiteFooter({ lang }: { lang: Lang }) {
         <div>
           <p className="mb-3 text-xs font-bold uppercase tracking-[0.16em] text-wine-200">{f.about}</p>
           <ul className="space-y-2">
+            <li><Link href={withLang(lang, '/about')} className={footLink}>{t.about.navLabel}</Link></li>
+            <li><ReportLink lang={lang} className={footLink}>{t.report.navLabel}</ReportLink></li>
             <li><Link href={withLang(lang, '/accessibility')} className={footLink}>{t.footerA11y}</Link></li>
           </ul>
         </div>

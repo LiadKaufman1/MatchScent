@@ -261,3 +261,26 @@ export async function adminReviewSuggestion(id: string, approve: boolean, edits:
   revalidatePath('/admin/community');
   return { success: true };
 }
+
+// --- Problem reports sent by visitors (table site_reports, see /admin/reports) ---
+
+const reportId = (formData: FormData) => {
+  const id = Number(formData.get('id'));
+  return Number.isSafeInteger(id) && id > 0 ? id : null;
+};
+
+export async function setReportHandled(formData: FormData): Promise<void> {
+  await checkAuth();
+  const id = reportId(formData);
+  if (id === null) return;
+  await getSupabaseAdmin().from('site_reports').update({ handled: formData.get('handled') === '1' }).eq('id', id);
+  revalidatePath('/admin/reports');
+}
+
+export async function deleteReport(formData: FormData): Promise<void> {
+  await checkAuth();
+  const id = reportId(formData);
+  if (id === null) return;
+  await getSupabaseAdmin().from('site_reports').delete().eq('id', id);
+  revalidatePath('/admin/reports');
+}
