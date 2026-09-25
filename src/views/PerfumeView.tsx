@@ -251,8 +251,8 @@ export default async function PerfumeView({ lang, slug }: { lang: Lang; slug: st
             <p className="rounded-2xl border border-line bg-white py-12 text-center text-smoke">{t.curatingSimilar}</p>
           ) : (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              {entries.map((e, i) => (
-                <EntryCard key={e.id} entry={e} rank={i + 1} lang={lang} perfumeId={perfume.id} votes={community.entryVotes[entryKey(e.brand, e.name)]} />
+              {entries.map(e => (
+                <EntryCard key={e.id} entry={e} lang={lang} perfumeId={perfume.id} votes={community.entryVotes[entryKey(e.brand, e.name)]} />
               ))}
             </div>
           )}
