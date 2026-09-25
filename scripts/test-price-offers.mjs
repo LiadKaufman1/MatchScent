@@ -16,6 +16,8 @@ const cases = [
   [['search-maison-francis-kurkdjian-baccarat-rouge-540.json'], { brand: 'Maison Francis Kurkdjian', name: 'Baccarat Rouge 540', gender: 'unisex' }],
   [['search-chanel-coco-mademoiselle.json'], { brand: 'Chanel', name: 'Coco Mademoiselle', gender: 'female' }],
   [['search-afnan-turathi-blue.json', 'search-afnan-turathi-blue-hebrew-variant.json'], { brand: 'Afnan', name: 'Turathi Blue', gender: null }],
+  [['search-giorgio-armani-stronger-with-you.json'], { brand: 'Giorgio Armani', name: 'Stronger With You', gender: 'male', variantWords: ['intensely'] }],
+  [['search-giorgio-armani-acqua-di-gio-profumo.json'], { brand: 'Giorgio Armani', name: 'Acqua di Giò Profumo', gender: 'male' }],
 ];
 const read = f => JSON.parse(fs.readFileSync(`${DIR}/${f}`, 'utf8'));
 
@@ -44,4 +46,22 @@ for (const [files, wanted] of cases) {
     console.log('  --- thrown out:');
     for (const [r, reason] of dropped) console.log(`  ${reason.padEnd(20)} ${String(r.extracted_price ?? '').padStart(8)} ${(r.source ?? '').slice(0, 20).padEnd(20)} ${(r.title ?? '').slice(0, 70)}`);
   }
+}
+
+// Titles made up to check single rules (nothing is fetched): [wanted, title, should it be kept?]
+const synthetic = [
+  [{ brand: 'Giorgio Armani', name: 'Stronger With You', gender: 'male' }, 'Giorgio Armani Stronger With You פרפיום לגבר', false],
+  [{ brand: 'Giorgio Armani', name: 'Stronger With You', gender: 'male' }, 'ACE | Giorgio Armani Stronger With You EDT 100ML ארמני', true],
+  [{ brand: 'Giorgio Armani', name: 'Stronger With You', gender: 'male' }, 'בושם לגבר 100 מל Emporio Armani Stronger With You Powerfully או דה פרפיום', false],
+  [{ brand: 'Giorgio Armani', name: 'Stronger With You', gender: 'male' }, 'Armani Stronger With You Oud א.ד.פ לגבר', false],
+  [{ brand: 'Giorgio Armani', name: 'Stronger With You', gender: 'male' }, 'בושם לגבר 100 מל emporio armani stronger with you או דה טואלט', true],
+  [{ brand: 'Dior', name: 'Sauvage Elixir', gender: 'male' }, 'Christian Dior Sauvage Elixir PARFUM | Loven Mour', true, 'Loven Mour'],
+  [{ brand: 'Dior', name: 'Sauvage', gender: 'male' }, 'Dior Sauvage Parfum 100ml', false],
+  [{ brand: 'Dior', name: 'Sauvage', gender: 'male' }, 'Dior Sauvage Eau de Parfum 100ml', true],
+  [{ brand: 'Creed', name: 'Aventus', gender: 'male' }, 'Creed Aventus 100ml EDP Sealed', true],
+];
+console.log('\n=== single rules');
+for (const [wanted, title, keep, source] of synthetic) {
+  const got = classifyResults([{ title, source: source ?? 'ACE', price: '₪250.00', extracted_price: 250 }], wanted, { country: 'IL', isBlocked: t => BLOCKED.test(t) }).length > 0;
+  console.log(`${got === keep ? 'ok  ' : 'FAIL'} ${keep ? 'keep' : 'drop'}  ${wanted.name}: ${title}`);
 }

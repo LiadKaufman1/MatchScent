@@ -3,7 +3,7 @@ import { BrandView, brandMetadata, brandStaticParams } from '@/views/BrowseViews
 export const revalidate = 300;
 
 export async function generateStaticParams() {
-  return brandStaticParams();
+  return brandStaticParams('en');
 }
 
 type Props = { params: Promise<{ slug: string }> };

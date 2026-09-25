@@ -3,7 +3,7 @@ import PerfumeView, { perfumeMetadata, perfumeStaticParams } from '@/views/Perfu
 export const revalidate = 300;
 
 export async function generateStaticParams() {
-  return perfumeStaticParams();
+  return perfumeStaticParams('en');
 }
 
 type Props = { params: Promise<{ slug: string }> };

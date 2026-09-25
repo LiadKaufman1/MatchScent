@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowUpRight, Search, Store, X } from 'lucide-react';
 import { useCountry } from '@/lib/use-country';
-import { COUNTRIES, type CountryCode } from '@/lib/stores';
+import type { CountryCode } from '@/lib/stores';
 import { fmt, getDict, withLang, type Lang } from '@/lib/i18n';
 import type { PriceOffer, PriceReport } from '@/lib/price-types';
 
@@ -89,7 +89,6 @@ export default function PriceCompare({ perfumeKey, brand, name, lang, variant = 
   }
 
   const inCountry = t.countriesIn[country];
-  const stores = COUNTRIES[country].stores;
   const go = (o: PriceOffer) => o.url ?? (o.go
     ? `${withLang(lang, '/go')}?${new URLSearchParams({ k: perfumeKey, c: country, h: o.go, n: o.store.slice(0, 60) })}`
     : null);
@@ -128,17 +127,6 @@ export default function PriceCompare({ perfumeKey, brand, name, lang, variant = 
       </li>
     );
   };
-
-  const storeButtons = (
-    <div className="mt-4 flex flex-wrap gap-2">
-      {stores.map(s => (
-        <a key={s.id} href={s.url(`${brand} ${name}`)} target="_blank" rel="noopener noreferrer nofollow" className="inline-flex items-center gap-1.5 rounded-full border border-line bg-white px-4 py-2 text-sm font-bold text-ink transition hover:border-wine-600/60">
-          {s.name}
-          <ArrowUpRight className="h-4 w-4 text-wine-600 rtl:-scale-x-100" aria-hidden="true" />
-        </a>
-      ))}
-    </div>
-  );
 
   const hero = variant === 'hero';
   return (
@@ -198,8 +186,6 @@ export default function PriceCompare({ perfumeKey, brand, name, lang, variant = 
                   <p className="rounded-2xl bg-blush px-4 py-3 text-sm font-medium text-ink">
                     {mine && !mine.ok && mine.reason === 'none' ? fmt(t.prices.none, { in: inCountry }) : t.prices.unavailable}
                   </p>
-                  <p className="mt-4 text-sm text-smoke">{t.prices.tryStores}</p>
-                  {storeButtons}
                 </div>
               )}
 
@@ -239,20 +225,19 @@ export default function PriceCompare({ perfumeKey, brand, name, lang, variant = 
                       <ul className="mt-3 space-y-2.5">{view.testers.map(o => row(o))}</ul>
                     </details>
                   )}
-                  <div className="mt-5 border-t border-dashed border-line pt-4">
-                    <p className="text-sm font-bold text-smoke">{t.prices.alsoSearch}</p>
-                    {storeButtons}
-                  </div>
+
                 </div>
               )}
             </div>
 
-            <footer className="border-t border-line bg-[#FCFAF9] px-5 py-3">
-              <p className="text-xs leading-relaxed text-smoke">
-                {view && <span className="font-bold">{ago(view.at, lang, t.prices.updated)}. </span>}
-                {t.prices.disclaimer}
-              </p>
-            </footer>
+            {view && (
+              <footer className="border-t border-line bg-[#FCFAF9] px-5 py-3">
+                <p className="text-xs leading-relaxed text-smoke">
+                  <span className="font-bold">{ago(view.at, lang, t.prices.updated)}. </span>
+                  {t.prices.disclaimer}
+                </p>
+              </footer>
+            )}
           </div>
         )}
       </dialog>

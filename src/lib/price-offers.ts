@@ -18,7 +18,8 @@ export type RawResult = {
 // One store of a product page (the lookup that lists every store selling a listing).
 export type RawStore = { name?: string; title?: string; link?: string; price?: string; extracted_price?: number };
 
-export type Wanted = { brand: string; name: string; gender?: string | null };
+// variantWords: words that make another version of this perfume in our own catalogue ("Intensely" for "Stronger With You").
+export type Wanted = { brand: string; name: string; gender?: string | null; variantWords?: string[] };
 
 export type CleanOffer = {
   store: string;
@@ -78,7 +79,15 @@ const FOR_WOMEN = word('for women|pour femme|femme|women|woman|female|donna|her|
 
 // Versions of a perfume that are different products: a listing must agree with the wanted name on each.
 const VERSIONS: [string, RegExp][] = [
-  ['intense', word('intense|intensely|אינטנס')],
+  ['intense', word('intense|intensely|אינטנס|אינטנסלי')],
+  ['powerfully', word('powerfully|powerful|פאוורפולי|פאוורפול')],
+  ['absolutely', word('absolutely|אבסולוטלי')],
+  ['oud', word('oud|עוד|אוד')],
+  ['profumo', word('profumo|פרופומו')],
+  // "Parfum" on its own (not "Eau de Parfum") is a stronger, separate version. Israeli stores also write the plain word for
+  // perfume as פרפיום, but next to a name that has no such version it is treated as the strength.
+  ['parfum', new RegExp('(?<!de )(?<!d )(?<!דה )(?<![\\p{L}\\p{N}])(?:parfum|פרפיום|פרפום)(?![\\p{L}\\p{N}])', 'iu')],
+  ['leather', word('leather|לדר|לזר')],
   ['elixir', word('elixir|אליקסיר|אליקסר|אליכסיר')],
   ['extrait', word('extrait|extract|אקסטרייט|אקסטרט|אקסטראט|בושם טהור|טהור')],
   ['absolu', word('absolu|absolue|absolute|אבסולו|אבסולוט')],
@@ -91,7 +100,7 @@ const VERSIONS: [string, RegExp][] = [
 
 const COLORS = new Set(['blue', 'brown', 'red', 'black', 'white', 'green', 'gold', 'silver', 'pink', 'purple', 'orange', 'grey', 'gray', 'yellow', 'navy']);
 
-const ISRAELI_SOURCE = /[\u0590-\u05ff]|\.co\.il|\.il\b|^(ksp|ace|nose|mist|storypharm|story ?pharm|super-?pharm|shufersal|terminal ?x|zap|gomobile|libero|koker|wema|perfume ?il|skyperfumes|callperfume|cell ?tec|everywear|cosmetixe|icon ?pharm|vrona|loven|beyond skin|cosmetic club|life ?pharm|your-?pharm|mtbeauty|blendo|miolor|lola ?ray|parfum ?x|shoesonline|novo ?pharm|oud house|golden ?rose|my perfume|tamara|mashbir)/i;
+const ISRAELI_SOURCE = /[\u0590-\u05ff]|\.co\.il|\.il\b|^(ksp|ace|nose|mist|storypharm|story ?pharm|super-?pharm|shufersal|terminal ?x|zap|gomobile|libero|koker|wema|perfume ?il|skyperfumes|callperfume|cell ?tec|everywear|cosmetixe|icon ?pharm|vrona|loven|beyond skin|cosmetic club|life ?pharm|your-?pharm|mtbeauty|blendo|miolor|lola ?ray|parfum ?x|shoesonline|novo ?pharm|oud house|golden ?rose|my perfume|tamara|mashbir|y ?brands|zeraf|bosem|rosenfeld|vitamin ?zol|kolbo|perfume ?land|perfume ?oasis)/i;
 
 // The store's own address without the search service's tracking marks (srsltid, utm_source=google ...): the visitor
 // lands on the store's page as if they had typed its address. null when it is not a web address.
@@ -149,6 +158,10 @@ const editDistance = (a: string, b: string) => {
   }
   return row[b.length];
 };
+// Hebrew words that describe any perfume ("perfume", "parfum", "EDP", "for men" ...): a word like פרפיום sounds like
+// "profumo", so they must never count as the spelling of a name.
+const HEBREW_GENERIC = new Set(['בושם', 'פרפיום', 'פרפום', 'אדפ', 'אדט', 'לגבר', 'לגברים', 'גבר', 'לאישה', 'לאשה', 'אישה', 'אשה', 'נשים', 'גברים', 'יוניסקס', 'דה', 'או', 'מל', 'ספריי', 'בנפח', 'טסטר', 'חדש', 'מקורי', 'טואלט', 'קולון', 'אקסטרייט', 'אקסטרט']);
+
 // Two sounds are "the same word" when they are equal, or (for longer words) differ by one letter.
 const soundsAlike = (a: string, b: string) => a.length >= 2 && b.length >= 2 && (a === b || (Math.max(a.length, b.length) >= 4 && editDistance(a, b) <= 1));
 
@@ -178,6 +191,33 @@ type Options = { country: string; isBlocked?: (text: string) => boolean; onDrop?
 // The words of a title that belong to no perfume name: sizes, concentrations, "for men" ... A shortened title is only
 // trusted when it contains nothing else that could be the name of another perfume.
 const GENERIC_WORDS = new Set(['edp', 'edt', 'eau', 'de', 'parfum', 'toilette', 'for', 'men', 'man', 'women', 'woman', 'pour', 'homme', 'femme', 'ml', 'oz', 'fl', 'spray', 'tester', 'new', 'e', 'd', 'p', 't', 'and', 'the', 'by']);
+// ...and the ones that only describe the bottle or the offer.
+const AFTER_NAME_OK = new Set([
+  ...GENERIC_WORDS, 'perfume', 'perfum', 'parfume', 'fragrance', 'vaporisateur', 'vapo', 'unisex', 'authentic', 'original', 'genuine',
+  'sealed', 'boxed', 'box', 'sale', 'free', 'shipping', 'delivery', 'israel', 'atomizer', 'natural', 'her', 'him', 'ladies',
+]);
+
+// A title that carries another word after the perfume's name ("Stronger With You Powerfully", "... Oud", "... Only") is
+// another version of it. Returns that word, or null. Words of the store's own name do not count. Titles that give the
+// name only in Hebrew letters cannot be checked this way.
+function extraWordAfterName(title: string, store: string, nameTokens: string[], known: Set<string>): string | null {
+  const toks = tokens(title);
+  let last = -1;
+  toks.forEach((w, i) => { if (nameTokens.includes(w)) last = i; });
+  if (last < 0) return null;
+  const storeWords = new Set(tokens(store));
+  return toks.slice(last + 1).find(w => /^[a-z]{3,}$/.test(w) && !known.has(w) && !AFTER_NAME_OK.has(w) && !storeWords.has(w)) ?? null;
+}
+
+// Does the title carry a version the wanted perfume does not (or the other way round)? Perfumes whose own name already
+// says they are the strong version (Elixir, Extrait, Absolu...) may be sold as "Parfum", so that word is not held against them.
+function versionConflict(text: string, wantedVersions: string[], brandKey: string): boolean {
+  const strong = wantedVersions.some(k => ['elixir', 'extrait', 'absolu', 'absolutely'].includes(k));
+  return VERSIONS.some(([k, re]) => {
+    if (k === 'parfum' && (strong || brandKey.includes('parfum'))) return false;
+    return re.test(text) !== wantedVersions.includes(k);
+  });
+}
 
 function describeWanted(wanted: Wanted) {
   const nameTokens = tokens(wanted.name).filter(t => !NAME_STOP.has(t) && t.length > 0);
@@ -192,14 +232,16 @@ function describeWanted(wanted: Wanted) {
     needBrand: nameTokens.join('').length < 6,
     wantedVersions: VERSIONS.filter(([, re]) => re.test(plain(wanted.name))).map(([k]) => k),
     gender: (wanted.gender ?? '').toLowerCase(),
+    brandKey,
     known: new Set([...nameTokens, ...brandTokens, ...brandWords]),
+    variantWords: new Set((wanted.variantWords ?? []).filter(w => !nameTokens.includes(w))),
   };
 }
 
 // isBlocked: the site's list of words visitors must never see (dupe, clone ...); a listing that uses one is dropped.
 // onDrop (optional) is told why each listing was thrown out - used by the offline test to spot over-strict rules.
 export function classifyResults(results: RawResult[], wanted: Wanted, opts: Options): CleanOffer[] {
-  const { nameTokens, brandWords, needBrand, wantedVersions, gender, known } = describeWanted(wanted);
+  const { nameTokens, brandWords, brandKey, needBrand, wantedVersions, gender, known, variantWords } = describeWanted(wanted);
   if (!nameTokens.length) return [];
   const out: CleanOffer[] = [];
   for (const [rank, r] of results.entries()) {
@@ -207,12 +249,15 @@ export function classifyResults(results: RawResult[], wanted: Wanted, opts: Opti
     const price = r.extracted_price;
     const currency = currencyOf(r.price);
     const drop = (why: string) => opts.onDrop?.(r, why);
-    if (!title || !r.source || typeof price !== 'number' || !(price > 0) || !currency) { drop('no price'); continue; }
+    // Google sometimes shows a listing sold by several stores with no store and no price in the row; its product page
+    // still names them all, so such a listing is kept - only to be opened, never shown as an offer.
+    const priceless = !r.source || typeof price !== 'number' || !(price > 0) || !currency;
+    if (!title || (priceless && !(r.multiple_sources && r.immersive_product_page_token))) { drop('no price'); continue; }
     if (opts.isBlocked?.(title)) { drop('blocked word'); continue; }
     if (NOT_A_BOTTLE.test(plain(title))) { drop('not a bottle'); continue; }
 
     const words = new Set(tokens(title));
-    const hebrew = [...words].filter(w => /[\u0590-\u05ff]/.test(w)).map(sound);
+    const hebrew = [...words].filter(w => /[\u0590-\u05ff]/.test(w) && !HEBREW_GENERIC.has(w)).map(sound);
     const has = (t: string) => words.has(t) || (/^[a-z]+$/.test(t) && hebrew.some(h => soundsAlike(sound(t), h)));
     const missing = nameTokens.filter(t => !has(t));
     let approx = false;
@@ -229,7 +274,10 @@ export function classifyResults(results: RawResult[], wanted: Wanted, opts: Opti
     if (needBrand && ![...brandWords].some(has)) { drop('brand'); continue; }
 
     const text = plain(title);
-    if (VERSIONS.some(([k, re]) => re.test(text) !== wantedVersions.includes(k))) { drop('other version'); continue; }
+    if (versionConflict(text, wantedVersions, brandKey)) { drop('other version'); continue; }
+    if ([...words].some(w => variantWords.has(w))) { drop('other version (catalogue)'); continue; }
+    const extra = extraWordAfterName(title, r.source ?? '', nameTokens, known);
+    if (extra) { drop(`other version (${extra})`); continue; }
     const men = FOR_MEN.test(text), women = FOR_WOMEN.test(text);
     if ((gender === 'male' && women && !men) || (gender === 'female' && men && !women)) { drop('other gender'); continue; }
 
@@ -237,14 +285,16 @@ export function classifyResults(results: RawResult[], wanted: Wanted, opts: Opti
     if (multi || (ml !== null && (ml < 20 || ml > 500))) { drop('size'); continue; }
     // In Israel only stores that sell in Israel: the search also lists shops abroad, whose prices leave out
     // shipping and import tax.
-    const abroad = opts.country === 'IL' && !isIsraeliStore(r.source);
+    // (a store abroad has a converted price with odd cents; a Hebrew title and a round price point to an Israeli shop)
+    const roundPrice = !priceless && [0, 50, 90, 99].includes(Math.round(((price as number) % 1) * 100));
+    const abroad = priceless || (opts.country === 'IL' && !isIsraeliStore(r.source ?? '') && !(roundPrice && /[\u0590-\u05ff]/.test(title)));
     if (abroad && !r.multiple_sources) { drop('not an Israeli store'); continue; }
 
     out.push({
-      store: r.source.trim(),
+      store: (r.source ?? '').trim(),
       title,
-      price,
-      currency,
+      price: priceless ? 0 : (price as number),
+      currency: currency ?? 'ILS',
       sizeMl: ml,
       tester: TESTER.test(text),
       approx,
@@ -264,7 +314,7 @@ export function classifyResults(results: RawResult[], wanted: Wanted, opts: Opti
 // different colour, version or gender; a title that does not repeat the name is kept and marked "check the model".
 // Each store comes with its own address, which also tells whether it is an Israeli store.
 export function expandStores(stores: RawStore[], parent: CleanOffer, wanted: Wanted, opts: Options): CleanOffer[] {
-  const { nameTokens, wantedVersions, gender } = describeWanted(wanted);
+  const { nameTokens, brandKey, wantedVersions, gender, known, variantWords } = describeWanted(wanted);
   const wantsColour = nameTokens.some(t => COLORS.has(t));
   const out: CleanOffer[] = [];
   for (const st of stores) {
@@ -277,10 +327,11 @@ export function expandStores(stores: RawStore[], parent: CleanOffer, wanted: Wan
     if (opts.country === 'IL' && !isIsraeliStore(name, st.link)) continue;
     const text = plain(title);
     const words = new Set(tokens(title));
-    const hebrew = [...words].filter(w => /[\u0590-\u05ff]/.test(w)).map(sound);
+    const hebrew = [...words].filter(w => /[\u0590-\u05ff]/.test(w) && !HEBREW_GENERIC.has(w)).map(sound);
     const has = (t: string) => words.has(t) || (/^[a-z]+$/.test(t) && hebrew.some(h => soundsAlike(sound(t), h)));
     if (wantsColour && [...words].some(w => COLORS.has(w) && !nameTokens.includes(w))) continue;
-    if (VERSIONS.some(([k, re]) => re.test(text) !== wantedVersions.includes(k))) continue;
+    if (versionConflict(text, wantedVersions, brandKey)) continue;
+    if ([...words].some(w => variantWords.has(w)) || extraWordAfterName(title, name, nameTokens, known)) continue;
     const men = FOR_MEN.test(text), women = FOR_WOMEN.test(text);
     if ((gender === 'male' && women && !men) || (gender === 'female' && men && !women)) continue;
     const own = parseSizeMl(title);

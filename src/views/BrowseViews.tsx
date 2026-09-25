@@ -8,10 +8,11 @@ import Photo from '@/app/components/Photo';
 import PerfumeCard from '@/app/components/PerfumeCard';
 import { SiteFooter, SiteHeader } from '@/app/components/SiteChrome';
 import HoverLink from '@/app/components/HoverLink';
+import { buildsWholeSite } from '@/lib/site';
 
-export const brandStaticParams = async () => (await getBrandSlugs()).map(slug => ({ slug }));
+export const brandStaticParams = async (lang: Lang = 'he') => (buildsWholeSite(lang) ? (await getBrandSlugs()).map(slug => ({ slug })) : []);
 // Notes that only one or two fragrances have would be thin pages: they are built when first visited, not ahead of time.
-export const noteStaticParams = async () => (await getNoteSlugs(3)).map(slug => ({ slug }));
+export const noteStaticParams = async (lang: Lang = 'he') => (buildsWholeSite(lang) ? (await getNoteSlugs(3)).map(slug => ({ slug })) : []);
 
 export async function brandMetadata(lang: Lang, slug: string): Promise<Metadata> {
   const t = getDict(lang);

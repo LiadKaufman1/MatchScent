@@ -3,7 +3,7 @@ import { NoteView, noteMetadata, noteStaticParams } from '@/views/BrowseViews';
 export const revalidate = 300;
 
 export async function generateStaticParams() {
-  return noteStaticParams();
+  return noteStaticParams('en');
 }
 
 type Props = { params: Promise<{ slug: string }> };
