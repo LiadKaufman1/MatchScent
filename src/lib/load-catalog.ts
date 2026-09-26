@@ -30,16 +30,18 @@ export const hasContent = (p: ShownPerfume) =>
 // Supabase returns at most 1000 rows per request, so read in pages.
 async function fetchAll<T>(table: string): Promise<T[]> {
   const supabase = getCatalogSupabase();
-  const rows: T[] = [];
-  for (let from = 0; ; from += 1000) {
-    const { data, error } = await supabase
-      .from(table)
-      .select('*')
-      .order('id')
-      .range(from, from + 999);
+  const PAGE = 1000;
+  const WAVE = 5; // pages read at the same time: with tens of thousands of perfumes one after the other was slow
+  const page = async (from: number): Promise<T[]> => {
+    const { data, error } = await supabase.from(table).select('*').order('id').range(from, from + PAGE - 1);
     if (error) throw new Error(`Could not read "${table}": ${error.message}`);
-    rows.push(...((data ?? []) as T[]));
-    if (!data || data.length < 1000) break;
+    return (data ?? []) as T[];
+  };
+  const rows: T[] = [];
+  for (let from = 0; ; from += WAVE * PAGE) {
+    const wave = await Promise.all(Array.from({ length: WAVE }, (_, i) => page(from + i * PAGE)));
+    for (const part of wave) rows.push(...part);
+    if (wave.some(part => part.length < PAGE)) break;
   }
   return rows;
 }
