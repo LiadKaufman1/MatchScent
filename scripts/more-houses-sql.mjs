@@ -1,6 +1,7 @@
 // Perfumes of many more houses, added to the site.
 //
 //   node scripts/more-houses-sql.mjs [--min-votes 40] [--part-size 2500]
+// (also reads data-import/houses-meta-*.json: gender and year per Fragrantica number)
 //
 // Reads data-import/houses-collected-*.json (one designer page per house from Fragrantica, collected slowly in the browser:
 // { "<designer page name>": { status, list: [[id, name, brand, year, gender, votes], ...] } }), data-import/house-brands.json
@@ -51,6 +52,12 @@ const stripLead = (brand, name) => { const b = new Set(words(brand)); return wor
 
 const collected = {};
 for (const f of fs.readdirSync(DIR).filter(f => /^houses-collected-.*\.json$/.test(f)).sort()) Object.assign(collected, JSON.parse(fs.readFileSync(`${DIR}/${f}`, 'utf8')));
+// Gender and year come from a second pass over the same pages (houses-meta-*.json: { "<designer page>": [[id, gender, year], ...] }):
+// the first pass read them from a page layout that did not carry them.
+const meta = new Map();
+for (const f of fs.readdirSync(DIR).filter(f => /^houses-meta-.*\.json$/.test(f)).sort()) {
+  for (const list of Object.values(JSON.parse(fs.readFileSync(`${DIR}/${f}`, 'utf8')))) for (const [id, gender, year] of list) meta.set(id, { gender, year });
+}
 const houseBrand = new Map(JSON.parse(fs.readFileSync(`${DIR}/house-brands.json`, 'utf8')).map(h => [h.slug.toLowerCase(), h.brand]));
 
 const [perfumes, dupes] = await Promise.all([readAll('perfumes', 'brand,name,gender,year'), readAll('dupes', 'brand,name')]);
@@ -71,7 +78,9 @@ for (const [slug, page] of Object.entries(collected)) {
   pages++;
   const house = houseBrand.get(slug.toLowerCase());
   let added = 0, existing = 0, lowVotes = 0, skipped = 0;
-  for (const [id, rawName, brand, year, gender, votesText] of page.list) {
+  for (const [id, rawName, brand, year0, gender0, votesText] of page.list) {
+    const year = year0 || meta.get(id)?.year || 0;
+    const gender = gender0 || meta.get(id)?.gender || '';
     const name = String(rawName ?? '').replace(/\s+/g, ' ').trim();
     const houseName = house ?? String(brand ?? '').trim();
     if (!name || !houseName || BLOCKED.test(name) || name.length > 120) { skipped++; continue; }
