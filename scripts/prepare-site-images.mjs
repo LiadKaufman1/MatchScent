@@ -56,12 +56,19 @@ async function normalize(file) {
     .toBuffer();
 }
 
-fs.rmSync(OUT, { recursive: true, force: true });
+// Incremental by default: a picture that was already normalised (it is in index.json and its file exists) is kept, so a
+// run after a new download only works on the new pictures. --fresh starts from scratch.
+const fresh = process.argv.includes('--fresh');
+const indexFile = path.join(OUT, 'index.json');
+const old = !fresh && fs.existsSync(indexFile) ? JSON.parse(fs.readFileSync(indexFile, 'utf8')) : {};
+if (fresh) fs.rmSync(OUT, { recursive: true, force: true });
 fs.mkdirSync(OUT, { recursive: true });
+for (const stale of fs.readdirSync(OUT).filter(x => /^sheet-\d+\.(jpg|txt)$/.test(x))) fs.unlinkSync(path.join(OUT, stale));
 
 const index = {};
 const problems = [];
 for (const [slug, entry] of Object.entries(manifest)) {
+  if (old[slug] && fs.existsSync(path.join(OUT, `${slug}.jpg`))) { index[slug] = { ...old[slug], kind: kindOf[slug] || old[slug].kind }; continue; }
   const files = [...(entry.files || [])].sort((a, b) => (b.source === 'fragrantica') - (a.source === 'fragrantica'));
   let picked = null;
   for (const f of files) {
@@ -80,7 +87,7 @@ for (const [slug, entry] of Object.entries(manifest)) {
 fs.writeFileSync(path.join(OUT, 'index.json'), JSON.stringify(index, null, 1), 'utf8');
 
 // ---- contact sheets (40 per sheet) ------------------------------------------------------------------
-const slugs = Object.keys(index).sort();
+const slugs = Object.keys(index).filter(slug => !old[slug]).sort(); // contact sheets only for the new pictures
 const TW = 200, TH = 250, COLS = 8, PER = 40;
 for (let s = 0; s * PER < slugs.length; s++) {
   const chunk = slugs.slice(s * PER, (s + 1) * PER);
@@ -101,52 +108,59 @@ const rows = kind => Object.entries(index)
   .map(([slug, v]) => `    (${sqlText(v.brand.toLowerCase())}, ${sqlText(v.name.toLowerCase())}, ${sqlText(publicUrl(slug))})`);
 const pRows = rows('original'), dRows = rows('inspired');
 
-const sql = `-- =====================================================================
--- MatchScent: connect the uploaded pictures to the perfumes and entries   (PROPOSAL, review before running)
+// One script per PART_SIZE perfumes (a single script with thousands of rows is too big to paste into the SQL Editor).
+// Part 1 also carries the entries (similar scents). Run the parts one after the other; each keeps its own backup table.
+const PART_SIZE = 2500;
+const chunks = [];
+for (let i = 0; i < Math.max(1, pRows.length); i += PART_SIZE) chunks.push(pRows.slice(i, i + PART_SIZE));
+const sqlPart = (n, pChunk, dChunk) => `-- =====================================================================
+-- MatchScent: connect the uploaded pictures to the perfumes and entries, part ${n} of ${chunks.length}   (PROPOSAL, review before running)
 -- =====================================================================
 -- Claude has NOT run this. You run it yourself in Supabase -> SQL Editor, AFTER the pictures were uploaded
--- to the "${BUCKET}" storage bucket (db-migrations/2026-09-perfume-images-bucket.sql + scripts/upload-site-images.mjs).
+-- to the "${BUCKET}" storage bucket (db-migrations/2026-09-perfume-images-bucket.sql + scripts/upload-site-images.mjs)
+-- and AFTER the perfumes exist (data-import/more-houses-part-N.sql).
 --  * DRY RUN first (dry_run := true): it ends with a red message that lists the numbers; nothing is saved.
 --  * If the numbers look right, change  dry_run := true  to  dry_run := false  and run again.
---  * All-or-nothing. It only sets the image_url column (perfumes: ${pRows.length} pictures, entries: ${dRows.length} pictures);
+--  * All-or-nothing. It only sets the image_url column (this part: ${pChunk.length} perfumes${dChunk.length ? `, ${dChunk.length} entries` : ''});
 --    it changes no other column and no other table. Before it runs, a backup of the current values is kept in
---    image_url_backup_<date> (public access off).
+--    image_url_backup_${STAMP}_p${n} (public access off).
 -- =====================================================================
 
 DO $$
 DECLARE
   dry_run boolean := true;   -- <<< change to false to APPLY
   n_perfumes int;
-  n_entries int;
+  n_entries int := 0;
 BEGIN
   PERFORM set_config('search_path', 'public, extensions', true);
 
-  EXECUTE 'CREATE TABLE image_url_backup_${STAMP} AS
+  EXECUTE 'CREATE TABLE image_url_backup_${STAMP}_p${n} AS
     SELECT ''perfumes''::text AS tbl, id, image_url FROM public.perfumes
     UNION ALL SELECT ''dupes''::text, id, image_url FROM public.dupes';
-  EXECUTE 'ALTER TABLE image_url_backup_${STAMP} ENABLE ROW LEVEL SECURITY';
+  EXECUTE 'ALTER TABLE image_url_backup_${STAMP}_p${n} ENABLE ROW LEVEL SECURITY';
 
   WITH v(b, n, u) AS (VALUES
-${pRows.join(',\n')}
+${pChunk.join(',\n')}
   )
   UPDATE public.perfumes p SET image_url = v.u FROM v WHERE lower(p.brand) = v.b AND lower(p.name) = v.n;
   GET DIAGNOSTICS n_perfumes = ROW_COUNT;
-
+${dChunk.length ? `
   WITH v(b, n, u) AS (VALUES
-${dRows.join(',\n')}
+${dChunk.join(',\n')}
   )
   UPDATE public.dupes d SET image_url = v.u FROM v WHERE lower(d.brand) = v.b AND lower(d.name) = v.n;
   GET DIAGNOSTICS n_entries = ROW_COUNT;
-
+` : ''}
   IF dry_run THEN
-    RAISE EXCEPTION 'DRY RUN OK, nothing was saved. Perfume rows that would get a picture: % (expected about ${pRows.length}). Entry rows: % (an entry shown on several perfumes counts once per perfume).', n_perfumes, n_entries;
+    RAISE EXCEPTION 'DRY RUN OK, nothing was saved. Perfume rows that would get a picture: % (expected about ${pChunk.length}, fewer if some perfumes are not on the site yet). Entry rows: %.', n_perfumes, n_entries;
   END IF;
 END $$;
 
 SELECT (SELECT count(*) FROM public.perfumes WHERE image_url LIKE '%/${BUCKET}/%') AS perfumes_with_our_picture,
        (SELECT count(*) FROM public.dupes WHERE image_url LIKE '%/${BUCKET}/%') AS entries_with_our_picture;
 `;
-fs.writeFileSync('data-import/site-images.sql', sql, 'utf8');
+for (const old of fs.readdirSync('data-import').filter(x => /^site-images(-part-\d+)?\.sql$/.test(x))) fs.unlinkSync(`data-import/${old}`);
+chunks.forEach((chunk, i) => fs.writeFileSync(`data-import/site-images-part-${i + 1}.sql`, sqlPart(i + 1, chunk, i === 0 ? dRows : []), 'utf8'));
 
 const orig = Object.values(index).filter(v => v.kind === 'original').length;
 console.log(`Prepared ${Object.keys(index).length} pictures (${orig} originals, ${Object.keys(index).length - orig} "inspired by").`);
@@ -154,4 +168,4 @@ console.log(`From Fragrantica: ${Object.values(index).filter(v => v.source === '
 const total = Object.values(index).reduce((n, v) => n + v.bytes, 0);
 console.log(`Total size to upload: ${(total / 1024 / 1024).toFixed(1)} MB (average ${Math.round(total / Object.keys(index).length / 1024)} KB).`);
 if (problems.length) console.log('\nNotes:\n  ' + problems.join('\n  '));
-console.log(`\nContact sheets: ${OUT}/sheet-N.jpg   SQL: data-import/site-images.sql`);
+console.log(`\nContact sheets: ${OUT}/sheet-N.jpg   SQL: data-import/site-images-part-N.sql`);
