@@ -4,7 +4,8 @@ import { notFound } from 'next/navigation';
 import { entryKey, getCatalog, getPerfumePage, hasContent, isFeatured, type ShownPerfume } from '@/lib/load-catalog';
 import { buildsWholeSite } from '@/lib/site';
 import StoreButtons from '@/app/components/StoreButtons';
-import { ils, usd } from '@/lib/format';
+import { ils } from '@/lib/format';
+import { describePerfume } from '@/lib/describe';
 import { slugify } from '@/lib/slug';
 import { siteUrl } from '@/lib/site';
 import { fmt, getDict, withLang, type Lang } from '@/lib/i18n';
@@ -97,7 +98,6 @@ export default async function PerfumeView({ lang, slug }: { lang: Lang; slug: st
 
   const { perfume, entries, inspiredBy, siblings, sameBrand, more, community } = data;
   const isInspired = entries.length === 0 && inspiredBy.length > 0;
-  const orig = inspiredBy.map(x => `${x.original.brand} ${x.original.name}`).slice(0, 2).join(', ');
   const alike = await similarByNotes(perfume);
   const full = `${perfume.brand} ${perfume.name}`;
   const path = `/perfume/${perfume.slug}`;
@@ -123,17 +123,9 @@ export default async function PerfumeView({ lang, slug }: { lang: Lang; slug: st
     ],
   };
 
-  const audience =
-    perfume.gender === 'male' ? t.audForMen : perfume.gender === 'female' ? t.audForWomen : t.audForAll;
   const audienceLabel =
     perfume.gender === 'male' ? t.audMale : perfume.gender === 'female' ? t.audFemale : t.audUnisex;
-  const intro = (isInspired
-    ? [fmt(t.inspiredPage.intro, { name: perfume.name, brand: perfume.brand, orig }), t.introPrices]
-    : [
-        fmt(t.introBase, { name: perfume.name, brand: perfume.brand, audience }),
-        entries.length === 0 ? t.introNone : entries.length === 1 ? t.introWithOne : fmt(t.introWithMany, { n: entries.length }),
-        t.introPrices,
-      ]).join(' ');
+  const intro = describePerfume(perfume, lang);
 
   return (
     <div className="site">
@@ -193,13 +185,10 @@ export default async function PerfumeView({ lang, slug }: { lang: Lang; slug: st
 
             <p className="mt-5 max-w-xl leading-relaxed text-smoke">{intro}</p>
 
-            {!isInspired && usd(perfume.price_usd) && (
+            {!isInspired && ils(perfume.price_ils) && (
               <p className="mt-4 text-sm">
                 <span className="text-[11px] font-medium uppercase tracking-[0.16em] text-smoke">{t.originalFrom}</span>{' '}
-                <span className="font-bold text-ink" dir="ltr">
-                  {usd(perfume.price_usd)}
-                  {ils(perfume.price_ils) && <span className="ms-2 font-medium text-smoke">{ils(perfume.price_ils)}</span>}
-                </span>
+                <span className="font-bold text-ink" dir="ltr">{ils(perfume.price_ils)}</span>
               </p>
             )}
 
