@@ -1,8 +1,9 @@
 import { createHash } from 'node:crypto';
-import { classifyResults, cleanStoreUrl, expandStores, finalizeOffers, type CleanOffer, type RawResult, type RawStore } from './price-offers';
+import { unstable_cache } from 'next/cache';
+import { classifyResults, cleanStoreUrl, expandStores, finalizeOffers, serperRows, type CleanOffer, type RawResult, type RawStore, type SerperRow } from './price-offers';
 import { hasBlockedWord } from './catalog';
 import { tagStoreUrl } from './store-links';
-import type { CountryCode } from './stores';
+import { storeSearchUrl, type CountryCode } from './stores';
 import type { PriceOffer, PriceReport } from './price-types';
 
 // Live prices for one perfume in the visitor's country. Server only: the search service's key never leaves here.
@@ -27,7 +28,12 @@ const MARKET: Record<CountryCode, { gl: string; hl: string; domain: string }> = 
   WORLD: { gl: 'us', hl: 'en', domain: 'google.com' },
 };
 
-export const pricesConfigured = () => !!process.env.SERPAPI_KEY;
+export const pricesConfigured = () => !!(process.env.SERPER_API_KEY || process.env.SERPAPI_KEY);
+// Serper (google.serper.dev) is about 15 times cheaper per search than SerpApi and is used whenever its key is set;
+// SerpApi stays as the fallback. Serper has no "product page with every store" and its own links go to Google, so the
+// stores are found with more (cheap) searches - one that names each main Israeli store - and the button of a row opens the
+// store's own search page (storeSearchUrl).
+const serperEnabled = () => !!process.env.SERPER_API_KEY;
 
 type Wanted = { brand: string; name: string; gender?: string | null };
 type Search = { results: RawResult[]; at: string; complete: boolean };
@@ -113,9 +119,62 @@ async function storesOf(token: string): Promise<RawStore[]> {
   }, v => v !== null).then(v => v ?? []);
 }
 
+type SerperAnswer = { rows: SerperRow[]; at: string };
+
+// One Serper search (1 credit). Kept HOURS in the platform's cache; a failure throws, so it is never kept.
+const serperCached = unstable_cache(async (q: string, gl: string, hl: string): Promise<SerperAnswer> => {
+  const res = await fetch('https://google.serper.dev/shopping', {
+    method: 'POST',
+    headers: { 'X-API-KEY': process.env.SERPER_API_KEY ?? '', 'Content-Type': 'application/json' },
+    body: JSON.stringify({ q, gl, hl, num: 40 }),
+  });
+  if (!res.ok) throw new Error(`serper ${res.status}`);
+  const data = (await res.json()) as { shopping?: SerperRow[]; message?: string };
+  if (!Array.isArray(data.shopping) && data.message) throw new Error('serper: ' + data.message);
+  return { rows: Array.isArray(data.shopping) ? data.shopping : [], at: new Date().toISOString() };
+}, ['serper-shopping-v1'], { revalidate: HOURS * 3600 });
+
+function serperOnce(q: string, country: CountryCode): Promise<SerperAnswer | null> {
+  const m = MARKET[country];
+  return remember(`z|${m.gl}|${q.toLowerCase()}`, HOURS, () => serperCached(q, m.gl, m.hl).catch(() => null), v => v !== null);
+}
+
+// The main Israeli stores get their own search ("<perfume> KSP"): a store's listing that the plain search leaves out
+// (KSP's plain Eau de Toilette of Stronger With You at 245 NIS) is found this way. Only stores that the first searches
+// did not already show are searched.
+const ISRAELI_STORE_SEARCHES: { query: string; match: RegExp }[] = [
+  { query: 'KSP', match: /^ksp$/i },
+  { query: 'סופר פארם', match: /super.?pharm|סופר.?פארם/i },
+  { query: 'YBrands', match: /y\s?brands/i },
+];
+
+async function collectSerper(wanted: Wanted, country: CountryCode): Promise<{ offers: CleanOffer[]; at: string } | null> {
+  const q = searchName(wanted);
+  const opts = { country, isBlocked: hasBlockedWord };
+  const answers: SerperAnswer[] = [];
+  const take = (list: (SerperAnswer | null)[]) => { for (const a of list) if (a) answers.push(a); };
+
+  take(await Promise.all((country === 'IL' ? [q, `${q} בושם`] : [q]).map(x => serperOnce(x, country))));
+  if (!answers.length) return null;
+
+  const clean = () => finalizeOffers(classifyResults(serperRows(answers.flatMap(a => a.rows)), wanted, opts));
+  let offers = clean();
+  if (country === 'IL') {
+    const missing = ISRAELI_STORE_SEARCHES.filter(s => !offers.some(o => s.match.test(o.store)));
+    if (missing.length) {
+      take(await Promise.all(missing.map(s => serperOnce(`${q} ${s.query}`, country))));
+      offers = clean();
+    }
+  }
+  const at = new Date(Math.min(...answers.map(a => new Date(a.at).getTime()))).toISOString();
+  const withPages = offers.map(o => ({ ...o, url: o.url ?? storeSearchUrl(o.store, q, country) }));
+  return { offers: withPages.slice(0, 40), at };
+}
+
 // Every offer we know for this perfume, each with what opens its store: the store's own address, or (for a listing seen
 // only in the search rows) the token that lets us look the address up when someone clicks.
 async function collect(wanted: Wanted, country: CountryCode): Promise<{ offers: CleanOffer[]; at: string } | null> {
+  if (serperEnabled()) return collectSerper(wanted, country);
   const found = await search(wanted, country);
   if (!found) return null;
   const opts = { country, isBlocked: hasBlockedWord };
