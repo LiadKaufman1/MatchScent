@@ -155,7 +155,7 @@ export default async function PerfumeView({ lang, slug }: { lang: Lang; slug: st
             </p>
             <h1 className="mt-1.5 text-3xl font-extrabold leading-tight text-ink sm:text-5xl">{perfume.name}</h1>
             <p className="mt-2 text-sm text-smoke">
-              {[audienceLabel, perfume.year ? String(perfume.year) : null, perfume.perfumers?.length ? perfume.perfumers.join(', ') : null].filter(Boolean).join(' · ')}
+              {[audienceLabel, perfume.year ? String(perfume.year) : null].filter(Boolean).join(' · ')}
             </p>
           </div>
 
