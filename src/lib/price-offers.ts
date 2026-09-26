@@ -15,6 +15,22 @@ export type RawResult = {
   product_id?: string;
 };
 
+// One row of Serper's Google Shopping answer (a cheaper search service). It has no product page and its own link goes to
+// Google, so it never leaves the server: the store's page is built from the store's name (see storeSearchUrl).
+export type SerperRow = { title?: string; source?: string; price?: string; productId?: string };
+
+// "‏284.00 ‏₪" -> 284 ; "$1,299.50" -> 1299.5 ; anything without a number -> undefined
+export function serperPrice(price: string | undefined): number | undefined {
+  const digits = (price ?? '').replace(/[^\d.,]/g, '');
+  if (!digits) return undefined;
+  const n = Number(digits.replace(/,(?=\d{3}(?:\D|$))/g, '').replace(',', '.'));
+  return Number.isFinite(n) && n > 0 ? n : undefined;
+}
+
+export function serperRows(rows: SerperRow[]): RawResult[] {
+  return rows.map(r => ({ title: r.title, source: r.source, price: r.price, extracted_price: serperPrice(r.price), product_id: r.productId }));
+}
+
 // One store of a product page (the lookup that lists every store selling a listing).
 export type RawStore = { name?: string; title?: string; link?: string; price?: string; extracted_price?: number };
 

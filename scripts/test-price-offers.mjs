@@ -5,7 +5,7 @@
 // files: the Israeli lookup merges the plain search and the one with the Hebrew word for perfume. Saved product pages
 // (immersive-<search name>-<row>.json) are opened too, like the server does for listings sold by several stores.
 import fs from 'node:fs';
-import { classifyResults, expandStores, finalizeOffers, versionWordsOf } from '../src/lib/price-offers.ts';
+import { classifyResults, expandStores, finalizeOffers, serperRows, serperPrice, versionWordsOf } from '../src/lib/price-offers.ts';
 
 const DIR = 'data-import/serpapi-samples';
 const why = process.argv.includes('--why');
@@ -15,6 +15,9 @@ const BLOCKED = /\b(dupes?|clones?|knock-?offs?|replicas?|fakes?|counterfeit)\b/
 const ARMANI_NAMES = ['Stronger With You', 'Emporio Armani Stronger With You', 'Emporio Armani Stronger With You Parfum', 'Emporio Armani Stronger With You Absolutely',
   'Emporio Armani Stronger With You Powerfully', 'Emporio Armani Stronger With You Intensely', 'Emporio Armani Stronger With You Oud', 'Emporio Armani Stronger With You Limited Edition'];
 const cases = [
+  // Serper (the cheaper search service): the plain search plus the one that names the store. The store's own Eau de Toilette
+  // (KSP, 245 NIS) only shows up in the second one.
+  [['serper-emporio-armani-stronger-with-you.json', 'serper-emporio-armani-stronger-with-you-ksp.json'], { brand: 'Giorgio Armani', name: 'Stronger With You', gender: 'male', variantWords: ['absolutely', 'edition', 'intensely', 'limited', 'oud', 'powerfully'] }],
   [['search-dior-sauvage-elixir.json'], { brand: 'Dior', name: 'Sauvage Elixir', gender: 'male' }],
   [['search-creed-aventus.json'], { brand: 'Creed', name: 'Aventus', gender: 'male' }],
   [['search-maison-francis-kurkdjian-baccarat-rouge-540.json'], { brand: 'Maison Francis Kurkdjian', name: 'Baccarat Rouge 540', gender: 'unisex' }],
@@ -29,7 +32,7 @@ const read = f => JSON.parse(fs.readFileSync(`${DIR}/${f}`, 'utf8'));
 
 for (const [files, wanted] of cases) {
   const present = files.filter(f => fs.existsSync(`${DIR}/${f}`));
-  const raw = present.flatMap(read);
+  const raw = present.flatMap(file => { const d = read(file); return Array.isArray(d) ? d : serperRows(d.shopping ?? []); });
   if (!raw.length) continue;
   const dropped = [];
   const opts = { country: 'IL', isBlocked: t => BLOCKED.test(t), onDrop: (r, reason) => dropped.push([r, reason]) };
@@ -74,6 +77,12 @@ for (const [own, others, expected] of [
 ]) {
   const got = versionWordsOf(own, others).sort().join(',');
   console.log(`${got === expected ? 'ok  ' : 'FAIL'} ${own}: ${got}`);
+}
+
+console.log('\n=== Serper prices');
+for (const [text, expected] of [['\u200f284.00 \u200f\u20aa', 284], ['$1,299.50', 1299.5], ['\u20aa 1,200', 1200], ['from 45,99', 45.99], ['free', undefined]]) {
+  const got = serperPrice(text);
+  console.log(`${got === expected ? 'ok  ' : 'FAIL'} ${JSON.stringify(text)} -> ${got}`);
 }
 
 console.log('\n=== single rules');

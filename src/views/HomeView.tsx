@@ -2,6 +2,7 @@ import { getCatalog, isFeatured } from '@/lib/load-catalog';
 import { getDict, withLang, type Lang } from '@/lib/i18n';
 import Catalog from '@/app/components/Catalog';
 import CommunityHighlights from '@/app/components/CommunityHighlights';
+import SeoText from '@/app/components/SeoText';
 import Link from 'next/link';
 import { Search } from 'lucide-react';
 import { SiteFooter, SiteHeader, Wordmark } from '@/app/components/SiteChrome';
@@ -77,6 +78,8 @@ export default async function HomeView({ lang }: { lang: Lang }) {
             </Link>
           </p>
         </div>
+
+        <SeoText lang={lang} />
       </main>
 
       <SiteFooter lang={lang} />
