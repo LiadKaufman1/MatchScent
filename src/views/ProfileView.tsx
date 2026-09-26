@@ -7,6 +7,7 @@ import { fmt, getDict, withLang, type Lang } from '@/lib/i18n';
 import { SiteFooter, SiteHeader } from '@/app/components/SiteChrome';
 import ProfileEditor from '@/app/components/ProfileEditor';
 import HoverLink from '@/app/components/HoverLink';
+import Photo from '@/app/components/Photo';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -80,10 +81,20 @@ export default async function ProfileView({ lang, id }: { lang: Lang; id: string
   ];
   const rateLabels = t.community.panels.rate.options; // index 0 = hate ... 4 = love
 
+  // A medium picture; the name slides up over it when the pointer is on it (or the tile has the keyboard focus).
   const chip = (p: NonNullable<ReturnType<typeof byId.get>>, extra?: string) => (
-    <HoverLink href={withLang(lang, `/perfume/${p.slug}`)} className="block rounded-full border border-line bg-white px-3.5 py-1.5 text-sm font-medium text-ink transition hover:border-wine-600/60">
-      {p.brand} {p.name}
-      {extra && <span className="ms-2 text-xs font-bold text-wine-600">{extra}</span>}
+    <HoverLink
+      href={withLang(lang, `/perfume/${p.slug}`)}
+      title={`${p.brand} ${p.name}`}
+      className="group relative block w-28 overflow-hidden rounded-2xl border border-line bg-white transition hover:border-wine-600/60 sm:w-32"
+    >
+      <span className="relative block aspect-[4/5]">
+        <Photo url={p.image_url} alt={`${p.brand} ${p.name}`} seed={p.brand + p.name} sizes="128px" />
+      </span>
+      <span className="absolute inset-x-0 bottom-0 translate-y-full bg-plum-900/90 px-2 py-2 text-center text-[11px] font-bold leading-tight text-white transition duration-200 group-hover:translate-y-0 group-focus-visible:translate-y-0">
+        {p.brand} {p.name}
+      </span>
+      {extra && <span className="absolute start-1.5 top-1.5 rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-bold text-wine-700">{extra}</span>}
     </HoverLink>
   );
 
@@ -121,7 +132,7 @@ export default async function ProfileView({ lang, id }: { lang: Lang; id: string
                         <h3 className="mb-2 text-xs font-bold uppercase tracking-[0.12em] text-smoke">
                           {g.label} <span dir="ltr">({items.length})</span>
                         </h3>
-                        <ul className="flex flex-wrap gap-2">
+                        <ul className="flex flex-wrap gap-3">
                           {items.map(p => <li key={p!.id}>{chip(p!)}</li>)}
                         </ul>
                       </div>
@@ -136,7 +147,7 @@ export default async function ProfileView({ lang, id }: { lang: Lang; id: string
               {profile.ratings.length === 0 ? (
                 <p className="text-smoke">{t.profile.empty}</p>
               ) : (
-                <ul className="flex flex-wrap gap-2">
+                <ul className="flex flex-wrap gap-3">
                   {[...profile.ratings]
                     .sort((a, b) => b.score - a.score)
                     .map(r => ({ r, p: byId.get(r.perfumeId) }))
