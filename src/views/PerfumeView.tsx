@@ -4,7 +4,6 @@ import { notFound } from 'next/navigation';
 import { entryKey, getCatalog, getPerfumePage, hasContent, isFeatured, type ShownPerfume } from '@/lib/load-catalog';
 import { buildsWholeSite } from '@/lib/site';
 import StoreButtons from '@/app/components/StoreButtons';
-import { ils } from '@/lib/format';
 import { describePerfume } from '@/lib/describe';
 import { slugify } from '@/lib/slug';
 import { siteUrl } from '@/lib/site';
@@ -185,12 +184,6 @@ export default async function PerfumeView({ lang, slug }: { lang: Lang; slug: st
 
             <p className="mt-5 max-w-xl leading-relaxed text-smoke">{intro}</p>
 
-            {!isInspired && ils(perfume.price_ils) && (
-              <p className="mt-4 text-sm">
-                <span className="text-[11px] font-medium uppercase tracking-[0.16em] text-smoke">{t.originalFrom}</span>{' '}
-                <span className="font-bold text-ink" dir="ltr">{ils(perfume.price_ils)}</span>
-              </p>
-            )}
 
             {perfume.accords && perfume.accords.length > 0 && (
               <AccordBars accords={perfume.accords} lang={lang} title={t.facts.accords} />
