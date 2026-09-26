@@ -12,6 +12,15 @@ const nextConfig = {
     return [
       { source: '/he', destination: '/', permanent: true },
       { source: '/he/:path*', destination: '/:path*', permanent: true },
+      // Perfumes that were on the site twice were merged (db-cleanup/2026-09-merge-duplicate-perfumes.sql): the removed address leads to the kept one.
+      ...[
+        ['giorgio-armani-emporio-armani-stronger-with-you', 'giorgio-armani-stronger-with-you'],
+        ['jo-malone-myrrh-and-tonka', 'jo-malone-london-myrrh-and-tonka'],
+        ['jo-malone-wood-sage-and-sea-salt', 'jo-malone-london-wood-sage-and-sea-salt'],
+      ].flatMap(([from, to]) => [
+        { source: `/perfume/${from}`, destination: `/perfume/${to}`, permanent: true },
+        { source: `/en/perfume/${from}`, destination: `/en/perfume/${to}`, permanent: true },
+      ]),
     ];
   },
   images: {
