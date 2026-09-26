@@ -177,6 +177,14 @@ export type Dict = {
   notes: { heading: string; top: string; heart: string; base: string; notes: string };
   facts: { year: string; perfumer: string; accords: string };
   featured: { heading: string; viewAll: string };
+  seo: {
+    heading: string;
+    paragraphs: string[];
+    ctaInspired: string;
+    ctaAll: string;
+    faqHeading: string;
+    faq: { q: string; a: string }[];
+  };
   allPerfumes: {
     metaTitle: string;
     metaDescription: string;
@@ -631,6 +639,26 @@ const en: Dict = {
   notes: { heading: 'Notes', top: 'Top notes', heart: 'Heart notes', base: 'Base notes', notes: 'Notes' },
   facts: { year: 'Launched', perfumer: 'Perfumer', accords: 'Main accords' },
   featured: { heading: 'Featured fragrances', viewAll: 'View all fragrances' },
+  seo: {
+    heading: 'How to find an expensive scent at a fair price',
+    paragraphs: [
+      'Designer and niche perfumes smell wonderful, but the price tag is another story. A bottle of a famous perfume can cost hundreds of shekels, and for many people that is not an everyday scent. That is exactly why we built MatchScent: one place that shows where every perfume is cheapest to buy in Israel, and which fragrances smell like it, usually for less.',
+      'A perfume inspired by another is a separate fragrance, with its own name and brand, made by a perfume house that aimed for the character of a famous scent. Houses such as Armaf, Lattafa, Al Haramain, Maison Alhambra and French Avenue specialise in this, and their perfumes are sold openly in stores. It is not the same perfume and not the same scent to the last detail, but the resemblance can be easy to recognise, and sometimes it is surprising.',
+      'Here is how it works. Search for a perfume you love and open its page. There you will find the scents that fragrance lovers around the world vote as similar to it, its notes and accords, ratings and reviews from our members, and a price comparison across stores in Israel, by bottle size, cheapest first. That way you can decide whether the original is worth the price, or whether to try a similar scent for a fraction of it.',
+      'We make no inflated promises. We do not invent similarity percentages: we show the votes of fragrance lovers, and you can vote yourself on whether a scent really smells like the original. Scent is personal, so the best move is to try a sample before you buy a full bottle.',
+    ],
+    ctaInspired: 'Browse inspired fragrances',
+    ctaAll: 'All fragrances',
+    faqHeading: 'Frequently asked questions',
+    faq: [
+      { q: 'How does MatchScent work?', a: 'Type the name of a perfume, a brand or a note and open the perfume page. There you will see a description, notes and accords, similar scents, ratings and reviews from members, and a button to compare prices in stores in Israel. You can also sign up to rate perfumes, write reviews and mark what is on your shelf and what you want.' },
+      { q: 'What is an inspired fragrance, and how is it different from the original?', a: 'An inspired fragrance is a separate perfume, under another name and brand, that aims for the character of a famous scent. It is not the same perfume: the ingredients, strength and wear on the skin can differ. What they share is the general impression, so it can suit someone who loves the original and wants an alternative for less.' },
+      { q: 'How do I know if a perfume really smells like the original?', a: 'The links between perfumes are based on votes from fragrance lovers, not on a score we made up. On every similar scent you can vote on whether it smells like the original. Scent is personal, so we recommend smelling a sample before you buy.' },
+      { q: 'How do I find where a perfume is cheapest in Israel?', a: 'On a perfume page press the price comparison button. A window opens with the stores in Israel that sell it, by bottle size and cheapest first, with a button to go to the store. Check that the version and size in the store are the ones you wanted.' },
+      { q: 'Are the prices on the site up to date?', a: 'Prices are checked automatically and kept for a few days, so a small difference between what you see here and the store page is possible. The price that counts is always the one in the store when you buy. Found a wrong or missing price? Tell us through the report a problem link.' },
+      { q: 'Are there perfumes for men and for women?', a: 'Yes, for men, for women and unisex. On the All fragrances page you can filter by audience and by type, originals or inspired.' },
+    ],
+  },
   allPerfumes: {
     metaTitle: 'All fragrances',
     metaDescription: 'Every fragrance on MatchScent, the famous originals and the ones inspired by them, with pictures, notes and price comparison in Israel.',
@@ -1096,6 +1124,26 @@ const he: Dict = {
   notes: { heading: 'תווים', top: 'תווי ראש', heart: 'תווי לב', base: 'תווי בסיס', notes: 'תווים' },
   facts: { year: 'שנת הוצאה', perfumer: 'יוצר הבושם', accords: 'אקורדים עיקריים' },
   featured: { heading: 'הבשמים המובילים', viewAll: 'לכל הבשמים' },
+  seo: {
+    heading: 'איך מוצאים ניחוח יקר במחיר הוגן?',
+    paragraphs: [
+      'בשמי מותג ובשמי נישה מריחים נהדר, אבל המחיר הוא כבר סיפור אחר. בקבוק של בושם מפורסם יכול לעלות מאות שקלים, ובשביל רבים זה לא בושם של כל יום. בדיוק בשביל זה יצרנו את מאצ׳ סנט: מקום אחד בעברית שמראה איפה הכי זול לקנות כל בושם בישראל, ואילו ניחוחות מריחים כמוהו, לרוב במחיר נמוך יותר.',
+      'בושם בהשראה הוא בושם נפרד, עם שם ומותג משלו, שנוצר בידי בית בישום שכיוון לאופי הריח של בושם מפורסם. בתי בישום כמו Armaf, Lattafa, Al Haramain, Maison Alhambra, French Avenue ועוד מתמחים בכך, והבשמים שלהם נמכרים בגלוי בחנויות. זה לא אותו בושם ולא אותו ריח עד הפרט האחרון, אבל את הקרבה אפשר לזהות, ולפעמים היא מפתיעה.',
+      'כך זה עובד: מחפשים בושם שאתם אוהבים ופותחים את העמוד שלו. שם תמצאו את הניחוחות שאוהבי בישום בעולם מצביעים עליהם כדומים לו, את התווים והאקורדים, דירוגים וביקורות של חברי הקהילה שלנו, והשוואת מחירים בחנויות בישראל, לפי גודל בקבוק ומהזול ליקר. כך אפשר להחליט אם כדאי לשלם על המקור, או לנסות ניחוח דומה בחלק קטן מהמחיר.',
+      'אצלנו אין הבטחות מנופחות. אנחנו לא ממציאים אחוזי דמיון: אנחנו מציגים הצבעות של אוהבי בישום, ואפשר להצביע בעצמכם אם ניחוח באמת מריח כמו המקור. ריח הוא עניין אישי, ולכן הכי טוב להריח דוגמית לפני שקונים בקבוק שלם.',
+    ],
+    ctaInspired: 'לבשמים בהשראת',
+    ctaAll: 'לכל הבשמים',
+    faqHeading: 'שאלות נפוצות',
+    faq: [
+      { q: 'איך מאצ׳ סנט עובד?', a: 'מקלידים שם של בושם, מותג או תו, ופותחים את עמוד הבושם. שם רואים תיאור, תווים ואקורדים, ניחוחות דומים, דירוגים וביקורות של חברים, וכפתור להשוואת מחירים בחנויות בישראל. אפשר גם להירשם כדי לדרג בשמים, לכתוב ביקורות ולסמן מה יש לכם על המדף ומה אתם רוצים.' },
+      { q: 'מה זה בושם בהשראה, ובמה הוא שונה מהבושם המקורי?', a: 'בושם בהשראה הוא בושם נפרד, בשם ובמותג אחרים, שמכוון לאופי הריח של בושם מפורסם. הוא לא אותו בושם: הרכב החומרים, העוצמה והחיים על העור עשויים להיות שונים. מה שמשותף הוא הרושם הכללי, ולכן הוא יכול להתאים למי שאוהב את המקור ורוצה אלטרנטיבה במחיר נמוך יותר.' },
+      { q: 'איך יודעים אם בושם באמת דומה למקור?', a: 'הקשרים בין הבשמים מבוססים על הצבעות של אוהבי בישום, ולא על ציון שהמצאנו. בכל ניחוח דומה אפשר להצביע אם הוא מריח כמו המקור. ריח הוא עניין אישי, ולכן מומלץ להריח דוגמית לפני הקנייה.' },
+      { q: 'איך מוצאים איפה הכי זול לקנות בושם בישראל?', a: 'בעמוד של כל בושם לוחצים על כפתור השוואת המחירים. נפתח חלון עם החנויות בישראל שמוכרות אותו, לפי גודל בקבוק ומהזול ליקר, עם כפתור מעבר לחנות. חשוב לבדוק שהגרסה והגודל בחנות הם אלה שרציתם.' },
+      { q: 'האם המחירים באתר מעודכנים?', a: 'המחירים נבדקים אוטומטית ונשמרים לכמה ימים, ולכן ייתכן הבדל קטן בין מה שמוצג כאן לבין מה שכתוב באתר החנות. המחיר שקובע הוא תמיד המחיר בחנות ברגע הקנייה. מצאתם מחיר שגוי או חסר? ספרו לנו דרך הקישור דיווח על תקלה.' },
+      { q: 'יש באתר בשמים לגברים ולנשים?', a: 'כן, לגברים, לנשים וגם יוניסקס. בעמוד כל הבשמים אפשר לסנן לפי קהל יעד ולפי סוג: מקוריים או בהשראה.' },
+    ],
+  },
   allPerfumes: {
     metaTitle: 'כל הבשמים',
     metaDescription: 'כל הבשמים באתר, המקוריים המפורסמים והבשמים שבהשראתם, עם תמונות, תווים והשוואת מחירים בישראל.',
