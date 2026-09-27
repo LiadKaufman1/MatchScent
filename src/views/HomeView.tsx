@@ -6,11 +6,6 @@ import SeoText from '@/app/components/SeoText';
 import Link from 'next/link';
 import { Search } from 'lucide-react';
 import { SiteFooter, SiteHeader, Wordmark } from '@/app/components/SiteChrome';
-import { noteLabel } from '@/lib/notes';
-import { slugify } from '@/lib/slug';
-
-// Notes offered as quick links under the home page search.
-const POPULAR_NOTES = ['Vanilla', 'Agarwood (Oud)', 'Rose', 'Amber', 'Leather', 'Bergamot'];
 
 // The home page, in either language.
 export default async function HomeView({ lang }: { lang: Lang }) {
@@ -45,16 +40,6 @@ export default async function HomeView({ lang }: { lang: Lang }) {
                 {t.search.submit}
               </button>
             </form>
-            <p className="mt-4 flex flex-wrap items-center justify-center gap-2 text-sm">
-              <span className="text-smoke">{t.hero.popular}</span>
-              {POPULAR_NOTES.map(n => (
-                <Link key={n} href={withLang(lang, `/notes/${slugify(n)}`)} className="rounded-full border border-line bg-white px-3 py-1 font-medium text-ink transition hover:border-wine-600/50">
-                  {noteLabel(n, lang)}
-                </Link>
-              ))}
-              <Link href={withLang(lang, '/perfumes')} className="rounded-full px-3 py-1 font-bold text-wine-600 underline underline-offset-4">{t.hero.browse}</Link>
-            </p>
-
             {/* What the site is for: find the perfume, compare store prices, buy where it is cheapest. */}
             <ol className="mx-auto mt-10 grid max-w-2xl gap-3 text-start sm:grid-cols-3">
               {t.hero.steps.map((label, i) => (

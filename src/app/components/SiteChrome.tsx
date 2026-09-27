@@ -44,6 +44,7 @@ export function SiteHeader({ lang, path }: { lang: Lang; path: string }) {
         <nav aria-label="MatchScent" className="flex items-center gap-4">
           <Link href={withLang(lang, '/perfumes')} className={`hidden md:inline ${navLink}`}>{t.allFragrances}</Link>
           <Link href={withLang(lang, '/inspired')} className={navLink}>{t.nav.inspired}</Link>
+          <Link href={withLang(lang, '/notes')} className={`hidden sm:inline ${navLink}`}>{t.nav.notes}</Link>
           <Link href={withLang(lang, '/top')} className={`hidden sm:inline ${navLink}`}>{t.nav.top}</Link>
           <Link href={withLang(lang, '/brands')} className={`hidden lg:inline ${navLink}`}>{t.nav.brands}</Link>
           <Link href={withLang(lang, '/suggest')} className={`hidden xl:inline ${navLink}`}>{t.nav.suggest}</Link>
@@ -87,6 +88,7 @@ export function SiteFooter({ lang }: { lang: Lang }) {
           <ul className="space-y-2">
             <li><Link href={withLang(lang, '/perfumes')} className={footLink}>{t.allFragrances}</Link></li>
             <li><Link href={withLang(lang, '/inspired')} className={footLink}>{t.nav.inspired}</Link></li>
+            <li><Link href={withLang(lang, '/notes')} className={footLink}>{t.nav.notes}</Link></li>
             <li><Link href={withLang(lang, '/brands')} className={footLink}>{t.nav.brands}</Link></li>
             <li><Link href={withLang(lang, '/top')} className={footLink}>{t.nav.top}</Link></li>
             <li><Link href={withLang(lang, '/search')} className={footLink}>{t.nav.search}</Link></li>
