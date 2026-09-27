@@ -4,6 +4,7 @@ import { getDict, otherLang, withLang, type Lang } from '@/lib/i18n';
 import CountrySelect from './CountrySelect';
 import AuthStatus from './AuthStatus';
 import ReportLink from './ReportLink';
+import HeaderHeightVar from './HeaderHeightVar';
 
 export function Wordmark({ className = '' }: { className?: string }) {
   return (
@@ -36,7 +37,8 @@ const navLink = 'text-xs font-bold uppercase tracking-[0.14em] text-smoke transi
 export function SiteHeader({ lang, path }: { lang: Lang; path: string }) {
   const t = getDict(lang);
   return (
-    <header className="border-b border-line bg-white/85 backdrop-blur">
+    <header className="sticky top-0 z-30 border-b border-line bg-white/85 backdrop-blur">
+      <HeaderHeightVar />
       <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-5 gap-y-3 px-4 py-3.5 sm:px-6">
         <Link href={withLang(lang, '/')} aria-label="MatchScent" className="shrink-0">
           <Wordmark className="text-2xl font-extrabold" />
