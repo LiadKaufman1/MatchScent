@@ -11,11 +11,14 @@ export default function PerfumeGridCard({ p, lang, index = 99 }: { p: ShownPerfu
   return (
     <HoverLink
       href={withLang(lang, `/perfume/${p.slug}`)}
-      className={`site-card group flex flex-col overflow-hidden rounded-2xl text-start ${index < 12 ? 'rise' : ''}`}
+      className={`site-card group flex flex-col overflow-hidden rounded-2xl text-start transition-transform duration-300 ease-out active:duration-75 active:scale-[0.97] ${index < 12 ? 'rise' : ''}`}
       style={index < 12 ? { animationDelay: `${index * 45}ms` } : undefined}
     >
       <div className="relative aspect-[4/5] overflow-hidden">
-        <Photo url={p.image_url} alt={`${p.brand} ${p.name}`} seed={p.brand + p.name} sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw" />
+        {/* A quick zoom + brighten "punch" on click/tap, snappy in and springy back out. */}
+        <span className="absolute inset-0 transition-transform duration-500 ease-out group-active:scale-110 group-active:duration-150 group-active:brightness-110">
+          <Photo url={p.image_url} alt={`${p.brand} ${p.name}`} seed={p.brand + p.name} sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw" />
+        </span>
         {badge && (
           <span
             className={`absolute start-2.5 top-2.5 rounded-full border px-2.5 py-1 text-[11px] font-bold backdrop-blur sm:start-3 sm:top-3 ${

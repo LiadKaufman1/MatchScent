@@ -27,7 +27,10 @@ function Pair({ item, lang, index }: { item: InspiredItem; lang: Lang; index: nu
   const href = e.perfumeSlug ? withLang(lang, `/perfume/${e.perfumeSlug}`) : null;
   const picture = (
     <div className="relative aspect-[4/5] overflow-hidden">
-      <Photo url={e.image_url} alt={`${e.brand} ${e.name}`} seed={e.brand + e.name} sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw" />
+      {/* A quick zoom + brighten "punch" on click/tap, snappy in and springy back out. */}
+      <span className="absolute inset-0 transition-transform duration-500 ease-out group-active:scale-110 group-active:duration-150 group-active:brightness-110">
+        <Photo url={e.image_url} alt={`${e.brand} ${e.name}`} seed={e.brand + e.name} sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw" />
+      </span>
     </div>
   );
   const name = (
@@ -39,7 +42,7 @@ function Pair({ item, lang, index }: { item: InspiredItem; lang: Lang; index: nu
   return (
     <li className={`site-card flex flex-col overflow-hidden rounded-2xl ${index < 12 ? 'rise' : ''}`} style={index < 12 ? { animationDelay: `${index * 45}ms` } : undefined}>
       {href ? (
-        <HoverLink href={href} className="group flex flex-1 flex-col hover:text-wine-700">
+        <HoverLink href={href} className="group flex flex-1 flex-col transition-transform duration-300 ease-out hover:text-wine-700 active:duration-75 active:scale-[0.97]">
           {picture}
           <span className="block p-3.5 pb-3 text-start sm:p-5 sm:pb-4">{name}</span>
         </HoverLink>
