@@ -64,6 +64,12 @@ html:has(.site) {
   background-color: var(--color-paper);
 }
 
+:root {
+  /* The header is sticky; kept in sync with its real (sometimes two-line) height by HeaderHeightVar.tsx.
+     The fallback below is only used for the instant before that script runs. */
+  --header-h: 64px;
+}
+
 .site ::selection {
   background: var(--color-wine-100);
   color: var(--color-wine-800);
@@ -84,7 +90,7 @@ html:has(.site) {
   line-height: 1.3;
   font-weight: 800;
   color: var(--color-ink);
-  scroll-margin-top: 4.5rem; /* so the sticky section menu does not cover it after a jump */
+  scroll-margin-top: calc(var(--header-h, 64px) + 3rem); /* so the sticky header + section menu don't cover it after a jump */
 }
 .section-title::before {
   content: '';
@@ -98,7 +104,7 @@ html:has(.site) {
 /* The in-page menu of a perfume page: sticks to the top while scrolling. */
 .section-nav {
   position: sticky;
-  top: 0;
+  top: var(--header-h, 64px); /* sits right below the sticky header */
   z-index: 20;
   background: rgba(251, 249, 247, 0.92);
   backdrop-filter: blur(8px);

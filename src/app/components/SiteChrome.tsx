@@ -4,7 +4,7 @@ import { getDict, otherLang, withLang, type Lang } from '@/lib/i18n';
 import CountrySelect from './CountrySelect';
 import AuthStatus from './AuthStatus';
 import ReportLink from './ReportLink';
-import HeaderSearch from './HeaderSearch';
+import HeaderHeightVar from './HeaderHeightVar';
 
 export function Wordmark({ className = '' }: { className?: string }) {
   return (
@@ -37,7 +37,8 @@ const navLink = 'text-xs font-bold uppercase tracking-[0.14em] text-smoke transi
 export function SiteHeader({ lang, path }: { lang: Lang; path: string }) {
   const t = getDict(lang);
   return (
-    <header className="border-b border-line bg-white/85 backdrop-blur">
+    <header className="sticky top-0 z-30 border-b border-line bg-white/85 backdrop-blur">
+      <HeaderHeightVar />
       <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-5 gap-y-3 px-4 py-3.5 sm:px-6">
         <Link href={withLang(lang, '/')} aria-label="MatchScent" className="shrink-0">
           <Wordmark className="text-2xl font-extrabold" />
@@ -45,6 +46,7 @@ export function SiteHeader({ lang, path }: { lang: Lang; path: string }) {
         <nav aria-label="MatchScent" className="flex items-center gap-4">
           <Link href={withLang(lang, '/perfumes')} className={`hidden md:inline ${navLink}`}>{t.allFragrances}</Link>
           <Link href={withLang(lang, '/inspired')} className={navLink}>{t.nav.inspired}</Link>
+          <Link href={withLang(lang, '/notes')} className={`hidden sm:inline ${navLink}`}>{t.nav.notes}</Link>
           <Link href={withLang(lang, '/top')} className={`hidden sm:inline ${navLink}`}>{t.nav.top}</Link>
           <Link href={withLang(lang, '/brands')} className={`hidden lg:inline ${navLink}`}>{t.nav.brands}</Link>
           <Link href={withLang(lang, '/suggest')} className={`hidden xl:inline ${navLink}`}>{t.nav.suggest}</Link>
@@ -82,6 +84,7 @@ export function SiteFooter({ lang }: { lang: Lang }) {
           <ul className="space-y-2">
             <li><Link href={withLang(lang, '/perfumes')} className={footLink}>{t.allFragrances}</Link></li>
             <li><Link href={withLang(lang, '/inspired')} className={footLink}>{t.nav.inspired}</Link></li>
+            <li><Link href={withLang(lang, '/notes')} className={footLink}>{t.nav.notes}</Link></li>
             <li><Link href={withLang(lang, '/brands')} className={footLink}>{t.nav.brands}</Link></li>
             <li><Link href={withLang(lang, '/top')} className={footLink}>{t.nav.top}</Link></li>
             <li><Link href={withLang(lang, '/search')} className={footLink}>{t.nav.search}</Link></li>
