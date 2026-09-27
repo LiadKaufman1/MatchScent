@@ -5,6 +5,7 @@ import CountrySelect from './CountrySelect';
 import AuthStatus from './AuthStatus';
 import ReportLink from './ReportLink';
 import HeaderHeightVar from './HeaderHeightVar';
+import HeaderSearch from './HeaderSearch';
 
 export function Wordmark({ className = '' }: { className?: string }) {
   return (
