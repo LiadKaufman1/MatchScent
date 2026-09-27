@@ -105,7 +105,7 @@ export async function InspiredIndexView({ lang, q, brand, page }: { lang: Lang; 
             <Search className="pointer-events-none absolute start-4 top-1/2 h-4 w-4 -translate-y-1/2 text-wine-600" aria-hidden="true" />
             <input name="q" type="search" defaultValue={q} placeholder={x.placeholder} className="w-full rounded-full border border-line bg-white py-3 pe-4 ps-11 outline-none focus:border-wine-600" />
           </label>
-          <select name="brand" defaultValue={brand} aria-label={x.allBrands} className="rounded-full border border-line bg-white px-4 py-3 outline-none focus:border-wine-600">
+          <select name="brand" defaultValue={brand} aria-label={x.brandLabel} className="rounded-full border border-line bg-white px-4 py-3 outline-none focus:border-wine-600">
             <option value="">{x.allBrands}</option>
             {brands.map(b => <option key={b.slug} value={b.slug}>{b.name} ({b.count})</option>)}
           </select>
