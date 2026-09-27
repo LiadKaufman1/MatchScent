@@ -247,6 +247,7 @@ export type Dict = {
     heading: string;
     intro: string;
     placeholder: string;
+    brandLabel: string;
     allBrands: string;
     filter: string;
     count: string;
@@ -723,7 +724,8 @@ const en: Dict = {
     heading: 'Inspired fragrances',
     intro: 'Every fragrance that is inspired by a famous perfume, next to the perfume it is inspired by.',
     placeholder: 'Search by name or brand...',
-    allBrands: 'All brands',
+    brandLabel: 'Inspired by (original house)',
+    allBrands: 'All original houses',
     filter: 'Show',
     count: '{n} fragrances',
     none: 'Nothing found.',
@@ -1210,7 +1212,8 @@ const he: Dict = {
     heading: 'בשמים בהשראת',
     intro: 'כל הבשמים בהשראת בשמים מפורסמים, כל אחד לצד הבושם שהוא בהשראתו.',
     placeholder: 'חיפוש לפי שם או מותג...',
-    allBrands: 'כל המותגים',
+    brandLabel: 'בהשראת (בית מקור)',
+    allBrands: 'כל בתי המקור',
     filter: 'הצגה',
     count: '{n} בשמים',
     none: 'לא נמצא דבר.',

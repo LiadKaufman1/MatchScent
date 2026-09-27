@@ -32,18 +32,26 @@ async function loadInspired(): Promise<InspiredItem[]> {
 }
 export const getInspiredIndex = cache(loadInspired);
 
+// The brand filter offers the ORIGINAL houses (the famous perfumes being imitated, e.g. YSL, Dior), not the house of the
+// inspired fragrance itself: that is what answers "show me everything inspired by YSL". One inspired item can list more
+// than one original (rare), so it can count toward more than one house.
 export async function searchInspired(query: string, brandSlug: string) {
   const all = await getInspiredIndex();
   const words = fold(query).split(/\s+/).filter(Boolean);
   const brands = new Map<string, { slug: string; name: string; count: number }>();
   for (const i of all) {
-    const slug = slugify(i.entry.brand);
-    const b = brands.get(slug) ?? { slug, name: i.entry.brand, count: 0 };
-    b.count++;
-    brands.set(slug, b);
+    const seen = new Set<string>();
+    for (const o of i.originals) {
+      const slug = slugify(o.brand);
+      if (seen.has(slug)) continue; // count this item once per original house, even if it lists that house twice
+      seen.add(slug);
+      const b = brands.get(slug) ?? { slug, name: o.brand, count: 0 };
+      b.count++;
+      brands.set(slug, b);
+    }
   }
   const hits = all.filter(i => {
-    if (brandSlug && slugify(i.entry.brand) !== brandSlug) return false;
+    if (brandSlug && !i.originals.some(o => slugify(o.brand) === brandSlug)) return false;
     if (!words.length) return true;
     const text = fold(`${i.entry.brand} ${i.entry.name} ${i.originals.map(o => `${o.brand} ${o.name}`).join(' ')}`);
     return words.every(w => text.includes(w));
