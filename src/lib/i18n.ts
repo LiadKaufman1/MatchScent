@@ -191,11 +191,13 @@ export type Dict = {
     heading: string;
     intro: string;
     placeholder: string;
-    search: string;
+    searchLabel: string;
+    brandLabel: string;
+    brandAll: string;
+    apply: string;
     kindLabel: string;
     kindAll: string;
     kindOriginals: string;
-    kindInspired: string;
     badgeInspired: string;
     count: string;
     none: string;
@@ -665,11 +667,13 @@ const en: Dict = {
     heading: 'All fragrances',
     intro: 'Every fragrance on the site in one place: the famous perfumes and the ones that smell like them. Search by name, filter by audience and type, and open a perfume to compare prices in Israel.',
     placeholder: 'Search by perfume or brand',
-    search: 'Search',
+    searchLabel: 'Search',
+    brandLabel: 'Perfume house',
+    brandAll: 'All houses',
+    apply: 'Filter',
     kindLabel: 'Type',
     kindAll: 'All',
-    kindOriginals: 'Originals',
-    kindInspired: 'Inspired',
+    kindOriginals: 'Originals only',
     badgeInspired: 'Inspired',
     count: '{n} fragrances',
     none: 'No fragrance matches this search.',
@@ -1150,11 +1154,13 @@ const he: Dict = {
     heading: 'כל הבשמים',
     intro: 'כל הבשמים שבאתר במקום אחד: הבשמים המפורסמים והבשמים שמריחים כמוהם. חפשו לפי שם, סננו לפי קהל יעד וסוג, ופתחו בושם כדי להשוות מחירים בישראל.',
     placeholder: 'חיפוש לפי בושם או מותג',
-    search: 'חיפוש',
+    searchLabel: 'חיפוש',
+    brandLabel: 'בית בישום',
+    brandAll: 'כל בתי הבישום',
+    apply: 'סינון',
     kindLabel: 'סוג',
     kindAll: 'הכול',
-    kindOriginals: 'מקוריים',
-    kindInspired: 'בהשראה',
+    kindOriginals: 'מקוריים בלבד',
     badgeInspired: 'בהשראה',
     count: '{n} בשמים',
     none: 'לא נמצא בושם שמתאים לחיפוש הזה.',
