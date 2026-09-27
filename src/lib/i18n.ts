@@ -231,7 +231,19 @@ export type Dict = {
     notFound: string;
     empty: string;
   };
-  nav: { top: string; suggest: string; search: string; inspired: string; brands: string };
+  nav: { top: string; suggest: string; search: string; inspired: string; brands: string; notes: string };
+  allNotes: {
+    metaTitle: string;
+    metaDescription: string;
+    heading: string;
+    intro: string;
+    selectedLabel: string;
+    clear: string;
+    pickLabel: string;
+    none: string;
+    noMatch: string;
+    count: string;
+  };
   inspiredPage: {
     titleOne: string;
     description: string;
@@ -708,7 +720,19 @@ const en: Dict = {
     notFound: 'Nothing was found here.',
     empty: 'Nothing here yet.',
   },
-  nav: { top: 'Top rated', suggest: 'Suggest a perfume', search: 'Search', inspired: 'Inspired fragrances', brands: 'Houses' },
+  nav: { top: 'Top rated', suggest: 'Suggest a perfume', search: 'Search', inspired: 'Inspired fragrances', brands: 'Houses', notes: 'Notes' },
+  allNotes: {
+    metaTitle: 'All notes',
+    metaDescription: 'Every scent note on MatchScent. Pick one or more notes to see the fragrances that have all of them.',
+    heading: 'All notes',
+    intro: 'Pick one or more notes to see the fragrances that have all of them. Notes come from real votes on real fragrances, not from us.',
+    selectedLabel: 'Selected:',
+    clear: 'Clear all',
+    pickLabel: 'Pick notes',
+    none: 'Pick a note above to see fragrances that have it.',
+    noMatch: 'No fragrance has all the notes you picked. Try removing one.',
+    count: '{n} fragrances',
+  },
   inspiredPage: {
     titleOne: '{full} - inspired by {orig}',
     description: '{full} is a fragrance inspired by {orig}. Notes, ratings, reviews and where to buy it.',
@@ -1196,7 +1220,19 @@ const he: Dict = {
     notFound: 'לא נמצא כלום כאן.',
     empty: 'אין כאן עדיין כלום.',
   },
-  nav: { top: 'המובילים', suggest: 'הציעו בושם', search: 'חיפוש', inspired: 'בשמים בהשראת', brands: 'בתי בישום' },
+  nav: { top: 'המובילים', suggest: 'הציעו בושם', search: 'חיפוש', inspired: 'בשמים בהשראת', brands: 'בתי בישום', notes: 'תווים' },
+  allNotes: {
+    metaTitle: 'כל התווים',
+    metaDescription: 'כל תווי הריח באתר. בחרו תו אחד או יותר כדי לראות את הבשמים שיש בהם את כל התווים האלה.',
+    heading: 'כל התווים',
+    intro: 'בחרו תו אחד או יותר כדי לראות בשמים שיש בהם את כל התווים שבחרתם. התווים מבוססים על הצבעות אמיתיות על בשמים אמיתיים, לא עלינו.',
+    selectedLabel: 'נבחרו:',
+    clear: 'ניקוי הבחירה',
+    pickLabel: 'בחירת תווים',
+    none: 'בחרו תו למעלה כדי לראות בשמים שיש בהם.',
+    noMatch: 'אין בושם שיש בו את כל התווים שבחרתם. נסו להסיר תו אחד.',
+    count: '{n} בשמים',
+  },
   inspiredPage: {
     titleOne: '{full} - בהשראת {orig}',
     description: '{full} הוא בושם בהשראת {orig}. תווים, דירוגים, ביקורות, ואיפה לקנות.',
