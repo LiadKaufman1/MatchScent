@@ -52,17 +52,18 @@ BEGIN
       ('Jo Malone London', 'Wood Sage & Sea Salt', 'Jo Malone',      'Wood Sage & Sea Salt')
     ) AS t(keep_brand, keep_name, drop_brand, drop_name);
 
-  -- backups first
+  -- backups first (the join alias is "mp", not "m": "m" is also the name of the PL/pgSQL loop variable below,
+  -- and Postgres would try to read that not-yet-assigned variable instead of the SQL table)
   CREATE TABLE public.perfumes_merge_backup_2026_09_26 AS
-    SELECT p.* FROM public.perfumes p JOIN merge_pairs m
-      ON (p.brand = m.keep_brand AND p.name = m.keep_name) OR (p.brand = m.drop_brand AND p.name = m.drop_name);
+    SELECT p.* FROM public.perfumes p JOIN merge_pairs mp
+      ON (p.brand = mp.keep_brand AND p.name = mp.keep_name) OR (p.brand = mp.drop_brand AND p.name = mp.drop_name);
   ALTER TABLE public.perfumes_merge_backup_2026_09_26 ENABLE ROW LEVEL SECURITY;
   REVOKE ALL ON public.perfumes_merge_backup_2026_09_26 FROM anon, authenticated;
 
   CREATE TABLE public.dupes_merge_backup_2026_09_26 AS
     SELECT d.* FROM public.dupes d
       JOIN public.perfumes p ON p.id = d.original_perfume_id OR p.id = d.inspired_perfume_id
-      JOIN merge_pairs m ON p.brand = m.drop_brand AND p.name = m.drop_name;
+      JOIN merge_pairs mp ON p.brand = mp.drop_brand AND p.name = mp.drop_name;
   ALTER TABLE public.dupes_merge_backup_2026_09_26 ENABLE ROW LEVEL SECURITY;
   REVOKE ALL ON public.dupes_merge_backup_2026_09_26 FROM anon, authenticated;
 
@@ -80,10 +81,11 @@ BEGIN
 
     -- members' data on the row to be removed: stop instead of losing it
     FOR fk IN
-      SELECT c.conrelid AS tbl, a.attname AS col
+      SELECT c.conrelid::regclass AS tbl, a.attname AS col
       FROM pg_constraint c JOIN pg_attribute a ON a.attrelid = c.conrelid AND a.attnum = ANY (c.conkey)
       WHERE c.contype = 'f' AND c.confrelid = 'public.perfumes'::regclass AND c.conrelid <> 'public.dupes'::regclass
     LOOP
+      -- tbl is a regclass (its text form is already a safe, properly quoted table name), not a plain oid number
       EXECUTE format('SELECT count(*) FROM %s WHERE %I = $1', fk.tbl, fk.col) INTO n USING v_drop;
       IF n > 0 THEN
         RAISE EXCEPTION 'STOPPED, nothing was saved. % has % row(s) about "% %" (to be removed): move them by hand first.', fk.tbl, n, m.drop_brand, m.drop_name;
