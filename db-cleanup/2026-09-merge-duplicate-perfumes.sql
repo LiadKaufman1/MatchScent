@@ -81,10 +81,11 @@ BEGIN
 
     -- members' data on the row to be removed: stop instead of losing it
     FOR fk IN
-      SELECT c.conrelid AS tbl, a.attname AS col
+      SELECT c.conrelid::regclass AS tbl, a.attname AS col
       FROM pg_constraint c JOIN pg_attribute a ON a.attrelid = c.conrelid AND a.attnum = ANY (c.conkey)
       WHERE c.contype = 'f' AND c.confrelid = 'public.perfumes'::regclass AND c.conrelid <> 'public.dupes'::regclass
     LOOP
+      -- tbl is a regclass (its text form is already a safe, properly quoted table name), not a plain oid number
       EXECUTE format('SELECT count(*) FROM %s WHERE %I = $1', fk.tbl, fk.col) INTO n USING v_drop;
       IF n > 0 THEN
         RAISE EXCEPTION 'STOPPED, nothing was saved. % has % row(s) about "% %" (to be removed): move them by hand first.', fk.tbl, n, m.drop_brand, m.drop_name;
