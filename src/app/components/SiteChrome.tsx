@@ -51,13 +51,7 @@ export function SiteHeader({ lang, path }: { lang: Lang; path: string }) {
           <Link href={withLang(lang, '/brands')} className={`hidden lg:inline ${navLink}`}>{t.nav.brands}</Link>
           <Link href={withLang(lang, '/suggest')} className={`hidden xl:inline ${navLink}`}>{t.nav.suggest}</Link>
         </nav>
-        <Link
-          href={withLang(lang, '/search')}
-          className="hidden min-w-0 flex-1 items-center gap-2 rounded-full border border-line bg-[#FCFAF9] px-4 py-2 text-sm text-smoke transition hover:border-wine-600/50 md:flex md:max-w-xs"
-        >
-          <Search className="h-4 w-4 shrink-0 text-wine-600" aria-hidden="true" />
-          <span className="truncate">{t.hero.searchLabel}</span>
-        </Link>
+        <HeaderSearch lang={lang} placeholder={t.hero.searchLabel} />
         <div className="ms-auto flex flex-wrap items-center justify-end gap-2 sm:gap-3">
           <Link href={withLang(lang, '/search')} aria-label={t.nav.search} title={t.nav.search} className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-white text-wine-600 md:hidden">
             <Search className="h-4 w-4" aria-hidden="true" />
