@@ -583,6 +583,7 @@ export const ACCORDS_HE: Record<string, string> = {
   'woody': 'עצי',
   'fresh': 'רענן',
   'fresh spicy': 'תבליני רענן',
+  'chypre': 'שיפר',
   'warm spicy': 'תבליני חם',
   'soft spicy': 'תבליני עדין',
   'spicy': 'תבליני',
