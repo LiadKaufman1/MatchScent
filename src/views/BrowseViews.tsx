@@ -54,15 +54,19 @@ function InspiredList({ items, lang }: { items: InspiredHit[]; lang: Lang }) {
                 <HoverLink href={withLang(lang, `/perfume/${entry.perfumeSlug}`)} className="hover:text-wine-700">{entry.name}</HoverLink>
               ) : entry.name}
             </span>
-            <span className="mt-1 block text-xs text-smoke">
-              {t.browse.inspiredBy}{' '}
-              {originals.map((o, i) => (
-                <span key={o.id}>
-                  {i > 0 && ', '}
-                  <HoverLink href={withLang(lang, `/perfume/${o.slug}`)} className="font-medium text-ink underline-offset-2 hover:text-wine-600 hover:underline">
-                    {o.brand} {o.name}
-                  </HoverLink>
-                </span>
+            <span className="mt-1.5 block text-[10px] font-bold uppercase tracking-[0.12em] text-smoke">{t.browse.inspiredBy}</span>
+            <span className="mt-1 flex flex-wrap gap-1.5">
+              {originals.map(o => (
+                <HoverLink
+                  key={o.id}
+                  href={withLang(lang, `/perfume/${o.slug}`)}
+                  className="flex items-center gap-1.5 rounded-full border border-line bg-[#FCFAF9] py-1 pe-2.5 ps-1 text-xs font-medium text-ink hover:border-wine-600/50 hover:text-wine-700"
+                >
+                  <span className="relative h-6 w-6 shrink-0 overflow-hidden rounded-full border border-line bg-white">
+                    <Photo url={o.image_url} alt={`${o.brand} ${o.name}`} seed={o.brand + o.name} sizes="24px" />
+                  </span>
+                  {o.brand} {o.name}
+                </HoverLink>
               ))}
             </span>
           </span>
@@ -97,20 +101,13 @@ export async function BrandView({ lang, slug }: { lang: Lang; slug: string }) {
         {data.perfumes.some(p => p.entryCount === 0) && (
           <section className="mt-12" aria-labelledby="brand-all">
             <h2 id="brand-all" className="mb-4 section-title">{fmt(t.browse.brandAll, { brand: data.brand, n: data.perfumes.filter(p => p.entryCount === 0).length })}</h2>
-            {/* A house can have hundreds of perfumes: plain links and minimal markup keep this page light. */}
-            <ul className="columns-1 gap-x-8 sm:columns-2 lg:columns-3 [&>li]:break-inside-avoid [&>li]:border-b [&>li]:border-line/60 [&>li]:py-1.5 [&>li]:text-sm">
+            {/* A house can have hundreds of perfumes; the browser only loads a picture once it scrolls into view. */}
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {data.perfumes
                 .filter(p => p.entryCount === 0)
                 .sort((a, b) => (b.year ?? 0) - (a.year ?? 0) || a.name.localeCompare(b.name))
-                .map(p => (
-                  <li key={p.id}>
-                    <a href={withLang(lang, `/perfume/${p.slug}`)} className="flex items-baseline justify-between gap-3 font-medium text-ink hover:text-wine-700">
-                      <span className="min-w-0 truncate">{p.name}</span>
-                      {p.year ? <span className="shrink-0 text-xs text-smoke" dir="ltr">{p.year}</span> : null}
-                    </a>
-                  </li>
-                ))}
-            </ul>
+                .map(p => <PerfumeCard key={p.id} perfume={p} lang={lang} note={p.year ? String(p.year) : undefined} />)}
+            </div>
           </section>
         )}
 
