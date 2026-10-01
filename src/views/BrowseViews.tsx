@@ -6,6 +6,7 @@ import { noteLabel } from '@/lib/notes';
 import { scentColor } from '@/lib/scent-colors';
 import Photo from '@/app/components/Photo';
 import PerfumeCard from '@/app/components/PerfumeCard';
+import BrandLogo from '@/app/components/BrandLogo';
 import { SiteFooter, SiteHeader } from '@/app/components/SiteChrome';
 import HoverLink from '@/app/components/HoverLink';
 import { buildsWholeSite } from '@/lib/site';
@@ -85,7 +86,10 @@ export async function BrandView({ lang, slug }: { lang: Lang; slug: string }) {
     <div className="site">
       <SiteHeader lang={lang} path={`/brand/${slug}`} />
       <main className="mx-auto max-w-5xl px-4 pb-12 pt-10 sm:px-6">
-        <h1 className="text-4xl font-extrabold text-ink sm:text-5xl">{fmt(t.browse.brandHeading, { brand: data.brand })}</h1>
+        <h1 className="flex items-center gap-3 text-4xl font-extrabold text-ink sm:text-5xl">
+          <BrandLogo slug={slug} name={data.brand} />
+          {fmt(t.browse.brandHeading, { brand: data.brand })}
+        </h1>
         <p className="mt-3 text-smoke">{fmt(t.browse.brandCounts, { perfumes: data.perfumes.length, inspired: data.inspired.length })}</p>
         <div className="wine-rule my-6 w-32" />
 
