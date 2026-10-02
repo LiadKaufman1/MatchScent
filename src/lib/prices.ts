@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { unstable_cache } from 'next/cache';
-import { classifyResults, cleanStoreUrl, expandStores, finalizeOffers, serperRows, type CleanOffer, type RawResult, type RawStore, type SerperRow } from './price-offers';
+import { classifyResults, cleanStoreUrl, expandStores, finalizeOffers, pickStorePage, serperRows, storeDomain, type CleanOffer, type OrganicRow, type RawResult, type RawStore, type SerperRow } from './price-offers';
 import { hasBlockedWord } from './catalog';
 import { tagStoreUrl } from './store-links';
 import { storeSearchUrl, type CountryCode } from './stores';
@@ -190,7 +190,9 @@ async function collect(wanted: Wanted, country: CountryCode): Promise<{ offers: 
 }
 
 // The visitor's browser never gets a store address: each row carries a short handle, and the click goes through /go.
-const handleFor = (o: CleanOffer) => (o.url ?? o.token ? handleOf((o.url ?? o.token) as string) : null);
+// A row with no address yet (every Serper row) still gets one: its page is looked up when somebody clicks (pageBySearch).
+const handleFor = (o: CleanOffer) =>
+  o.url || o.token || serperEnabled() ? handleOf(o.url ?? o.token ?? `row|${o.store}|${o.price}|${o.sizeMl}|${o.tester}`) : null;
 
 export async function getPrices(wanted: Wanted, country: CountryCode): Promise<PriceReport> {
   if (!pricesConfigured()) return { ok: false, reason: 'unavailable' };
@@ -213,6 +215,32 @@ async function pageOfToken(token: string, store: string): Promise<string | null>
   }, v => v !== null);
 }
 
+// Serper's ordinary web search (1 credit), used only to find a store's own page when somebody clicks a price row that has
+// no address: kept HOURS, and a failure throws so it is never kept.
+const serperWebCached = unstable_cache(async (q: string, gl: string, hl: string): Promise<OrganicRow[]> => {
+  const res = await fetch('https://google.serper.dev/search', {
+    method: 'POST',
+    headers: { 'X-API-KEY': process.env.SERPER_API_KEY ?? '', 'Content-Type': 'application/json' },
+    body: JSON.stringify({ q, gl, hl, num: 10 }),
+  });
+  if (!res.ok) throw new Error(`serper ${res.status}`);
+  const data = (await res.json()) as { organic?: OrganicRow[] };
+  return Array.isArray(data.organic) ? data.organic : [];
+}, ['serper-web-v1'], { revalidate: HOURS * 3600 });
+
+// The store's own page for a price row found by Serper (which gives no address): a web search for the store's own listing
+// title together with the store's name or address, then the first result that really is that store (pickStorePage).
+async function pageBySearch(offer: CleanOffer, country: CountryCode): Promise<string | null> {
+  if (!serperEnabled()) return null;
+  const m = MARKET[country];
+  const domain = storeDomain(offer.store);
+  const q = domain ? `${offer.title} site:${domain}` : `${offer.title} ${offer.store}`;
+  return remember(`w|${m.gl}|${q.toLowerCase()}`, HOURS, async () => {
+    const rows = await serperWebCached(q.slice(0, 250), m.gl, m.hl).catch(() => null);
+    return rows ? pickStorePage(offer.store, rows) : null;
+  }, v => v !== null);
+}
+
 export type StoreTarget = { url: string; store: string; price: number; currency: string; sizeMl: number | null };
 
 // Where a click on one row of the price panel goes (found by the row's handle): the store's own page, marked as coming
@@ -222,7 +250,7 @@ export async function resolveStorePage(wanted: Wanted, country: CountryCode, han
   const found = await collect(wanted, country);
   const offer = found?.offers.find(o => handleFor(o) === handle);
   if (!offer) return null;
-  const url = offer.url ?? (offer.token ? await pageOfToken(offer.token, offer.store) : null);
+  const url = offer.url ?? (offer.token ? await pageOfToken(offer.token, offer.store) : await pageBySearch(offer, country));
   if (!url) return null;
   return { url: tagStoreUrl(url), store: offer.store, price: offer.price, currency: offer.currency, sizeMl: offer.sizeMl };
 }
