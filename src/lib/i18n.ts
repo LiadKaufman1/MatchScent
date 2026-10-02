@@ -50,6 +50,7 @@ export type Dict = {
   audForWomen: string;
   audForAll: string;
   curatingSimilar: string;
+  sameLine: { heading: string; intro: string; baseHas: string };
 
   whereToBuy: string;
   shopFrom: string;
@@ -516,6 +517,11 @@ const en: Dict = {
   audForWomen: 'women',
   audForAll: 'everyone',
   curatingSimilar: 'We are still curating similar scents for this fragrance.',
+  sameLine: {
+    heading: 'From the same line',
+    intro: 'This fragrance is a version of {base}. It has no similar scents of its own yet, but the basic version does:',
+    baseHas: 'Similar scents of {base}',
+  },
 
   whereToBuy: 'Where to buy',
   shopFrom: 'Shop from',
@@ -1016,6 +1022,11 @@ const he: Dict = {
   audForWomen: 'נשים',
   audForAll: 'כולם',
   curatingSimilar: 'אנחנו עדיין מרכזים ניחוחות דומים לבושם הזה.',
+  sameLine: {
+    heading: 'מאותה סדרה',
+    intro: 'הבושם הזה הוא גרסה של {base}. עדיין אין לו בשמים דומים משלו, אבל לגרסה הבסיסית יש:',
+    baseHas: 'בשמים דומים ל-{base}',
+  },
 
   whereToBuy: 'איפה לקנות',
   shopFrom: 'קונים מ',
