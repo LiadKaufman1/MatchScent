@@ -133,6 +133,30 @@ const hash = (s: string) => {
   return h;
 };
 
+const words = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').split(' ').filter(Boolean);
+// "Emporio Armani Stronger With You Intensely" is a version of "Stronger With You": same house, the base name inside
+// ours with at least one more word after it, and anything in front of it being only the house's own name.
+const LINE_PREFIX = new Set(['emporio']);
+
+function baseVersionOf(perfume: ShownPerfume, perfumes: ShownPerfume[]): ShownPerfume | null {
+  const own = words(perfume.name);
+  const house = new Set(words(perfume.brand));
+  let best: { p: ShownPerfume; len: number } | null = null;
+  for (const p of perfumes) {
+    if (p.id === perfume.id || p.entryCount === 0 || p.brand !== perfume.brand) continue;
+    // "Alien Man ..." is not a version of the women's "Alien".
+    if (p.gender && perfume.gender && p.gender !== 'unisex' && perfume.gender !== 'unisex' && p.gender !== perfume.gender) continue;
+    const base = words(p.name);
+    if (!base.length || base.length >= own.length || base.join('').length < 4) continue;
+    for (let i = 0; i + base.length < own.length; i++) {
+      if (!base.every((w, k) => own[i + k] === w)) continue;
+      if (own.slice(0, i).every(w => house.has(w) || LINE_PREFIX.has(w)) && (!best || base.length > best.len)) best = { p, len: base.length };
+      break;
+    }
+  }
+  return best?.p ?? null;
+}
+
 // Everything one perfume page needs.
 export async function getPerfumePage(slug: string) {
   const { perfumes, dupes } = await getCatalog();
@@ -173,7 +197,13 @@ export async function getPerfumePage(slug: string) {
   const start = pool.length ? hash(slug) % pool.length : 0;
   const more = Array.from({ length: Math.min(6, pool.length) }, (_, i) => pool[(start + i) % pool.length]);
 
+  // A version with no similar scents of its own ("... Intensely") points to the basic version that has them.
+  const baseVersion = entries.length === 0 && perfume.inspiredOf.length === 0 ? baseVersionOf(perfume, perfumes) : null;
+  const sameLine = baseVersion
+    ? { base: baseVersion, entries: dupes.filter(d => d.original_perfume_id === baseVersion.id).sort((a, b) => b.similarity_score - a.similarity_score).slice(0, 4) }
+    : null;
+
   const community = await getPerfumeCommunity(perfume.id);
 
-  return { perfume, entries, inspiredBy, siblings, sameBrand, more, community };
+  return { perfume, entries, inspiredBy, siblings, sameBrand, more, community, sameLine };
 }

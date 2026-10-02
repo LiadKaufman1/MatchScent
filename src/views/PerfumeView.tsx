@@ -95,7 +95,7 @@ export default async function PerfumeView({ lang, slug }: { lang: Lang; slug: st
   const data = await getPerfumePage(slug);
   if (!data) notFound();
 
-  const { perfume, entries, inspiredBy, siblings, sameBrand, more, community } = data;
+  const { perfume, entries, inspiredBy, siblings, sameBrand, more, community, sameLine } = data;
   const isInspired = entries.length === 0 && inspiredBy.length > 0;
   const alike = await similarByNotes(perfume);
   const full = `${perfume.brand} ${perfume.name}`;
@@ -233,9 +233,45 @@ export default async function PerfumeView({ lang, slug }: { lang: Lang; slug: st
         {!isInspired && (
         <section className="mt-14" aria-labelledby="inspired-heading">
           <h2 id="inspired-heading" className="mb-5 section-title">
-            {fmt(t.inspiredHeading, { name: perfume.name })}
+            {entries.length === 0 && sameLine ? t.sameLine.heading : fmt(t.inspiredHeading, { name: perfume.name })}
           </h2>
-          {entries.length === 0 ? (
+          {entries.length === 0 && sameLine ? (
+            <div className="rounded-2xl border border-line bg-white p-5">
+              <p className="mb-4 text-smoke">{fmt(t.sameLine.intro, { base: sameLine.base.name })}</p>
+              <div className="max-w-md">
+                <PerfumeLink p={sameLine.base} lang={lang} />
+              </div>
+              {sameLine.entries.length > 0 && (
+                <>
+                  <p className="mb-3 mt-6 text-[11px] font-bold uppercase tracking-[0.16em] text-smoke">{fmt(t.sameLine.baseHas, { base: sameLine.base.name })}</p>
+                  <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                    {sameLine.entries.map(s => {
+                      const inner = (
+                        <>
+                          <span className="relative h-20 w-16 shrink-0 overflow-hidden rounded-xl border border-line bg-white">
+                            <Photo url={s.image_url} alt={`${s.brand} ${s.name}`} seed={s.brand + s.name} sizes="64px" />
+                          </span>
+                          <span className="min-w-0">
+                            <span className="block text-[11px] font-bold uppercase tracking-[0.16em] text-wine-600">{s.brand}</span>
+                            <span className="block truncate font-bold text-ink">{s.name}</span>
+                          </span>
+                        </>
+                      );
+                      return (
+                        <li key={s.id}>
+                          {s.perfumeSlug ? (
+                            <HoverLink href={withLang(lang, `/perfume/${s.perfumeSlug}`)} className="flex items-center gap-3 rounded-xl border border-line bg-white p-3 transition hover:border-wine-600/50">{inner}</HoverLink>
+                          ) : (
+                            <div className="flex items-center gap-3 rounded-xl border border-line bg-white p-3">{inner}</div>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </>
+              )}
+            </div>
+          ) : entries.length === 0 ? (
             <p className="rounded-2xl border border-line bg-white py-12 text-center text-smoke">{t.curatingSimilar}</p>
           ) : (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
