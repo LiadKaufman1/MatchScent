@@ -1,11 +1,10 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ArrowLeft, Search } from 'lucide-react';
-import { searchInspired, getHouses, houseLetter, type HouseEntry, type InspiredItem } from '@/lib/load-directory';
+import { Search } from 'lucide-react';
+import { searchInspired, getHouses, houseLetter, type HouseEntry } from '@/lib/load-directory';
 import { fmt, getDict, withLang, type Lang } from '@/lib/i18n';
-import Photo from '@/app/components/Photo';
+import InspiredPairCard from '@/app/components/InspiredPairCard';
 import { SiteFooter, SiteHeader } from '@/app/components/SiteChrome';
-import HoverLink from '@/app/components/HoverLink';
 
 const PER_PAGE = 36;
 
@@ -18,64 +17,6 @@ export function inspiredIndexMetadata(lang: Lang, filtered: boolean): Metadata {
     // Search / filter / later pages are not separate pages for search engines.
     robots: filtered ? { index: false, follow: true } : undefined,
   };
-}
-
-// One card: the inspired fragrance with a big picture (like the perfume cards), and under it the perfume(s) it is inspired by.
-function Pair({ item, lang, index }: { item: InspiredItem; lang: Lang; index: number }) {
-  const t = getDict(lang);
-  const e = item.entry;
-  const href = e.perfumeSlug ? withLang(lang, `/perfume/${e.perfumeSlug}`) : null;
-  const picture = (
-    <div className="relative aspect-[4/5] overflow-hidden">
-      {/* A quick zoom + brighten "punch" on click/tap, snappy in and springy back out. */}
-      <span className="absolute inset-0 transition-transform duration-500 ease-out group-active:scale-110 group-active:duration-150 group-active:brightness-110">
-        <Photo url={e.image_url} alt={`${e.brand} ${e.name}`} seed={e.brand + e.name} sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw" />
-      </span>
-    </div>
-  );
-  const name = (
-    <>
-      <span className="block text-[11px] font-bold uppercase tracking-[0.16em] text-wine-600">{e.brand}</span>
-      <h3 className="mt-1.5 text-lg font-bold leading-tight text-ink sm:text-xl">{e.name}</h3>
-    </>
-  );
-  return (
-    <li className={`site-card flex flex-col overflow-hidden rounded-2xl ${index < 12 ? 'rise' : ''}`} style={index < 12 ? { animationDelay: `${index * 45}ms` } : undefined}>
-      {href ? (
-        <HoverLink href={href} className="group flex flex-1 flex-col transition-transform duration-300 ease-out hover:text-wine-700 active:duration-75 active:scale-[0.97]">
-          {picture}
-          <span className="block p-3.5 pb-3 text-start sm:p-5 sm:pb-4">{name}</span>
-        </HoverLink>
-      ) : (
-        <div className="flex flex-1 flex-col">
-          {picture}
-          <div className="p-3.5 pb-3 sm:p-5 sm:pb-4">{name}</div>
-        </div>
-      )}
-      <div className="border-t border-dashed border-line bg-[#FCFAF9] p-3.5 sm:px-5">
-        <p className="mb-2 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-smoke">
-          <ArrowLeft className="h-3.5 w-3.5 text-wine-600 ltr:rotate-180" aria-hidden="true" />
-          {t.inspiredIndex.inspiredBy}
-        </p>
-        <ul className="space-y-2">
-          {item.originals.slice(0, 2).map(o => (
-            <li key={o.id}>
-              <HoverLink href={withLang(lang, `/perfume/${o.slug}`)} className="flex items-center gap-3 hover:text-wine-700">
-                <span className="relative h-[4.5rem] w-14 shrink-0 overflow-hidden rounded-lg border border-line bg-white">
-                  <Photo url={o.image_url} alt={`${o.brand} ${o.name}`} seed={o.brand + o.name} sizes="56px" />
-                </span>
-                <span className="min-w-0">
-                  <span className="block text-[10px] font-bold uppercase tracking-[0.14em] text-smoke">{o.brand}</span>
-                  <span className="block text-sm font-bold leading-snug text-ink">{o.name}</span>
-                </span>
-              </HoverLink>
-            </li>
-          ))}
-          {item.originals.length > 2 && <li className="text-xs text-smoke">+{item.originals.length - 2}</li>}
-        </ul>
-      </div>
-    </li>
-  );
 }
 
 export async function InspiredIndexView({ lang, q, brand, page }: { lang: Lang; q: string; brand: string; page: number }) {
@@ -121,7 +62,7 @@ export async function InspiredIndexView({ lang, q, brand, page }: { lang: Lang; 
           <p className="mt-6 rounded-2xl border border-line bg-white p-8 text-center text-smoke">{x.none}</p>
         ) : (
           <ul className="mt-5 grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3 lg:grid-cols-4 lg:gap-6">
-            {shown.map((item, i) => <Pair key={item.key} item={item} lang={lang} index={i} />)}
+            {shown.map((item, i) => <InspiredPairCard key={item.key} item={item} lang={lang} index={i} />)}
           </ul>
         )}
 

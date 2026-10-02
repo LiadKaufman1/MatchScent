@@ -1,15 +1,19 @@
-import { getCatalog, isFeatured } from '@/lib/load-catalog';
+import { getCatalog } from '@/lib/load-catalog';
+import { getInspiredIndex } from '@/lib/load-directory';
 import { getDict, withLang, type Lang } from '@/lib/i18n';
-import Catalog from '@/app/components/Catalog';
+import InspiredPairCard from '@/app/components/InspiredPairCard';
 import CommunityHighlights from '@/app/components/CommunityHighlights';
 import SeoText from '@/app/components/SeoText';
 import Link from 'next/link';
 import { Search } from 'lucide-react';
 import { SiteFooter, SiteHeader, Wordmark } from '@/app/components/SiteChrome';
 
+const HOME_CARDS = 24;
+
 // The home page, in either language.
 export default async function HomeView({ lang }: { lang: Lang }) {
   const { perfumes } = await getCatalog();
+  const inspired = await getInspiredIndex();
   const t = getDict(lang);
 
   return (
@@ -52,17 +56,24 @@ export default async function HomeView({ lang }: { lang: Lang }) {
           </div>
         </section>
 
-        <CommunityHighlights lang={lang} />
-
-        <div id="catalog" className="scroll-mt-4">
-          <h2 className="mb-6 px-4 text-center text-3xl font-extrabold text-ink">{t.featured.heading}</h2>
-          <Catalog perfumes={perfumes.filter(isFeatured)} lang={lang} />
-          <p className="mt-10 text-center">
-            <Link href={withLang(lang, '/perfumes')} className="inline-block rounded-full bg-wine-600 px-8 py-3.5 font-bold text-white transition hover:bg-wine-700">
+        {/* The main content of the site: every fragrance next to the perfume it reminds people of. */}
+        <section id="inspired" className="mx-auto w-full max-w-7xl scroll-mt-4 px-4 sm:px-6" aria-labelledby="inspired-title">
+          <h2 id="inspired-title" className="text-center text-3xl font-extrabold text-ink">{t.inspiredIndex.heading}</h2>
+          <p className="mx-auto mt-3 max-w-2xl text-center text-smoke">{t.inspiredIndex.intro}</p>
+          <ul className="mt-8 grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3 lg:grid-cols-4 lg:gap-6">
+            {inspired.slice(0, HOME_CARDS).map((item, i) => <InspiredPairCard key={item.key} item={item} lang={lang} index={i} />)}
+          </ul>
+          <p className="mt-10 flex flex-wrap items-center justify-center gap-3 text-center">
+            <Link href={withLang(lang, '/inspired')} className="inline-block rounded-full bg-wine-600 px-8 py-3.5 font-bold text-white transition hover:bg-wine-700">
+              {t.inspiredIndex.viewAll} ({inspired.length.toLocaleString('en-US')})
+            </Link>
+            <Link href={withLang(lang, '/perfumes')} className="inline-block rounded-full border border-line bg-white px-8 py-3.5 font-bold text-ink transition hover:border-wine-600/60 hover:text-wine-700">
               {t.featured.viewAll} ({perfumes.length.toLocaleString('en-US')})
             </Link>
           </p>
-        </div>
+        </section>
+
+        <CommunityHighlights lang={lang} />
 
         <SeoText lang={lang} />
       </main>
