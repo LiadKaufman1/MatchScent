@@ -177,7 +177,7 @@ export type Dict = {
   };
   notes: { heading: string; top: string; heart: string; base: string; notes: string };
   facts: { year: string; perfumer: string; accords: string };
-  featured: { heading: string; viewAll: string };
+  featured: { viewAll: string };
   seo: {
     heading: string;
     paragraphs: string[];
@@ -269,6 +269,7 @@ export type Dict = {
     next: string;
     page: string;
     inspiredBy: string;
+    viewAll: string;
   };
   brandsIndex: {
     metaTitle: string;
@@ -659,7 +660,7 @@ const en: Dict = {
   },
   notes: { heading: 'Notes', top: 'Top notes', heart: 'Heart notes', base: 'Base notes', notes: 'Notes' },
   facts: { year: 'Launched', perfumer: 'Perfumer', accords: 'Main accords' },
-  featured: { heading: 'Featured fragrances', viewAll: 'View all fragrances' },
+  featured: { viewAll: 'View all fragrances' },
   seo: {
     heading: 'How to find an expensive scent at a fair price',
     paragraphs: [
@@ -763,6 +764,7 @@ const en: Dict = {
     next: 'Next',
     page: 'Page {n} of {total}',
     inspiredBy: 'Reminds me of',
+    viewAll: 'All inspired fragrances',
   },
   brandsIndex: {
     metaTitle: 'Perfume houses A-Z',
@@ -1164,7 +1166,7 @@ const he: Dict = {
   },
   notes: { heading: 'תווים', top: 'תווי ראש', heart: 'תווי לב', base: 'תווי בסיס', notes: 'תווים' },
   facts: { year: 'שנת הוצאה', perfumer: 'יוצר הבושם', accords: 'אקורדים עיקריים' },
-  featured: { heading: 'הבשמים המובילים', viewAll: 'לכל הבשמים' },
+  featured: { viewAll: 'לכל הבשמים' },
   seo: {
     heading: 'איך מוצאים ניחוח יקר במחיר הוגן?',
     paragraphs: [
@@ -1268,6 +1270,7 @@ const he: Dict = {
     next: 'הבא',
     page: 'עמוד {n} מתוך {total}',
     inspiredBy: 'מזכיר לי את',
+    viewAll: 'לכל הבשמים בהשראת',
   },
   brandsIndex: {
     metaTitle: 'בתי בישום מא׳ עד ת׳',
