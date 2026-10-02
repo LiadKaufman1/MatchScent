@@ -5,7 +5,7 @@
 // files: the Israeli lookup merges the plain search and the one with the Hebrew word for perfume. Saved product pages
 // (immersive-<search name>-<row>.json) are opened too, like the server does for listings sold by several stores.
 import fs from 'node:fs';
-import { classifyResults, expandStores, finalizeOffers, serperRows, serperPrice, versionWordsOf } from '../src/lib/price-offers.ts';
+import { classifyResults, expandStores, finalizeOffers, pickStorePage, serperRows, serperPrice, versionWordsOf } from '../src/lib/price-offers.ts';
 
 const DIR = 'data-import/serpapi-samples';
 const why = process.argv.includes('--why');
@@ -89,4 +89,18 @@ console.log('\n=== single rules');
 for (const [wanted, title, keep, source] of synthetic) {
   const got = classifyResults([{ title, source: source ?? 'ACE', price: '₪250.00', extracted_price: 250 }], wanted, { country: 'IL', isBlocked: t => BLOCKED.test(t) }).length > 0;
   console.log(`${got === keep ? 'ok  ' : 'FAIL'} ${keep ? 'keep' : 'drop'}  ${wanted.name}: ${title}`);
+}
+
+console.log('\n=== the store page behind a price row (web results for the listing title + the store)');
+for (const [store, rows, expected] of [
+  ['yhscents.com', [{ title: 'x', link: 'https://www.google.com/x' }, { title: 'Gucci Guilty Elixir', link: 'https://www.yhscents.com/product/gucci-guilty-elixir?srsltid=abc' }], 'https://www.yhscents.com/product/gucci-guilty-elixir'],
+  ['yhscents.com', [{ title: 'Gucci', link: 'https://www.fragrantica.com/perfume/Gucci/Guilty-1.html' }], 'https://yhscents.com/'],
+  ['callperfume', [{ title: 'Gucci Guilty', link: 'https://www.zap.co.il/model.aspx?x=1' }, { title: 'גוצי גילטי | Call Perfume', link: 'https://callperfume.co.il/p/guilty' }], 'https://callperfume.co.il/p/guilty'],
+  ['ויטמין זול', [{ title: 'גוצי גילטי אליקסיר - ויטמין זול', snippet: '', link: 'https://vitamin-zol.co.il/guilty' }], 'https://vitamin-zol.co.il/guilty'],
+  ['Lola Ray', [{ title: 'Gucci Guilty Elixir', link: 'https://www.lolaray.co.il/gucci' }], 'https://www.lolaray.co.il/gucci'],
+  ['GLAM42', [{ title: 'Gucci Guilty', link: 'https://www.fragrantica.com/x' }, { title: 'Gucci Guilty', link: 'https://www.facebook.com/glam42' }], null],
+  ['אודם קוסמטיקה', [{ title: 'Gucci Guilty', link: 'https://www.perfumeshop.co.il/gucci' }], null],
+]) {
+  const got = pickStorePage(store, rows);
+  console.log(`${got === expected ? 'ok  ' : 'FAIL'} ${store} -> ${got}`);
 }

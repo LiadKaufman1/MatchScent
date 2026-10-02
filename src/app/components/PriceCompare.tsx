@@ -98,7 +98,7 @@ export default function PriceCompare({ perfumeKey, brand, name, lang, variant = 
   const row = (o: PriceOffer, first = false) => {
     const href = go(o);
     return (
-      <li key={`${o.store}|${o.price}|${o.sizeMl}|${o.tester}`} className={`flex items-center gap-3 rounded-2xl border p-3.5 ${first ? 'border-wine-600/60 bg-blush/60' : 'border-line bg-white'}`}>
+      <li key={`${o.store}|${o.price}|${o.sizeMl}|${o.tester}`} className={`relative flex items-center gap-3 rounded-2xl border p-3.5 transition ${first ? 'border-wine-600/60 bg-blush/60' : 'border-line bg-white'} ${href ? 'hover:border-wine-600 hover:shadow-[0_10px_24px_-18px_rgba(126,31,55,0.7)]' : ''}`}>
         <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-blush text-wine-600" aria-hidden="true"><Store className="h-5 w-5" /></span>
         <span className="min-w-0 flex-1">
           <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
@@ -119,7 +119,7 @@ export default function PriceCompare({ perfumeKey, brand, name, lang, variant = 
             href={href}
             target="_blank"
             rel="noopener noreferrer nofollow sponsored"
-            className="inline-flex shrink-0 items-center gap-1 rounded-full bg-wine-600 px-3.5 py-2 text-sm font-bold text-white transition hover:bg-wine-700"
+            className="inline-flex shrink-0 items-center gap-1 rounded-full bg-wine-600 px-3.5 py-2 text-sm font-bold text-white transition after:absolute after:inset-0 after:rounded-2xl hover:bg-wine-700"
           >
             {t.prices.toStore}
             <ArrowUpRight className="h-4 w-4 rtl:-scale-x-100" aria-hidden="true" />

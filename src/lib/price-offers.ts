@@ -131,6 +131,44 @@ export function cleanStoreUrl(link: string | undefined | null): string | null {
   }
 }
 
+// --- Finding a store's own page from its name (used when a click on a price row has no address yet) ---
+
+// A store that the price service names by its web address ("yhscents.com"): the address, without "www.". Otherwise null.
+export function storeDomain(store: string): string | null {
+  const m = /^(?:https?:\/\/)?(?:www\.)?([a-z0-9-]+(?:\.[a-z0-9-]+)+)\/?$/i.exec(store.trim());
+  return m ? m[1].toLowerCase() : null;
+}
+
+export type OrganicRow = { title?: string; link?: string; snippet?: string };
+
+// Sites that are never the store itself.
+const NOT_A_STORE = /(^|\.)(google|facebook|instagram|youtube|tiktok|pinterest|wikipedia|reddit|twitter|x|linkedin|fragrantica|parfumo|zap|pricez|ebay|aliexpress|temu|shein|wix|waze)\./i;
+const STORE_FILLER = new Set(['ltd', 'inc', 'llc', 'co', 'shop', 'store', 'online', 'the', 'בעמ', 'חנות', 'החנות', 'אונליין', 'חנויות']);
+
+// One of the web results for "<listing title> <store name>" (or "<title> site:<address>"): the first that really is this
+// store's page. A store known by its address: a result on that address (otherwise its home page). A store known only by
+// name: a result whose address, title or text carries at least half of the name's words, from a site that is not an
+// aggregator or social network. Returns null rather than guessing: a wrong store is worse than no link.
+export function pickStorePage(store: string, rows: OrganicRow[]): string | null {
+  const domain = storeDomain(store);
+  const hostOf = (link?: string) => { try { return new URL(link ?? '').hostname.replace(/^www\./, '').toLowerCase(); } catch { return ''; } };
+  if (domain) {
+    const hit = rows.find(r => { const h = hostOf(r.link); return h === domain || h.endsWith(`.${domain}`); });
+    return cleanStoreUrl(hit?.link) ?? `https://${domain}/`;
+  }
+  const words = tokens(store).filter(w => w.length >= 2 && !STORE_FILLER.has(w));
+  if (!words.length) return null;
+  const needed = Math.max(1, Math.ceil(words.length / 2));
+  for (const r of rows) {
+    const host = hostOf(r.link);
+    if (!host || NOT_A_STORE.test(`${host}.`)) continue;
+    const text = plain(`${r.title ?? ''} ${r.snippet ?? ''} ${host}`);
+    const compactHost = host.replace(/[^a-z0-9]/g, '');
+    if (words.filter(w => text.includes(w) || compactHost.includes(w)).length >= needed) return cleanStoreUrl(r.link);
+  }
+  return null;
+}
+
 // A store is Israeli when its name is (Hebrew / known), or its own web address ends in .il or is a known Israeli shop.
 const ISRAELI_HOST = /(^|\.)(co\.il|org\.il|net\.il|il)$|^(www\.)?(terminalx|goldenrose|skyperfumes|perfumeil)\./i;
 export function isIsraeliStore(name: string, link?: string | null): boolean {
