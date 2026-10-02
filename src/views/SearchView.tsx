@@ -72,12 +72,16 @@ export default async function SearchView({ lang, query }: { lang: Lang; query: s
                         ) : (
                           <span className="block font-bold text-ink">{entry.name}</span>
                         )}
-                        <span className="mt-1 block text-xs text-smoke">
-                          {s.inspiredBy}{' '}
-                          <HoverLink href={withLang(lang, `/perfume/${original.slug}`)} className="font-medium text-ink hover:text-wine-600 hover:underline">
-                            {original.brand} {original.name}
-                          </HoverLink>
-                        </span>
+                        <span className="mt-1.5 block text-[10px] font-bold uppercase tracking-[0.12em] text-smoke">{s.inspiredBy}</span>
+                        <HoverLink
+                          href={withLang(lang, `/perfume/${original.slug}`)}
+                          className="mt-1 flex w-fit items-center gap-1.5 rounded-full border border-line bg-[#FCFAF9] py-1 pe-2.5 ps-1 text-xs font-medium text-ink hover:border-wine-600/50 hover:text-wine-700"
+                        >
+                          <span className="relative h-6 w-6 shrink-0 overflow-hidden rounded-full border border-line bg-white">
+                            <Photo url={original.image_url} alt={`${original.brand} ${original.name}`} seed={original.brand + original.name} sizes="24px" />
+                          </span>
+                          {original.brand} {original.name}
+                        </HoverLink>
                       </span>
                     </li>
                   ))}
